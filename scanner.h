@@ -83,30 +83,30 @@ Lexikalni Analyzator
 
  	//TERMINALY
 
- 	T_EOF, 		 //Konec souboru
- 	T_ID, 		 //Identifiktor
- 	T_INT0, 	 //0
- 	T_INT, 		 //Cele cislo
- 	T_DOUBLE, 	 //Desetine cislo
- 	T_EXP, 		 //Float 64 (s exponentem)
- 	T_STRING, 	 //Retezec " ... "
- 	T_LDBR, 	 // Left default bracket ' ( '
- 	T_RDBR, 	 // Right default bracket ' ( '
- 	T_ASSIGN,	 // Prirazeni :=
- 	T_LCBR, 	 // Left curly bracket ' { '
- 	T_RCBR, 	 // Right curly bracket ' } '
- 	T_COMMA, 	 // Carka
- 	T_SEMICOLON, // Strednik
- 	T_ADD, 		 // + Scitani nebo konkatenace retezce
- 	T_SUB, 		 // - Odcitani
- 	T_MUL, 		 // * Nasobeni
- 	T_DIV, 		 // / Deleni
- 	T_LESS, 	 // < Je mensi
- 	T_LEQ, 		 // <= Mensi nebo rovno
- 	T_GREAT, 	 // > Je vetsi
- 	T_GREQ, 	 // >= Vetsi nebo rovno
- 	T_EQL, 	 	 // == Je rovno
- 	T_NEQ 		 // != Neni rovno
+ 	T_EOF, 		 	//Konec souboru
+ 	T_ID, 		 	//Identifiktor
+ 	T_INT0, 	 	//0
+ 	T_INT, 		 	//Cele cislo
+ 	T_DOUBLE, 	 	//Desetine cislo
+ 	T_EXP, 		 	//Float 64 (s exponentem)
+ 	T_STRING, 	 	//Retezec " ... "
+ 	T_LDBR, 	 	// Left default bracket ' ( '
+ 	T_RDBR, 	 	// Right default bracket ' ( '
+ 	T_ASSIGN,	 	// Prirazeni :=
+ 	T_LCBR, 	 	// Left curly bracket ' { '
+ 	T_RCBR, 	 	// Right curly bracket ' } '
+ 	T_COMMA, 	 	// Carka
+ 	T_SEMICOLON, 	// Strednik
+ 	T_ADD, 		 	// + Scitani nebo konkatenace retezce
+ 	T_SUB, 		 	// - Odcitani
+ 	T_MUL, 		 	// * Nasobeni
+ 	T_DIV, 		 	// / Deleni
+ 	T_LESS, 	 	// < Je mensi
+ 	T_LEQ, 		 	// <= Mensi nebo rovno
+ 	T_GREAT, 	 	// > Je vetsi
+ 	T_GREQ, 	 	// >= Vetsi nebo rovno
+ 	T_EQL, 	 	 	// == Je rovno
+ 	T_NEQ 		 	// != Neni rovno
 
  	//DODELAT NETERMINALY CASEM
  } tType;
