@@ -1,0 +1,14 @@
+FAKIN PRAVIDLA GRAMATIKY
+1)<FUNC> -> <DATATYPE> Identifikator (<PARAMS>){ EOL <FUNCBODY>} //funkce 
+2)<DATATYPE> -> int
+3)<DATATYPE> -> float64
+4)<DATATYPE> -> string
+5)<PARAMS> -> <DATATYPE> Identifikator <PARAMS_N>
+6)<PARAMS> -> EPS //Pokud neni zadnej parametr ve fci
+7)<PARAMS_N> -> , <DATATYPE> Identifikator <PARAMS_N> //rekurzivne vice parametru
+8)<PARAMS_N> -> EPS //Pokud je pouze jeden parametr fce
+
+9)<IF> -> if <výraz> { EOL <IFBODY> } else { EOL <ELSEBODY> }
+10)<FOR> -> for (<FORDEF>; <výraz>, <prikaz_prirazeni> { EOL <FORBODY> }
+11)<FORDEF> -> <DATATYPE> Identifikator
+12)<FORDEF> -> EPS
