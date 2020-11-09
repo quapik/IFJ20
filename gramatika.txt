@@ -1,14 +1,30 @@
 FAKIN PRAVIDLA GRAMATIKY
-1)<FUNC> -> <DATATYPE> Identifikator (<PARAMS>){ EOL <FUNCBODY>} //funkce 
-2)<DATATYPE> -> int
-3)<DATATYPE> -> float64
-4)<DATATYPE> -> string
-5)<PARAMS> -> <DATATYPE> Identifikator <PARAMS_N>
-6)<PARAMS> -> EPS //Pokud neni zadnej parametr ve fci
-7)<PARAMS_N> -> , <DATATYPE> Identifikator <PARAMS_N> //rekurzivne vice parametru
-8)<PARAMS_N> -> EPS //Pokud je pouze jeden parametr fce
+<program> -> <body> EOF
 
-9)<IF> -> if <výraz> { EOL <IFBODY> } else { EOL <ELSEBODY> }
-10)<FOR> -> for (<FORDEF>; <výraz>, <prikaz_prirazeni> { EOL <FORBODY> }
-11)<FORDEF> -> <DATATYPE> Identifikator
-12)<FORDEF> -> EPS
+<FUNC> -> <DATATYPE> Identifikator (<PARAMS>){ EOL <BODY>} //funkce 
+<DATATYPE> -> int
+<DATATYPE> -> float64
+<DATATYPE> -> string
+<PARAMS> -> <DATATYPE> Identifikator <PARAMS_N>
+<PARAMS> -> EPS //Pokud neni zadnej parametr ve fci
+<PARAMS_N> -> , <DATATYPE> Identifikator <PARAMS_N> //rekurzivne vice parametru
+<PARAMS_N> -> EPS //Pokud je pouze jeden parametr fce
+<FUNCVOLANI> -> identifikator (<PARAMS>)
+<RETURNDEF> -> eps
+<RETURNDEF> -> return <RETURN_HODNOTA>
+<RETURN_HODNOTA> -> (<RETURN_HODNOTA>)
+<RETURN_HODNOTA> -> <VYRAZ> //maybe todo, pojmenovavaš to jak kokot
+
+<IF> -> if <výraz> { EOL <BODY> } else { EOL <BODY> }
+<FOR> -> for (<FORDEF>; <výraz>; <prikaz_prirazeni> { EOL <BODY> }
+<FORDEF> -> <DATATYPE> Identifikator
+<FORDEF> -> EPS
+
+<BODY> ->EPS
+<BODY> -><if> <body>
+<BODY> -> <func> <body>
+<BODY> -><for> <body>
+<BODY> -> vyraz <body>
+<body> -> <prirazeni> <body>
+<BODY> -> EOL <body> //kvuli moznost odradkovani (pro zprehledneni) 
+<prirazeni> -> Identifakatpor = vyraz EOL
