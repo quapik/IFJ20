@@ -27,6 +27,7 @@ Lexikalni Analyzator
  	STATE_ERROR,
  	STATE_START,
  	STATE_EOF,
+ 	STATE_EOL,
  	STATE_ID,
  	STATE_INT,
  	STATE_INT0,
@@ -84,6 +85,7 @@ Lexikalni Analyzator
  	//TERMINALY
 
  	T_EOF, 		 	//Konec souboru
+ 	T_EOL,			//Konec radku
  	T_ID, 		 	//Identifiktor
  	T_INT0, 	 	//0
  	T_INT, 		 	//Cele cislo
