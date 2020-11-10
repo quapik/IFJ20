@@ -24,7 +24,6 @@ Lexikalni Analyzator
 
  typedef enum{
  	STATE_NULL,
- 	STATE_ERROR,
  	STATE_START,
  	STATE_EOF,
  	STATE_EOL,
@@ -40,6 +39,7 @@ Lexikalni Analyzator
  	STATE_STR0,	
  	STATE_STR1, 
  	STATE_STRHEX, 
+ 	STATE_STRHEX2,
  	STATE_STRING,
  	STATE_CMNT0,
  	STATE_CMNT1,
@@ -89,13 +89,13 @@ Lexikalni Analyzator
  	T_EOL,			//Konec radku
  	T_SPACE,		//Mezera, tabulator apod.
  	T_ID, 		 	//Identifiktor
- 	T_INT0, 	 	//0
+ 	//T_INT0, 	 	//0 useless asi
  	T_INT, 		 	//Cele cislo
  	T_DOUBLE, 	 	//Desetine cislo
  	T_EXP, 		 	//Float 64 (s exponentem)
  	T_STRING, 	 	//Retezec " ... "
  	T_LDBR, 	 	// Left default bracket ' ( '
- 	T_RDBR, 	 	// Right default bracket ' ( '
+ 	T_RDBR, 	 	// Right default bracket ' ) '
  	T_ASSIGN,	 	// Prirazeni :=
  	T_LCBR, 	 	// Left curly bracket ' { '
  	T_RCBR, 	 	// Right curly bracket ' } '
