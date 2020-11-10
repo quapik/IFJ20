@@ -28,6 +28,7 @@ Lexikalni Analyzator
  	STATE_START,
  	STATE_EOF,
  	STATE_EOL,
+ 	STATE_SPACE,
  	STATE_ID,
  	STATE_INT,
  	STATE_INT0,
@@ -86,6 +87,7 @@ Lexikalni Analyzator
 
  	T_EOF, 		 	//Konec souboru
  	T_EOL,			//Konec radku
+ 	T_SPACE,		//Mezera, tabulator apod.
  	T_ID, 		 	//Identifiktor
  	T_INT0, 	 	//0
  	T_INT, 		 	//Cele cislo
