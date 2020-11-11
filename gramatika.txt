@@ -1,30 +1,40 @@
 FAKIN PRAVIDLA GRAMATIKY
-<program> -> <body> EOF
-
-<FUNC> -> <DATATYPE> Identifikator (<PARAMS>){ EOL <BODY>} //funkce 
-<DATATYPE> -> int
-<DATATYPE> -> float64
-<DATATYPE> -> string
-<PARAMS> -> <DATATYPE> Identifikator <PARAMS_N>
-<PARAMS> -> EPS //Pokud neni zadnej parametr ve fci
-<PARAMS_N> -> , <DATATYPE> Identifikator <PARAMS_N> //rekurzivne vice parametru
-<PARAMS_N> -> EPS //Pokud je pouze jeden parametr fce
-<FUNCVOLANI> -> identifikator (<PARAMS>)
-<RETURNDEF> -> eps
-<RETURNDEF> -> return <RETURN_HODNOTA>
-<RETURN_HODNOTA> -> (<RETURN_HODNOTA>)
-<RETURN_HODNOTA> -> <VYRAZ> //maybe todo, pojmenovavaš to jak kokot
-
-<IF> -> if <výraz> { EOL <BODY> } else { EOL <BODY> }
-<FOR> -> for (<FORDEF>; <výraz>; <prikaz_prirazeni> { EOL <BODY> }
-<FORDEF> -> <DATATYPE> Identifikator
-<FORDEF> -> EPS
-
-<BODY> ->EPS
-<BODY> -><if> <body>
-<BODY> -> <func> <body>
-<BODY> -><for> <body>
-<BODY> -> vyraz <body>
-<body> -> <prirazeni> <body>
-<BODY> -> EOL <body> //kvuli moznost odradkovani (pro zprehledneni) 
-<prirazeni> -> Identifakatpor = vyraz EOL
+<PROG>	_>	<BODY> EOF
+<FUNC>	_>	func ID (<PARAMS>)(DATATYPE_N){ EOL <BODY>}
+<PARAMS>	_>	ID <DATATYPE> <PARAMS_N>
+<PARAMS>	_>	EPS
+<PARAMS_N>	_>	, ID  <DATATYPE> <PARAMS_N>
+<PARAMS_N>	_>	EPS
+<DATATYPE>	_>	int
+<DATATYPE>	_>	float
+<DATATYPE>	_>	string
+<DATATYPE_N>	_>	, <DATATYPE> <DATATYPE_N>
+<DATATYPE_N>	_>	EPS
+<FUNCCALL>	_>	ID (<PARAMSCALL)
+<FUNCCALL>	_>	ID <ID_N> = ID (<PARAMSCALL)
+<PARAMSCALL>	_>	ID <PARAMSCALL_N>
+<PARAMSCALL_N>	_>	, ID <PARAMSCALL_N>
+<PARAMSCALL_N>	_>	EPS
+<ID_N>	_>	, ID <ID_N>
+<ID_N>	_>	EPS
+<RETURNDEF>	_>	return <vyraz> <vyraz_n>
+<IF>	_>	if <vyraz> { EOL <BODY>} else { EOL <BODY> }
+<FOR>	_>	for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
+<FORDEF>		<DATATYPE> ID
+<FORDEF>	_>	EPS
+<BODY>	_>	EPS
+<BODY>	_>	<IF> <BODY>
+<BODY>	_>	<FUNC> BODY>
+<BODY>	_>	<FOR> BODY>
+<BODY>	_>	<vyraz> BODY>
+<BODY>	_>	<FUNCCAL> <BODY>
+<BODY>		<RETURNDEF> <BODY>
+<BODY>	_>	<prirazeni> <BODY>
+<BODY>	_>	<EOL_POSS> <BODY>
+<EOL_POSS>	_>	EOL
+<EOL_POSS>	_>	EPS
+<prirazeni>	_>	ID := <vyraz>
+<prirazeni>	_>	_ = <vyraz>
+<prirazeni_vice>	_>	ID <ID_N> = <vyraz> <vyraz_n>
+<vyraz_n>	_>	, vyraz  <vyraz_n>
+<vyraz_n>	_>	EPS
