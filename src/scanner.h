@@ -49,6 +49,7 @@ Lexikalni Analyzator
  	STATE_RDBR, 
  	STATE_COLON, 
  	STATE_ASSIGN,
+ 	STATE_DEFINE,
  	STATE_LCBR,
  	STATE_RCBR,
  	STATE_COMMA,
@@ -61,7 +62,6 @@ Lexikalni Analyzator
  	STATE_LEQ,
  	STATE_GREAT,
  	STATE_GREQ,
- 	STATE_SEQ,
  	STATE_EQL,
  	STATE_EXC,
  	STATE_NEQ
@@ -96,6 +96,7 @@ Lexikalni Analyzator
  	T_LDBR, 	 	// Left default bracket ' ( '
  	T_RDBR, 	 	// Right default bracket ' ) '
  	T_ASSIGN,	 	// Prirazeni :=
+ 	T_DEFINE		// Definice ' = ' 
  	T_LCBR, 	 	// Left curly bracket ' { '
  	T_RCBR, 	 	// Right curly bracket ' } '
  	T_COMMA, 	 	// Carka
