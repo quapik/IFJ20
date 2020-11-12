@@ -48,7 +48,7 @@ int scannerDKA(FILE *file, tToken token) {
 					else if (isdigit(currChar)) nextState = STATE_INT;
 					else if (currChar == '"') nextState = STATE_STR0;
 					else if (currChar == '!') nextState = STATE_EXC;
-					else if (currChar == '=') nextState = STATE_SEQ;
+					else if (currChar == '=') nextState = STATE_ASSIGN;
 					else if (currChar == '>') nextState = STATE_GREAT;
 					else if (currChar == '<') nextState = STATE_LESS;
 					else if (currChar == '/') nextState = STATE_DIV;
@@ -157,7 +157,81 @@ int scannerDKA(FILE *file, tToken token) {
 					else nextState = STATE_ERROR;
 					break;
 
-			//EXPRESSIONS 
+			//MISC 
+			case STATE_SPACE:
+					if (isspace(currChar)) nextState = STATE_SPACE;
+					break;
+			case STATE_EOL:
+					token->type = T_EOL;
+					break;
+			case STATE_EOF:
+					token->type = T_EOF;
+					break;
+			case STATE_LDBR:
+					token->type = T_LDBR;
+					break;
+			case STATE_RDBR:
+					token->type = T_RDBR;
+					break;
+			case STATE_SEMICOL:
+					if (currChar == '=') nextState = STATE_DEFINE;
+					else nextState = STATE_ERROR;
+					break;
+			case STATE_LCBR:
+					token->type = T_LCBR;
+					break;
+			case STATE_RCBR:
+					token->type = T_RCBR;
+					break;
+			case STATE_COLON:
+					if (currChar == '=') nextState = STATE_DEFINE;
+					else nextState = STATE_ERROR;
+					break;
+			case STATE_DEFINE:
+					token->type = T_DEFINE;
+					break;
+
+			//EXPRESSIONS
+			case STATE_ADD:
+					token->type = T_ADD;
+					break;
+			case STATE_SUB:
+					token->type = T_SUB;
+					break;
+			case STATE_MUL:
+					token->type = T_MUL;
+					break;
+			case STATE_DIV:
+					token->type = T_DIV;
+					break;
+			case STATE_LESS:
+					if (currChar == '=') nextState = STATE_LEQ;
+					else token->type = T_LESS;
+					break;
+			case STATE_LEQ:
+					token->type = T_LEQ;
+					break;
+			case STATE_GREAT:
+					if (currChar == '=') nextState = STATE_GREQ;
+					else token->type = T_GREAT;
+					break;
+			case STATE_GREQ:
+					token->type = T_GREQ;
+					break;
+			case STATE_ASSIGN:
+					if (currChar == '=') nextState = STATE_EQL;
+					else token->type = T_ASSIGN;
+					break;
+			case STATE_EQL:
+					token->type = T_EQL;
+					break;
+			case STATE_EXC:
+					if (currChar == '=') nextState = STATE_NEQ;
+					token->type = T_EXC;
+					break;
+			case STATE_NEQ:
+					token->type = T_NEQ;
+					break;
 			default:
 					break;
 		}
