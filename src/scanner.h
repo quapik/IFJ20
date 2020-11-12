@@ -96,7 +96,7 @@ Lexikalni Analyzator
  	T_LDBR, 	 	// Left default bracket ' ( '
  	T_RDBR, 	 	// Right default bracket ' ) '
  	T_ASSIGN,	 	// Prirazeni :=
- 	T_DEFINE		// Definice ' = ' 
+ 	T_DEFINE,		// Definice ' = ' 
  	T_LCBR, 	 	// Left curly bracket ' { '
  	T_RCBR, 	 	// Right curly bracket ' } '
  	T_COMMA, 	 	// Carka
