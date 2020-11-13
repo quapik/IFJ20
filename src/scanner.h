@@ -24,6 +24,7 @@ Lexikalni Analyzator
 
  typedef enum{
  	STATE_NULL,
+ 	STATE_ERROR,
  	STATE_START,
  	STATE_EOF,
  	STATE_EOL,
@@ -74,14 +75,14 @@ Lexikalni Analyzator
 
  	T_UNKNOWN,
  	T_ELSE,
- 	T_FLOAT64, //mozna problem
+ 	T_KEYFLOAT64, //mozna problem
  	T_FOR,
  	T_FUNC,
  	T_IF,
- 	T_INT,
+ 	T_KEYINT,
  	T_PACKAGE,
  	T_RETURN,
- 	T_STRING,
+ 	T_KEYSTRING,
 
  	//TERMINALY
 
