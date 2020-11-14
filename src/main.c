@@ -1,13 +1,13 @@
 /*
-# Implementace pøekladaèe imperativního jazyka IFJ20
-# Tım èíslo 041, varianta I
-# Autoøi projektu:
-#	Šíma Vojtìch 	xsimav01@stud.fit.vutbr.cz
-#	Fabián Michal   xfabia13@stud.fit.vutbr.cz
-#	Èábela Radek    xcabel04@stud.fit.vutbr.cz
+# Implementace pÅ™ekladaÄe imperativnÃ­ho jazyka IFJ20
+# TÃ½m ÄÃ­slo 041, varianta I
+# AutoÅ™i projektu:
+#	Å Ã­ma VojtÄ›ch 	xsimav01@stud.fit.vutbr.cz
+#	FabiÃ¡n Michal   xfabia13@stud.fit.vutbr.cz
+#	ÄŒÃ¡bela Radek    xcabel04@stud.fit.vutbr.cz
 #	Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-#	Prosinec 2020, Fakulta informaèních technologií VUT v Brnì
-# Soubor main.c
+#	Prosinec 2020, Fakulta informaÄnÃ­ch technologiÃ­ VUT v BrnÄ›
+# Funkce main
 */
 
 #include <stdio.h>
