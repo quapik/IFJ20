@@ -17,6 +17,8 @@ Lexikalni Analyzator
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <limits.h>
+#include <locale.h>
 
 
 /* Stavy FSM Lexikalniho analyzatoru
@@ -128,4 +130,9 @@ Lexikalni Analyzator
  	struct Token *nextToken;	// ukazatel na dalsi token
 
  } *tToken;
+
+ //funkce
+
+int scannerLoadTokens(tToken *firstToken, FILE *file);
+int scannerDKA(tToken token, FILE *file);
 
