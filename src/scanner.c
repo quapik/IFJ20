@@ -14,14 +14,84 @@ Lexikalni Analyzator
 
 	// next TODO keywords
 
-int scannerDKA(FILE *file, tToken token) {
+int scannerLoadTokens(tToken *firstToken, FILE *file)
+{
+    // pocitame s platnym souborem
+
+    tToken prevToken = NULL;
+
+    //cyklus, ktery vytvori linked seznam
+    while (prevToken == NULL || prevToken->type != T_EOF) {
+
+        tToken newToken;
+
+        // filling token:
+        newToken = malloc(sizeof(struct Token));
+        if(newToken == NULL){
+            fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
+            exit(99);
+        }
+        newToken->data = NULL;
+        newToken->prevToken = NULL;
+        newToken->nextToken = NULL;
+
+        bool dkaError = false;
+
+
+        // cyklus naplneni jednoho tokenu
+        do {
+            free(newToken->data);
+            newToken->data = NULL;
+            dkaError = scannerDKA(newToken, file);
+
+            //debug
+            printf("dkaError je %d\n", dkaError);
+
+
+        } while ((dkaError && newToken->type != T_EOF) ||
+                    newToken->type == T_UNKNOWN);
+
+        //TODO keyword check
+
+
+
+        if (prevToken == NULL)
+        // Prvni token
+        {
+            *firstToken = newToken;
+        }
+        else
+        // Napojeni minuleho tokenu na soucasny
+        {
+            prevToken->nextToken = newToken;
+        }
+        // Napojeni souasneho tokenu na predchozi
+        newToken->prevToken = prevToken;
+        // Nove vytvoreny je predchozi pro dalsi cyklus
+        prevToken = newToken;
+
+        //osetreni erroru
+        if(dkaError)
+        {
+            //TODO free list
+            *firstToken = NULL;
+            return dkaError;
+        }
+    }
+
+    return 0;
+
+}
+
+int scannerDKA(tToken token, FILE *file)
+{
 
 	// pocitame s platnym souborem
 
 	sState state = STATE_START;
 	sState nextState;
 
-	static unsigned int currChar;
+	int currChar;
 
 	bool gettingLex = true;
 
@@ -31,21 +101,19 @@ int scannerDKA(FILE *file, tToken token) {
 
 	while(gettingLex) {
 
-		switch(state) {
+        if (currChar != EOF) {
+            currChar = getc(file);
+        }
 
-			if (currChar != EOF) {
-				currChar = getc(file);
-			}
+        printf("scanning... %c\n", currChar);
 
 
+        switch(state) {
 			case STATE_START:
 					if (currChar == '\n') nextState = STATE_EOL;
 					else if (currChar == EOF) nextState = STATE_EOF;
-					else if (isspace(currChar)) nextState = STATE_SPACE;
 					else if (currChar == '/') nextState = STATE_CMNT0;
-					else if (isalpha(currChar) || currChar == '_') nextState = STATE_ID;
 					else if (currChar == '0') nextState = STATE_INT0;
-					else if (isdigit(currChar)) nextState = STATE_INT;
 					else if (currChar == '"') nextState = STATE_STR0;
 					else if (currChar == '!') nextState = STATE_EXC;
 					else if (currChar == '=') nextState = STATE_ASSIGN;
@@ -62,7 +130,10 @@ int scannerDKA(FILE *file, tToken token) {
 					else if (currChar == ':') nextState = STATE_COLON;
 					else if (currChar == '(') nextState = STATE_LDBR;
 					else if (currChar == ')') nextState = STATE_RDBR;
-					else nextState == STATE_ERROR;
+                    else if (isdigit(currChar)) nextState = STATE_INT;
+                    else if (isalpha(currChar) || currChar == '_') nextState = STATE_ID;
+                    else if (isspace(currChar)) nextState = STATE_SPACE;
+					else nextState = STATE_ERROR;
 					break;
 			
 			//ID
@@ -109,7 +180,7 @@ int scannerDKA(FILE *file, tToken token) {
 			case STATE_STR0:
 					if (currChar == '\\') nextState = STATE_STR1;
 					else if (currChar == '"') nextState = STATE_STRING;
-					else if (currChar != '"' || currChar != '\\' || currChar != EOF) nextState = STATE_STR0;
+					else if (currChar > 32) nextState = STATE_STR0;
 					else nextState = STATE_ERROR;
 					break;
 			case STATE_STR1:
@@ -118,7 +189,7 @@ int scannerDKA(FILE *file, tToken token) {
 						currChar == '\\' ||
 						currChar == '"') nextState = STATE_STR0;
 					else if (currChar == 'x') nextState = STATE_STRHEX;
-					else nextState == STATE_ERROR;
+					else nextState = STATE_ERROR;
 					break;
 			case STATE_STRHEX:
 					if ((currChar >= 65 && currChar <= 70) ||
@@ -174,8 +245,7 @@ int scannerDKA(FILE *file, tToken token) {
 					token->type = T_RDBR;
 					break;
 			case STATE_SEMICOL:
-					if (currChar == '=') nextState = STATE_DEFINE;
-					else nextState = STATE_ERROR;
+					token->type = T_SEMICOLON;
 					break;
 			case STATE_LCBR:
 					token->type = T_LCBR;
@@ -227,7 +297,7 @@ int scannerDKA(FILE *file, tToken token) {
 					break;
 			case STATE_EXC:
 					if (currChar == '=') nextState = STATE_NEQ;
-					token->type = T_EXC;
+					else (nextState = STATE_ERROR);
 					break;
 			case STATE_NEQ:
 					token->type = T_NEQ;
@@ -235,6 +305,28 @@ int scannerDKA(FILE *file, tToken token) {
 			default:
 					break;
 		}
-	}
+		if (token->type == EOF) {
+		    break;
+		}
 
+		if (token->type != T_UNKNOWN) {
+		    ungetc(currChar, file);
+		    printf("ungeted \n");
+		    break;
+		}
+		else {
+            printf("mame unknown tokens \n");
+		    if (nextState == STATE_ERROR) {
+		        printf("error \n");
+		        if (state != STATE_START) {
+		            break;
+		        }
+		        gettingLex = false;
+		    }
+		    //break;
+		}
+
+		state = nextState;
+	}
+    return nextState == STATE_ERROR ? 1 : 0;
 }
