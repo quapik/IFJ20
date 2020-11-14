@@ -67,7 +67,7 @@ Lexikalni Analyzator
  	STATE_GREQ,
  	STATE_EQL,
  	STATE_EXC,
- 	STATE_NEQ
+ 	STATE_NEQ,
  } sState;
 
  // Typy tokenu
@@ -90,12 +90,12 @@ Lexikalni Analyzator
 
  	T_EOF, 		 	//Konec souboru
  	T_EOL,			//Konec radku
- 	T_ID, 		 	//Identifiktor
+ 	T_ID, 		 	//Identifiktor [obsahuje data]
  	//T_INT0, 	 	//0 useless asi
- 	T_INT, 		 	//Cele cislo
- 	T_DOUBLE, 	 	//Desetine cislo
- 	T_EXP, 		 	//Float 64 (s exponentem)
- 	T_STRING, 	 	//Retezec " ... "
+ 	T_INT, 		 	//Cele cislo [obsahuje data]
+ 	T_DOUBLE, 	 	//Desetine cislo [obsahuje data]
+ 	T_EXP, 		 	//Float 64 (s exponentem) [obsahuje data]
+ 	T_STRING, 	 	//Retezec " ... " [obsahuje data]
  	T_LDBR, 	 	// Left default bracket ' ( '
  	T_RDBR, 	 	// Right default bracket ' ) '
  	T_ASSIGN,	 	// Prirazeni :=
@@ -131,8 +131,11 @@ Lexikalni Analyzator
 
  } *tToken;
 
+
+
  //funkce
 
 int scannerLoadTokens(tToken *firstToken, FILE *file);
 int scannerDKA(tToken token, FILE *file);
+int getValidToken (tToken *newToken, FILE *file);
 
