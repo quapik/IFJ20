@@ -14,42 +14,21 @@ Lexikalni Analyzator
 
 	// next TODO keywords
 
+
 int scannerLoadTokens(tToken *firstToken, FILE *file)
 {
     // pocitame s platnym souborem
 
     tToken prevToken = NULL;
-
+    int dkaError = 0;
     //cyklus, ktery vytvori linked seznam
     while (prevToken == NULL || prevToken->type != T_EOF) {
 
         tToken newToken;
 
+
         // filling token:
-        newToken = malloc(sizeof(struct Token));
-        if(newToken == NULL){
-            fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
-            exit(99);
-        }
-        newToken->data = NULL;
-        newToken->prevToken = NULL;
-        newToken->nextToken = NULL;
-
-        bool dkaError = false;
-
-
-        // cyklus naplneni jednoho tokenu
-        do {
-            free(newToken->data);
-            newToken->data = NULL;
-            dkaError = scannerDKA(newToken, file);
-
-            //debug
-            printf("dkaError je %d\n", dkaError);
-
-
-        } while ((dkaError && newToken->type != T_EOF) ||
-                    newToken->type == T_UNKNOWN);
+        dkaError = getValidToken(&newToken, file);
 
         //TODO keyword check
 
@@ -83,6 +62,39 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
 
 }
 
+int getValidToken (tToken *newToken, FILE *file)
+{
+    //pocitame s platnym souborem
+    if (newToken == NULL) return -1; //TODO fix code
+
+    *newToken = malloc(sizeof(struct Token));
+    if(newToken == NULL){
+        fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
+        exit(99);
+    }
+    (*newToken)->data = NULL;
+    (*newToken)->prevToken = NULL;
+    (*newToken)->nextToken = NULL;
+
+    bool dkaError = false;
+
+
+    // cyklus naplneni jednoho tokenu
+    do {
+        free((*newToken)->data);
+        (*newToken)->data = NULL;
+        dkaError = scannerDKA(*newToken, file);
+
+        //debug
+        printf("dkaError je %d\n", dkaError);
+
+
+    } while ((dkaError && (*newToken)->type != T_EOF) ||
+             (*newToken)->type == T_UNKNOWN);
+
+    return dkaError ? 1 : 0;
+}
+
 int scannerDKA(tToken token, FILE *file)
 {
 
@@ -91,21 +103,48 @@ int scannerDKA(tToken token, FILE *file)
 	sState state = STATE_START;
 	sState nextState;
 
-	int currChar;
+	int currChar = 0;
+	char *tokenData;
 
 	bool gettingLex = true;
 
 	token->type = T_UNKNOWN;
 
-	//TODO Implementovat pamatovani stringu (pole nebo ungetc)
+	//dynamicky string
+    unsigned int c = 0; //data string counter
+    unsigned int dsMultiplier = 16; // data string multiplier - k alokaci a realokaci //TODO fix to var
+    char *dataString = malloc(sizeof(char)*dsMultiplier);
 
 	while(gettingLex) {
 
-        if (currChar != EOF) {
+	    //doplneni do pole charů
+        if (currChar != 0) //prvni pruchod (pokud currchar neni nulovy znak)
+        {
+            //znak se nevejde do alokovaneho pole
+            if (c >= dsMultiplier)
+            {
+                dsMultiplier += 16; //TODO fix to var
+                dataString = realloc(dataString, sizeof(char)*dsMultiplier);
+
+            }
+            if (currChar != ' ')
+            {
+                dataString[c] = currChar;
+                c++;
+            }
+
+
+        }
+
+	    //sken dalsiho znaku
+        if (currChar != EOF)
+        {
             currChar = getc(file);
         }
 
         printf("scanning... %c\n", currChar);
+
+        nextState = STATE_NULL;
 
 
         switch(state) {
@@ -132,11 +171,12 @@ int scannerDKA(tToken token, FILE *file)
 					else if (currChar == ')') nextState = STATE_RDBR;
                     else if (isdigit(currChar)) nextState = STATE_INT;
                     else if (isalpha(currChar) || currChar == '_') nextState = STATE_ID;
-                    else if (isspace(currChar)) nextState = STATE_SPACE;
+                    else if (isspace(currChar)) nextState = STATE_START;
 					else nextState = STATE_ERROR;
 					break;
 			
 			//ID
+            //case STATE_KEYWORD:
 			case STATE_ID:
 					if (isalpha(currChar) || isdigit(currChar) || currChar == '_') nextState = STATE_ID;
 					else token->type = T_ID;
@@ -229,9 +269,11 @@ int scannerDKA(tToken token, FILE *file)
 					break;
 
 			//MISC 
-			case STATE_SPACE:
-					if (isspace(currChar)) nextState = STATE_SPACE;
-					break;
+			//case STATE_SPACE:
+			//		printf("Ve STATE_SPACE currchar k porovnani je: %c\n", currChar);
+			//        if (isspace(currChar) && currChar != '\n') nextState = STATE_SPACE;
+			//        nextState = STATE_START;
+			//		break;
 			case STATE_EOL:
 					token->type = T_EOL;
 					break;
@@ -260,6 +302,9 @@ int scannerDKA(tToken token, FILE *file)
 			case STATE_DEFINE:
 					token->type = T_DEFINE;
 					break;
+            case STATE_COMMA:
+                    token->type = T_COMMA;
+                    break;
 
 			//EXPRESSIONS
 			case STATE_ADD:
@@ -305,12 +350,22 @@ int scannerDKA(tToken token, FILE *file)
 			default:
 					break;
 		}
+		// ignorujeme znaky:
+		//if (nextState == STATE_START) {
+		//    printf("freed string: %s\n", dataString);
+		//    dataString[0] = '\0';
+		//    free(dataString);
+		//}
+
+		//konec souboru:
 		if (token->type == EOF) {
 		    break;
 		}
 
+		// priprava obsahu tokenu:
 		if (token->type != T_UNKNOWN) {
 		    ungetc(currChar, file);
+            dataString[c] = '\0';
 		    printf("ungeted \n");
 		    break;
 		}
@@ -328,5 +383,26 @@ int scannerDKA(tToken token, FILE *file)
 
 		state = nextState;
 	}
+
+	//debug
+	printf("obsah tokenu: %s\n", dataString);
+
+	//zaplneni datoveho obsahu tokenu
+    switch (token->type)
+    {
+        case T_ID:
+        case T_INT:
+        case T_DOUBLE:
+        case T_EXP:
+        case T_STRING:
+            token->data = dataString;
+            break;
+        default:
+            free(dataString);
+            break;
+    }
+
+
+
     return nextState == STATE_ERROR ? 1 : 0;
 }
