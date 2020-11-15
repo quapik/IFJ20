@@ -131,11 +131,11 @@ Lexikalni Analyzator
 
  } *tToken;
 
-
-
- //funkce
+// funkce
 
 int scannerLoadTokens(tToken *firstToken, FILE *file);
 int scannerDKA(tToken token, FILE *file);
-int getValidToken (tToken *newToken, FILE *file);
+int scannerGetValidToken (tToken *newToken, FILE *file);
+tType scannerKeywordCheck (tToken token);
+void scannerTokenListDealloc (tToken *firstToken);
 
