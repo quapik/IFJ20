@@ -12,7 +12,7 @@ Lexikalni Analyzator
 
 #include "scanner.h"
 
-	// next TODO keywords
+
 
 
 int scannerLoadTokens(tToken *firstToken, FILE *file)
@@ -28,11 +28,7 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
 
 
         // filling token:
-        dkaError = getValidToken(&newToken, file);
-
-        //TODO keyword check
-
-
+        dkaError = scannerGetValidToken(&newToken, file);
 
         if (prevToken == NULL)
         // Prvni token
@@ -44,15 +40,17 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
         {
             prevToken->nextToken = newToken;
         }
+
         // Napojeni souasneho tokenu na predchozi
         newToken->prevToken = prevToken;
+
         // Nove vytvoreny je predchozi pro dalsi cyklus
         prevToken = newToken;
 
         //osetreni erroru
         if(dkaError)
         {
-            //TODO free list
+            scannerTokenListDealloc(&prevToken);
             *firstToken = NULL;
             return dkaError;
         }
@@ -62,7 +60,7 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
 
 }
 
-int getValidToken (tToken *newToken, FILE *file)
+int scannerGetValidToken (tToken *newToken, FILE *file)
 {
     //pocitame s platnym souborem
     if (newToken == NULL) return -1; //TODO fix code
@@ -83,14 +81,19 @@ int getValidToken (tToken *newToken, FILE *file)
     do {
         free((*newToken)->data);
         (*newToken)->data = NULL;
-        dkaError = scannerDKA(*newToken, file);
+        if (scannerDKA(*newToken, file)) dkaError = true;
 
         //debug
         printf("dkaError je %d\n", dkaError);
 
 
+
+
     } while ((dkaError && (*newToken)->type != T_EOF) ||
              (*newToken)->type == T_UNKNOWN);
+
+    //keyword check
+    (*newToken)->type = scannerKeywordCheck((*newToken));
 
     return dkaError ? 1 : 0;
 }
@@ -263,7 +266,7 @@ int scannerDKA(tToken token, FILE *file)
 					else nextState = STATE_ERROR;
 					break;
 			case STATE_CMNT3:
-					if (currChar != '\n' || currChar != EOF) nextState = STATE_CMNT3;
+					if (currChar != '\n' && currChar != EOF) nextState = STATE_CMNT3;
 					else if (currChar == '\n') nextState = STATE_START;
 					else nextState = STATE_ERROR;
 					break;
@@ -317,7 +320,9 @@ int scannerDKA(tToken token, FILE *file)
 					token->type = T_MUL;
 					break;
 			case STATE_DIV:
-					token->type = T_DIV;
+                    if (currChar == '*') nextState = STATE_CMNT1;
+                    else if (currChar == '/') nextState = STATE_CMNT3;
+			        else token->type = T_DIV;
 					break;
 			case STATE_LESS:
 					if (currChar == '=') nextState = STATE_LEQ;
@@ -405,4 +410,53 @@ int scannerDKA(tToken token, FILE *file)
 
 
     return nextState == STATE_ERROR ? 1 : 0;
+}
+
+tType scannerKeywordCheck (tToken token)
+{
+    if (token->type != T_ID) return token->type;
+    char *dataString;
+    dataString = token->data;
+
+    //debug
+    //printf("kontroluji keywords... \n");
+
+    if(strcmp(dataString, "else") == 0) return T_ELSE;
+    else if (strcmp(dataString, "float64") == 0) return T_KEYFLOAT64;
+    else if (strcmp(dataString, "for") == 0) return T_FOR;
+    else if (strcmp(dataString, "func") == 0) return T_FUNC;
+    else if (strcmp(dataString, "if") == 0) return T_IF;
+    else if (strcmp(dataString, "int") == 0) return T_KEYINT;
+    else if (strcmp(dataString, "package") == 0) return T_PACKAGE;
+    else if (strcmp(dataString, "return") == 0) return T_RETURN;
+    else if (strcmp(dataString, "string") == 0) return T_KEYSTRING;
+    else
+        {
+        //debug
+        //printf("nenalezen keyword.\n");
+        return T_ID;
+        }
+}
+
+void scannerTokenListDealloc (tToken *firstToken)
+{
+    if(firstToken == NULL || *firstToken == NULL) return;
+
+    while((*firstToken)->nextToken != NULL){
+        *firstToken = (*firstToken)->nextToken;
+    }
+
+    while(*firstToken != NULL){
+        tToken prevToken = (*firstToken)->prevToken;
+
+        if ((*firstToken)->data != NULL) {
+            free((*firstToken)->data);
+        }
+        free(*firstToken);
+        *firstToken = NULL;
+
+        *firstToken = prevToken;
+    }
+
+
 }
