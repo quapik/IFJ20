@@ -21,10 +21,30 @@ typedef struct tBSTNode {
 	struct tBSTNode * RPtr;                                   /* pravý podstrom */
 } *tBSTNodePtr;
 
-/* prototypy funkcí */
+/* prototypy funkcí BVS*/
 
 void BSTInit   (tBSTNodePtr *);
-int BSTSearch  (tBSTNodePtr, char, int *);
+int BSTSearch  (tBSTNodePtr, char, int *); //TODO nebude to int, nechcem vracet nic
 void BSTInsert (tBSTNodePtr *, char, int);
 void BSTDelete (tBSTNodePtr *, char);
 void BSTDispose(tBSTNodePtr *);
+
+typedef struct symtable {
+    tBSTNodePtr RootPtr;
+} tSymtable;
+
+typedef struct funkce {
+bool definovana;
+int parametry_datovytyp[10]; //arr pro ulozeni typu parametru a navratovych hodnot int=1, flaot64=2, string=3
+int navratovehodnoty_datovytyp[10];
+}tFunkce;
+
+typedef struct promenna{ //is it neccesery?
+int promenna_Datovytyp; ///int=1, flaot64=2, string=3 
+};
+
+void SymtableInit(tSymtable*);
+void SymtableSearch(tSymtable, string); //podle jmena promenne/fce hledani v tabulce
+void SymtableInsert(tSymtable*, string); //vlozeni polozky do symtable, promenna a fce zvlast?
+void SymtableDelete(tSymtable*, string);
+void SyntableDispose(tSymtable*);

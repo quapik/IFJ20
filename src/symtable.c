@@ -10,25 +10,39 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 
 //tabulka symbolu
 #include "symtable.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 //BST(BinarySearchTree - viz IAL projekt2, c401)
+
+
 //Inicializace stromu
 void BSTInit (tBSTNodePtr *RootPtr) {
 
 *(RootPtr)=NULL;
 }
+
+//inicializace tabulky
+void SymtableInit(tSymtable* Symtable){
+BSTInit(&(Symtable->RootPtr));
+}
+	
+
 //Vyhledavani v stromu
 int BSTSearch (tBSTNodePtr RootPtr, char K, int *Content)	{
 
 if(RootPtr==NULL)
 	{
-		return(FALSE);
-	}
+		return(0); 
 else
 	{
 		if(RootPtr->Key==K)
 			{
 				(*Content)=RootPtr->BSTNodeCont;
-				return(TRUE); //pokud je rootKey roven tak koncime a dal nehledame
+				return(1); //pokud je rootKey roven tak koncime a dal nehledame
+				//TODO co budeme vubec chtit vracet????
+	}
 			}
 		else
 			{
@@ -45,6 +59,13 @@ else
 	}	
 
 }
+
+//vyhledavani v tabulce
+void SymtableSearch(tSymtable* Symtable,string K){
+BSTSearch(&(Symtable->RootPtr),K); //TODO ERROR (string here, char v BST)
+}
+
+
 //Vlozeni do stromu
 void BSTInsert (tBSTNodePtr* RootPtr, char K, int Content)	{
 	tBSTNodePtr polozka;
@@ -169,6 +190,11 @@ void BSTDelete (tBSTNodePtr *RootPtr, char K) 		{
 	
 	}
 }
+//Odstraneni prvku symtable
+void SymtableDelete(tSymtable* Symtable,string K){
+BSTDelete(&(Symtable->RootPtr),K); //TODO ERROR (string here, char v BST)
+}
+
 //Zruseni stromu
 void BSTDispose (tBSTNodePtr *RootPtr) {
  
@@ -185,4 +211,13 @@ void BSTDispose (tBSTNodePtr *RootPtr) {
 			(*RootPtr)=NULL; //uvolneni rootu(korene stromu) a navraceni do puvodniho stavu
 		}		 
 
-}  
+} 
+//Zruseni symtadble
+void SymtableDispose(tSymtable* Symtable){
+BSTDispose(&(Symtable->RootPtr);
+}
+
+
+
+
+
