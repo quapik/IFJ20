@@ -12,9 +12,6 @@ Lexikalni Analyzator
 
 #include "scanner.h"
 
-
-
-
 int scannerLoadTokens(tToken *firstToken, FILE *file)
 {
     // pocitame s platnym souborem
@@ -75,6 +72,7 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
     (*newToken)->nextToken = NULL;
 
     bool dkaError = false;
+    bool debugPrint = true;
 
 
     // cyklus naplneni jednoho tokenu
@@ -85,6 +83,13 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
 
         //debug
         printf("dkaError je %d\n", dkaError);
+
+        //vypis prvni chyby
+        if (dkaError == true && debugPrint == true)
+        {
+            scannerPrintDebug((*newToken), 1);
+            debugPrint = false;
+        }
 
 
 
@@ -223,7 +228,7 @@ int scannerDKA(tToken token, FILE *file)
 			case STATE_STR0:
 					if (currChar == '\\') nextState = STATE_STR1;
 					else if (currChar == '"') nextState = STATE_STRING;
-					else if (currChar > 32) nextState = STATE_STR0;
+					else if (currChar >= 32) nextState = STATE_STR0;
 					else nextState = STATE_ERROR;
 					break;
 			case STATE_STR1:
@@ -378,6 +383,7 @@ int scannerDKA(tToken token, FILE *file)
             printf("mame unknown tokens \n");
 		    if (nextState == STATE_ERROR) {
 		        printf("error \n");
+		        //TODO ERROR VYPIS
 		        if (state != STATE_START) {
 		            break;
 		        }
@@ -456,6 +462,41 @@ void scannerTokenListDealloc (tToken *firstToken)
         *firstToken = NULL;
 
         *firstToken = prevToken;
+    }
+}
+
+void scannerPrintDebug (tToken token, unsigned opt) {
+    // pokud opt = 1, vypiseme error, pokud opt = 0, vypiseme obsah tokenu
+    char *dataString;
+    dataString = token->data;
+
+    if (opt == 1)
+    {
+        printf("Debug: Chyba tokenu\n");
+    }
+
+    if (token == NULL)
+    {
+        printf("Debug: Token je NULL\n");
+        return;
+    }
+    if (dataString == NULL)
+    {
+        printf("Debug: Zadna data v tokenu\n");
+        return;
+    }
+    else
+    {
+        if (opt == 1)
+        {
+            printf("Debug: Vyskytla se chyba pobliz %s\n", dataString);
+            return;
+        }
+        if (opt == 0)
+        {
+            printf("Debug: Obsah tokenu = %s\n", dataString);
+            return;
+        }
     }
 
 
