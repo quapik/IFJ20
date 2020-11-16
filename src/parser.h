@@ -14,6 +14,10 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #include <string.h>
 #include <stdio.h>
 
-
+int StartParser(tToken *token);
+int body(tToken *token);
+int id_next(tToken *token);
+int id_n(tToken *token);
+int id_vlevo_vice(tToken *token);
 
 #endif /* prarser.h */
