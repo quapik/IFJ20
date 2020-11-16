@@ -138,4 +138,5 @@ int scannerDKA(tToken token, FILE *file);
 int scannerGetValidToken (tToken *newToken, FILE *file);
 tType scannerKeywordCheck (tToken token);
 void scannerTokenListDealloc (tToken *firstToken);
+void scannerPrintDebug (tToken token, unsigned opt); //opt = 1 -> chybovy vypis , opt = 0 -> vypis obsahu tokenu (pro syntax, pozdejsi chyby)
 
