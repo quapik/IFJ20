@@ -14,8 +14,10 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
-{   if((*token)->type==T_PACKAGE) //prvni musi byt package main
-    {    (*token)=(*token)->nextToken;
+{
+    if((*token)->type==T_PACKAGE) //prvni musi byt package main
+    { printf("package");
+    (*token)=(*token)->nextToken;
         if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0)) //id s main
         {
             (*token)=(*token)->nextToken;
@@ -40,12 +42,13 @@ int StartParser(tToken *token)
     }
     else
     {
+        
         return ERR_SYNTAX;
     }
 }
 int body(tToken *token)
 {
-    if (token->type==T_IF)
+    if ((*token)->type==T_IF)
     {
        (*token)=(*token)->nextToken;
        //TODO KONTROLA zda nasleduje vyraz a je vporadku
@@ -63,24 +66,24 @@ int body(tToken *token)
             }
 
     }
-    else if (token->type==T_FOR)
+    else if ((*token)->type==T_FOR)
     {
 
 
     }
-    else if (token->type==T_EOL)
+    else if ((*token)->type==T_EOL)
     {
         (*token)=(*token)->nextToken;
         return body(token);
     }
 
-    else if (token->type==T_FUNC)
+    else if ((*token)->type==T_FUNC)
     {
 
         
     }
 
-    else if (token->type==T_ID) //Máme identifikátor (s hodnotou)
+    else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
     {
         (*token)=(*token)->nextToken;
         return id_next(token);
@@ -97,11 +100,11 @@ int body(tToken *token)
 //Pravidla 31 <ID_NEXT> -> := vyraz  a 35 , <ID_NEXT> -> <ID_N>=<VICE_ID_VLEVO>
 int id_next(tToken *token)
 {
-    if(token->type==T_ASSIGN) // pokud je :=
+    if((*token)->type==T_ASSIGN) // pokud je :=
     {
         //TODO kontrolva vyrazu
     }
-    else if (token->type==T_COMMA) //pokud je carka
+    else if ((*token)->type==T_COMMA) //pokud je carka
     {
        return id_n(token); //volat <ID_> (vice identifikatoru za sebou)
     }
@@ -113,10 +116,10 @@ int id_next(tToken *token)
 //pravidlo 15 a 16 <ID_N> -> , ID <ID_N> & <ID_N> -> EPS
 int id_n(tToken *token)
 {
-    if(token->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
+    if((*token)->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
     {
         (*token) = (*token)->nextToken;
-        if (token->type == T_ID) //ted musi byt id jinak chyba
+        if ((*token)->type == T_ID) //ted musi byt id jinak chyba
         {
             (*token) = (*token)->nextToken;
             return id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
@@ -127,7 +130,7 @@ int id_n(tToken *token)
         }
 
     }
-    else if (token->type==T_DEFINE) //=
+    else if ((*token)->type==T_DEFINE) //=
     {
         return vice_id_vlevo(token);
     }
@@ -139,11 +142,11 @@ int id_n(tToken *token)
 
 }
 
-/*int vice_id_vlevo(tToken *token)
+int vice_id_vlevo(tToken *token)
 {
 
     //TODO
-}*/
+}
 
 
 
