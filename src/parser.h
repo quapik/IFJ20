@@ -10,7 +10,9 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 
 #ifndef _PARSER_H
 #define _PARSER_H
-#include scanner.h
+#include "scanner.h"
+#include "error.h"
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -18,6 +20,6 @@ int StartParser(tToken *token);
 int body(tToken *token);
 int id_next(tToken *token);
 int id_n(tToken *token);
-int id_vlevo_vice(tToken *token);
+int vice_id_vlevo(tToken *token);
 
 #endif /* prarser.h */

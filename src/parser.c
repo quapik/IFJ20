@@ -12,22 +12,36 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #include "parser.h"
 
 
-//pravidlo 1. <program>-><body> EOF
+//pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
-{
-    if((*token)->type==T_EOF) //konec souboru (je to to jedine, co soubor obsahujhe)
+{   if((*token)->type==T_PACKAGE) //prvni musi byt package main
+    {    (*token)=(*token)->nextToken;
+        if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0)) //id s main
         {
-        return ERR_OK;
-        } 
-    else if ((*token)->type==T_IF || (*token)->type==T_FUNC || (*token)->type==T_FOR || (*token)->type==T_RETURN || (*token)->type==T_ID || (*token)->type==T_EOL ||(*token)->type==T_ID) //TODO _, int float string?
-        {
-        return body(&token);
+            (*token)=(*token)->nextToken;
+            if ((*token)->type == T_EOF) //konec souboru (je tam pouze)
+            {
+                return ERR_OK;
+            }
+            else if ((*token)->type == T_IF || (*token)->type == T_FUNC || (*token)->type == T_FOR ||
+                     (*token)->type == T_RETURN || (*token)->type == T_ID || (*token)->type == T_EOL) //TODO _, int float string?
+            {
+                return body(token);
+            }
+            else
+            {
+                return ERR_SYNTAX;
+            }
         }
+        else
+        {
+            return ERR_SYNTAX;
+        }
+    }
     else
-        {
+    {
         return ERR_SYNTAX;
-        }
-        
+    }
 }
 int body(tToken *token)
 {
@@ -42,7 +56,7 @@ int body(tToken *token)
                  if ((*token)->type==T_EOL)
                  {
                      (*token)=(*token)->nextToken;
-                     return body(&token);
+                     return body(token);
                  }
                
                 //TODO ELSE
@@ -54,6 +68,11 @@ int body(tToken *token)
 
 
     }
+    else if (token->type==T_EOL)
+    {
+        (*token)=(*token)->nextToken;
+        return body(token);
+    }
 
     else if (token->type==T_FUNC)
     {
@@ -64,7 +83,7 @@ int body(tToken *token)
     else if (token->type==T_ID) //Máme identifikátor (s hodnotou)
     {
         (*token)=(*token)->nextToken;
-        return id_next(&token);
+        return id_next(token);
 
     }
 
@@ -84,7 +103,7 @@ int id_next(tToken *token)
     }
     else if (token->type==T_COMMA) //pokud je carka
     {
-       return id_n(&token); //volat <ID_> (vice identifikatoru za sebou)
+       return id_n(token); //volat <ID_> (vice identifikatoru za sebou)
     }
     else
     {
@@ -100,7 +119,7 @@ int id_n(tToken *token)
         if (token->type == T_ID) //ted musi byt id jinak chyba
         {
             (*token) = (*token)->nextToken;
-            return id_n(&token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
+            return id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
         }
         else
         {
@@ -110,7 +129,7 @@ int id_n(tToken *token)
     }
     else if (token->type==T_DEFINE) //=
     {
-        return id_vice_nalevo(&token);
+        return vice_id_vlevo(token);
     }
     else //neco jinyho nez carka nebo = automaticky error
 
@@ -120,11 +139,12 @@ int id_n(tToken *token)
 
 }
 
-int id_vlevo_vice(tToken *token)
+/*int vice_id_vlevo(tToken *token)
 {
 
     //TODO
-}
+}*/
+
 
 
 
