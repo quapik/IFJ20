@@ -126,7 +126,6 @@ int body(tToken *token)
         (*token)=(*token)->nextToken;
         return body(token);
     }
-    //PRAVIDLO <FUNC> -> func ID (<PARAMS>)(NAVRATTYPE_N){ EOL <BODY>}
     else if ((*token)->type==T_FUNC)
     {
         (*token)=(*token)->nextToken;
