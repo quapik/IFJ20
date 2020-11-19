@@ -11,6 +11,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 
 #include "parser.h"
 bool BylMain=false;
+int ErrorCheck=0;
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
@@ -184,9 +185,17 @@ int body(tToken *token)
     else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
     {
         (*token)=(*token)->nextToken;
-        if ((*token)->type==T_ASSIGN) //
+        if ((*token)->type==T_ASSIGN) // =
         {
-            //TODO VYRAZ
+            (*token)=(*token)->nextToken;
+            //TED MUSI BYT VYRAZ
+            (*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+            {
+                return ERR_SEM_KOMP;
+            }
+            (*token)=(*token)->nextToken;
+            return body(token);
         }
     }
     else if ((*token)->type==T_EOF)
@@ -274,6 +283,41 @@ int vice_id_vlevo(tToken *token)
     }
 
 }
+//PRAVIDLO <paramscall> -> ID <PARAMSCALL_N>
+int paramscall(tToken *token)
+{
+    if ((*token)->type==T_ID)
+    {    //TODO SEMANTIKA ID
+        (*token)=(*token)->nextToken;
+    }
+    else
+    {
+        return ERR_SYNTAX;
+    }
+
+}
+//PRAVIDLO <paramscall_n> -> , ID <PARAMSCALL_N> nebo <paramscall_n> -> EPS
+int paramscall_n(tToken *token)
+{
+    if ((*token)->type==T_COMMA)
+    {
+        (*token)=(*token)->nextToken;
+        if ((*token)->type==T_ID)
+        {
+            (*token)=(*token)->nextToken;
+            paramscall_n(token); //TODO VOLANI
+        }
+
+    }
+    else if ((*token)->type==T_RDBR) //)
+    {
+        //TODO RETURN do paramscall
+    }
+
+
+}
+
+
 
 
 
