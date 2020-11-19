@@ -1,0 +1,81 @@
+//Implementace překladače imperativního jazyka IFJ20
+//Tým číslo 041, varianta I
+/*Autoři projektu:
+Šíma Vojtěch 	xsimav01@stud.fit.vutbr.cz
+Fabián Michal   xfabia13@stud.fit.vutbr.cz
+Čábela Radek    xcabel04@stud.fit.vutbr.cz
+Poposki Vasil   xpopos00@stud.fit.vutbr.cz
+Prosinec 2020, Fakulta informačních technologií VUT v Brně
+
+Precedencni analyza zdola nahoru pro vyrazy
+*/
+
+#ifndef GETC_EXPRBOTTOMUP_H
+#define GETC_EXPRBOTTOMUP_H
+
+#include "scanner.h"
+
+#endif //GETC_EXPRBOTTOMUP_H
+
+#define EXPR_STACK_ALOC_SIZE 64
+
+// operátory z tabulky pro precedenční analýzu
+
+typedef enum{
+    X_MULDIV,	    // Násobení / dělení
+    X_ADDSUB,	    // Sčítaní / odčítání
+    X_LEQGEQ,		// Porovnání větší / menší / rovná se
+    X_EQL,		    // Porovnání (ne)rovná se
+    X_LDBR,		    // Levá (default) závorka
+    X_RDBR,		    // Pravá (default) závorka
+    X_N,		    // Proměnná
+    X_$			    // Jiné
+} xOperator;
+
+
+
+// položky precedenční tabulky
+
+typedef enum{
+    X_OPEN,		// (<)
+    X_CLOSE,	// (>)
+    X_EQUAL,	// (=)
+    X_EMPTY		// ( )
+} xPriority;
+
+
+// typ prvku na zasobniku
+
+typedef enum{
+    XT_OPEN,	// shift (<)
+    XT_TERM,	// terminál
+    XT_NONTERM,	// neterminál
+} xItemType;
+
+// prvek na zasobniku
+
+typedef struct xItem{
+    xItemType type;
+    tToken xToken; //TODO mozna to chce rozsirit
+} *txItem;
+
+// zásobník pro precedenční analýzu
+
+typedef struct xStack{
+    int size;	// velikost zásobníku
+    int top;	// index nejvyššího prvku
+    txItem *xs;	// pole prvků
+} *txStack;
+
+
+// funkce
+tToken exprBUParse (tToken *token);
+void exprBUStackInit (txStack *stack);
+xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
+xOperator exprTokenTypeToOperator(tType tokenType);
+
+
+
+
+
+
