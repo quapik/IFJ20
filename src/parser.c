@@ -52,8 +52,14 @@ int body(tToken *token)
     if ((*token)->type==T_IF)
     {
         (*token)=(*token)->nextToken;
-        //TODO KONTROLA zda nasleduje vyraz a je vporadku
+       //TED MUSI BYT VYRAZ
+        (*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+        {
+            return ERR_SEM_KOMP;
+        }
 
+        (*token)=(*token)->nextToken;
 
         if ((*token)->type==T_LCBR) // token je {
         {
@@ -126,6 +132,7 @@ int body(tToken *token)
         (*token)=(*token)->nextToken;
         return body(token);
     }
+    //PRAVIDLO <FUNC> -> func ID (<PARAMS>)(NAVRATTYPE_N){ EOL <BODY>}
     else if ((*token)->type==T_FUNC)
     {
         (*token)=(*token)->nextToken;
@@ -177,7 +184,7 @@ int body(tToken *token)
     else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
     {
         (*token)=(*token)->nextToken;
-        if ((*token)->type==T_DEFINE) //
+        if ((*token)->type==T_ASSIGN) //
         {
             //TODO VYRAZ
         }
@@ -196,9 +203,17 @@ int body(tToken *token)
 //Pravidla 31 <ID_NEXT> -> := vyraz  a 35 , <ID_NEXT> -> <ID_N>=<VICE_ID_VLEVO>
 int id_next(tToken *token)
 {
-    if((*token)->type==T_ASSIGN) // pokud je :=
+    if((*token)->type==T_DEFINE) // pokud je :=
     {
-        //TODO kontrolva vyrazu
+        (*token)=(*token)->nextToken;
+        //TED MUSI BYT VYRAZ
+        (*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+        {
+            return ERR_SEM_KOMP;
+        }
+        (*token)=(*token)->nextToken;
+        return body(token);
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
     {
@@ -231,7 +246,6 @@ int id_n(tToken *token)
         return vice_id_vlevo(token);
     }
     else //neco jinyho nez carka nebo = automaticky error
-
     {
         return ERR_SYNTAX;
     }
@@ -240,8 +254,25 @@ int id_n(tToken *token)
 //PRAVIDLA <VICE_ID_VLEVO> -> vyraz <vyraz_n> NEBO <VICE_ID_VLEVO> -> ID (<PARAMSCALL>
 int vice_id_vlevo(tToken *token)
 {
+    if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR))
+    {
+        (*token) = (*token)->nextToken;  (*token) = (*token)->nextToken;
+        //TODO CALL PARAMSCALL
+        //TODO SEMANTIKA IDčka
+    }
+    else
+    {
+        //TED MUSI BYT VYRAZ
+        (*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+        {
+            return ERR_SEM_KOMP;
+        }
+        (*token)=(*token)->nextToken;
+        return body(token);
 
-    //TODO
+    }
+
 }
 
 
