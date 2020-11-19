@@ -30,7 +30,7 @@ Lexikalni Analyzator
  	STATE_START,
  	STATE_EOF,
  	STATE_EOL,
- 	STATE_SPACE,
+ 	//STATE_SPACE,
  	STATE_ID,
  	STATE_INT,
  	STATE_INT0,
@@ -98,8 +98,8 @@ Lexikalni Analyzator
  	T_STRING, 	 	//Retezec " ... " [obsahuje data]
  	T_LDBR, 	 	// Left default bracket ' ( '
  	T_RDBR, 	 	// Right default bracket ' ) '
- 	T_ASSIGN,	 	// Prirazeni :=
- 	T_DEFINE,		// Definice ' = ' 
+ 	T_ASSIGN,	 	// Prirazeni ' = '
+ 	T_DEFINE,		// Definice :=
  	T_LCBR, 	 	// Left curly bracket ' { '
  	T_RCBR, 	 	// Right curly bracket ' } '
  	T_COMMA, 	 	// Carka
