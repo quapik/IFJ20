@@ -10,16 +10,18 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 */
 
 #include "parser.h"
-
+bool BylMain=false;
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
-{   if((*token)->type==T_PACKAGE) //prvni musi byt package main
-    {    (*token)=(*token)->nextToken;
+{
+    if(((*token)->type)==T_PACKAGE) //prvni musi byt package main
+    {
+        (*token)=(*token)->nextToken;
         if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0)) //id s main
         {
             (*token)=(*token)->nextToken;
-            if ((*token)->type == T_EOF) //konec souboru (je tam pouze)
+            if ((*token)->type == T_EOF) //pouze package main EOF
             {
                 return ERR_OK;
             }
@@ -29,7 +31,7 @@ int StartParser(tToken *token)
                 return body(token);
             }
             else
-            {
+            {   printf("chyba po package main");
                 return ERR_SYNTAX;
             }
         }
@@ -38,58 +40,156 @@ int StartParser(tToken *token)
             return ERR_SYNTAX;
         }
     }
-    else
+    else //zacina to necim jinym nez package main
     {
         return ERR_SYNTAX;
     }
 }
+
+
 int body(tToken *token)
-{
-    if (token->type==T_IF)
+{   //PRAVIDLO <IF> if vyraz { EOL <BODY>} else { EOL <BODY> }
+    if ((*token)->type==T_IF)
     {
-       (*token)=(*token)->nextToken;
-       //TODO KONTROLA zda nasleduje vyraz a je vporadku
-        
+        (*token)=(*token)->nextToken;
+        //TODO KONTROLA zda nasleduje vyraz a je vporadku
+
+
         if ((*token)->type==T_LCBR) // token je {
+        {
+            (*token)=(*token)->nextToken;
+            if ((*token)->type==T_EOL)
             {
-                 (*token)=(*token)->nextToken;
-                 if ((*token)->type==T_EOL)
-                 {
-                     (*token)=(*token)->nextToken;
-                     return body(token);
-                 }
-               
-                //TODO ELSE
+                (*token)=(*token)->nextToken;
+                if (body(token)==ERR_OK) //TODO jakej token je vracenej?
+                {
+                    if ((*token)->type==T_RCBR) // }
+                    {
+                        (*token)=(*token)->nextToken;
+                        if ((*token)->type==T_ELSE)
+                        {
+                            (*token)=(*token)->nextToken;
+                            if ((*token)->type==T_LCBR) // token je {
+                            {
+                                (*token)=(*token)->nextToken;
+                                if ((*token)->type==T_EOL)
+                                {
+                                    (*token)=(*token)->nextToken;
+                                    if (body(token)==ERR_OK) //TODO jakej token je vracenej?
+                                    {
+                                        if ((*token)->type==T_RCBR) // } konec else
+                                        {
+                                            return ERR_OK; //cele pravidlo if je ok
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        printf("chyba v body");
+        return ERR_SYNTAX; //pokud to dodje sem tak nekde byla chybe
+    }
+    //pravidlo <FOR> -> for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
+    else if ((*token)->type==T_FOR)
+    {
+        (*token)=(*token)->nextToken;
+        //PRAVIDLO <FORDEF> -> <DATATYPE> ID  a <FORDEF>EPS
+
+        if (((*token)->type==T_STRING) || ((*token)->type==T_INT) || ((*token)->type==T_EXP)) //TODO FLOAT?
+        {
+            (*token)=(*token)->nextToken;
+            if ((*token)->type==T_ID)
+            {
+                (*token)=(*token)->nextToken; //mame <DATAYPE> ID a ted musi byt strednik
+            }
+            else
+            {   printf("chyba for");
+                return ERR_SYNTAX;
             }
 
-    }
-    else if (token->type==T_FOR)
-    {
+        }
+        if ((*token)->type==T_SEMICOLON) //
+        {   //uspesne bylo datype ID a nebo bylo prazdne (pouze strednik)
+            //TODO ted musi byt vyraz
+        }
+        else
+        {
+            return ERR_SYNTAX;
+        }
 
-
     }
-    else if (token->type==T_EOL)
+    else if ((*token)->type==T_EOL)
     {
         (*token)=(*token)->nextToken;
         return body(token);
     }
-
-    else if (token->type==T_FUNC)
+    //PRAVIDLO <FUNC> -> func ID (<PARAMS>)(NAVRATTYPE_N){ EOL <BODY>}
+    else if ((*token)->type==T_FUNC)
     {
+        (*token)=(*token)->nextToken;
+        if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0))
+        {
+            if (BylMain==false)
+            {
+                (*token)=(*token)->nextToken;
+                if ((*token)->type==T_LDBR) // (
+                {
+                    (*token)=(*token)->nextToken;
+                    if ((*token)->type==T_RDBR) // )
+                    {
+                        BylMain=true;
+                        (*token)=(*token)->nextToken;
+                        return body(token);
+                    }
+                    else //pokud to neni main()
+                    {   printf("chyba main()");
+                        return ERR_SEM_POCET;
+                    }
+                }
 
-        
+            } //pokud jiz byl main a je znovu main
+            else
+            { printf("main again");
+               return ERR_SYNTAX; //TODO?
+            }
+
+        }
+        else if ((*token)->type==T_ID) //Dalsi typy funkci
+        {
+            (*token)=(*token)->nextToken;
+            if ((*token)->type==T_LDBR) // (
+            {
+                //TODO CALL <PARAMS>
+            }
+        }
+
+
     }
 
-    else if (token->type==T_ID) //Máme identifikátor (s hodnotou)
+    else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
     {
         (*token)=(*token)->nextToken;
         return id_next(token);
-
     }
-
-    else
+    //PRAVIDLO <prirazeni> -> _ = vyraz
+    else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
     {
-        return ERR_SYNTAX; 
+        (*token)=(*token)->nextToken;
+        if ((*token)->type==T_DEFINE) //
+        {
+            //TODO VYRAZ
+        }
+    }
+    else if ((*token)->type==T_EOF)
+    {
+        return ERR_OK;
+    }
+    else
+    {   printf("konec body");
+        return ERR_SYNTAX;
     }
 
 
@@ -97,13 +197,13 @@ int body(tToken *token)
 //Pravidla 31 <ID_NEXT> -> := vyraz  a 35 , <ID_NEXT> -> <ID_N>=<VICE_ID_VLEVO>
 int id_next(tToken *token)
 {
-    if(token->type==T_ASSIGN) // pokud je :=
+    if((*token)->type==T_ASSIGN) // pokud je :=
     {
         //TODO kontrolva vyrazu
     }
-    else if (token->type==T_COMMA) //pokud je carka
+    else if ((*token)->type==T_COMMA) //pokud je carka
     {
-       return id_n(token); //volat <ID_> (vice identifikatoru za sebou)
+        return id_n(token); //volat <ID_> (vice identifikatoru za sebou)
     }
     else
     {
@@ -113,10 +213,10 @@ int id_next(tToken *token)
 //pravidlo 15 a 16 <ID_N> -> , ID <ID_N> & <ID_N> -> EPS
 int id_n(tToken *token)
 {
-    if(token->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
+    if((*token)->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
     {
         (*token) = (*token)->nextToken;
-        if (token->type == T_ID) //ted musi byt id jinak chyba
+        if ((*token)->type == T_ID) //ted musi byt id jinak chyba
         {
             (*token) = (*token)->nextToken;
             return id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
@@ -127,7 +227,7 @@ int id_n(tToken *token)
         }
 
     }
-    else if (token->type==T_DEFINE) //=
+    else if ((*token)->type==T_DEFINE) //=
     {
         return vice_id_vlevo(token);
     }
@@ -138,13 +238,12 @@ int id_n(tToken *token)
     }
 
 }
-
-/*int vice_id_vlevo(tToken *token)
+//PRAVIDLA <VICE_ID_VLEVO> -> vyraz <vyraz_n> NEBO <VICE_ID_VLEVO> -> ID (<PARAMSCALL>
+int vice_id_vlevo(tToken *token)
 {
 
     //TODO
-}*/
-
+}
 
 
 
