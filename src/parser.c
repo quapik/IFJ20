@@ -12,6 +12,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #include "parser.h"
 bool BylMain=false;
 tToken pomToken;
+bool PossibleEof=false;
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
 {
@@ -22,21 +23,21 @@ int StartParser(tToken *token)
         {
             (*token)=(*token)->nextToken;
 
-             if ((*token)->type == T_IF || (*token)->type == T_FUNC || (*token)->type == T_FOR ||
-                     (*token)->type == T_RETURN || (*token)->type == T_ID || (*token)->type == T_EOL || (*token)->type == T_EOF)//TODO _, int float string?
+            if ((*token)->type == T_IF || (*token)->type == T_FUNC || (*token)->type == T_FOR ||
+                (*token)->type == T_RETURN || (*token)->type == T_ID || (*token)->type == T_EOL || (*token)->type == T_EOF)//TODO _, int float string?
             {
                 pomToken=body(token);
                 if((*pomToken).type==T_UNKNOWN) //vzdy to v tomto ifu musi skoncit (bud errorem nebo po EOFU s OK)
                 {
-                if(strcmp((*pomToken).data,"ERR_OK")==0) return ERR_OK;
-                if(strcmp((*pomToken).data,"ERR_SYNTAX")==0) return ERR_SYNTAX;
-                if(strcmp((*pomToken).data,"ERR_SEM_PROG")==0) return ERR_SEM_PROG;
-                if(strcmp((*pomToken).data,"ERR_SEM_TYPE")==0) return ERR_SEM_TYPE;
-                if(strcmp((*pomToken).data,"ERR_SEM_KOMP")==0) return ERR_SEM_KOMP;
-                if(strcmp((*pomToken).data,"ERR_SEM_POCET")==0) return ERR_SEM_POCET;
-                if(strcmp((*pomToken).data,"ERR_SEM_OSTATNI")==0) return ERR_SEM_OSTATNI;
-                if(strcmp((*pomToken).data,"ERR_SEM_DELENI")==0) return ERR_SEM_DELENI;
-                if(strcmp((*pomToken).data,"ERR_INTERNI")==0) return ERR_INTERNI;
+                    if(strcmp((*pomToken).data,"ERR_OK")==0) return ERR_OK;
+                    if(strcmp((*pomToken).data,"ERR_SYNTAX")==0) return ERR_SYNTAX;
+                    if(strcmp((*pomToken).data,"ERR_SEM_PROG")==0) return ERR_SEM_PROG;
+                    if(strcmp((*pomToken).data,"ERR_SEM_TYPE")==0) return ERR_SEM_TYPE;
+                    if(strcmp((*pomToken).data,"ERR_SEM_KOMP")==0) return ERR_SEM_KOMP;
+                    if(strcmp((*pomToken).data,"ERR_SEM_POCET")==0) return ERR_SEM_POCET;
+                    if(strcmp((*pomToken).data,"ERR_SEM_OSTATNI")==0) return ERR_SEM_OSTATNI;
+                    if(strcmp((*pomToken).data,"ERR_SEM_DELENI")==0) return ERR_SEM_DELENI;
+                    if(strcmp((*pomToken).data,"ERR_INTERNI")==0) return ERR_INTERNI;
                 }
 
             }
@@ -60,7 +61,7 @@ int StartParser(tToken *token)
 tToken body(tToken *token)
 {
     //PRAVIDLO <FUNC> -> func ID (<PARAMS>)(NAVRATTYPE_N){ EOL <BODY>}
-     if ((*token)->type==T_FUNC)
+    if ((*token)->type==T_FUNC)
     {
         (*token)=(*token)->nextToken;
         (*token)=func_rule(token);
@@ -80,7 +81,7 @@ tToken body(tToken *token)
 
 
     }
-    //PRAVIDLO <IF> if vyraz { EOL <BODY>} else { EOL <BODY> }
+        //PRAVIDLO <IF> if vyraz { EOL <BODY>} else { EOL <BODY> }
     else if ((*token)->type==T_IF)
     {
         (*token)=(*token)->nextToken;
@@ -100,82 +101,96 @@ tToken body(tToken *token)
 
 
     }
-         //pravidlo <FOR> -> for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
-     else if ((*token)->type==T_FOR)
-     {
-         (*token)=(*token)->nextToken;
-         (*token)=for_rule(token);
-         if ((*token)->type==T_UNKNOWN) //chyba v foru
-         {
-             return *token;
-         }
-         else
-         {
-             (*token)=body(token);
-             if ((*token)->type==T_UNKNOWN) //chyba v body nebo EOF (ten urcite jednou musi prijit)
-             {
-                 return *token;
-             }
-         }
-
-     }
-         //PRAVIDLO <prirazeni> -> _ = vyraz
-     else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
-     {
-         (*token)=(*token)->nextToken;
-         if ((*token)->type==T_ASSIGN) // =
-         {
-             (*token)=(*token)->nextToken;
-             //TED MUSI BYT VYRAZ
-             //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
-             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
-             {
-                 return *token;
-             }
-             (*token)=(*token)->nextToken;
-             (*token)=body(token);
-             return *token; //TODO melo by to asi stacit takto
-
-         }
-     }
-     else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
-     {
-         (*token)=(*token)->nextToken;
-         *(token)=id_next(token);
-         if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_NEXT
-         {
-             printf("chyba v ID_NEXT\n");  return *token;
-         }
-         (*token)=(*token)->nextToken;
-         (*token)=body(token);
-         return *token; //TODO melo by to asi stacit takto
-     }
-
-         //PRAVIDLO <BODY> -> EOL
-     else if ((*token)->type==T_EOL)
-     {
-         (*token)=(*token)->nextToken;
-         (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
-         if((*token)->type==T_UNKNOWN)
-         {
-             return *token;
-         }
-     }
-    //PRAVIDLO <BODY> -> EOF
-     else if ((*token)->type==T_EOF)
+        //pravidlo <FOR> -> for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
+    else if ((*token)->type==T_FOR)
     {
-        (*token)->type=T_UNKNOWN;
-        if (BylMain==false)
+        (*token)=(*token)->nextToken;
+        (*token)=for_rule(token);
+        if ((*token)->type==T_UNKNOWN) //chyba v foru
         {
-            (*token)->data="ERR_SEM_PROG"; printf("Chybi fce main\n");
+            return *token;
         }
         else
         {
-            (*token)->data="ERR_OK";
+            (*token)=body(token);
+            if ((*token)->type==T_UNKNOWN) //chyba v body nebo EOF (ten urcite jednou musi prijit)
+            {
+                return *token;
+            }
         }
+
+    }
+        //PRAVIDLO <prirazeni> -> _ = vyraz
+    else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
+    {
+        (*token)=(*token)->nextToken;
+        if ((*token)->type==T_ASSIGN) // =
+        {
+            (*token)=(*token)->nextToken;
+            //TED MUSI BYT VYRAZ
+            //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+            {
+                return *token;
+            }
+            (*token)=(*token)->nextToken;
+            (*token)=body(token);
+            return *token; //TODO melo by to asi stacit takto
+
+        }
+    }
+    else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
+    {
+        (*token)=(*token)->nextToken;
+        *(token)=id_next(token);
+        if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_NEXT
+        {
+            printf("chyba v ID_NEXT\n");  return *token;
+        }
+        (*token)=(*token)->nextToken;
+        (*token)=body(token);
+        return *token; //TODO melo by to asi stacit takto
+    }
+
+        //PRAVIDLO <BODY> -> EOL
+    else if ((*token)->type==T_EOL)
+    {
+        (*token)=(*token)->nextToken;
+        (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
+        if((*token)->type==T_UNKNOWN)
+        {
+            return *token;
+        }
+    }
+        //PRAVIDLO <BODY> -> EOF
+    else if ((*token)->type==T_EOF)
+    {   if (PossibleEof==true)
+        {
+        (*token)->type=T_UNKNOWN;
+            if (BylMain==false)
+            {
+                (*token)->data="ERR_SEM_PROG"; printf("Chybi fce main\n");
+            }
+            else
+            {
+                (*token)->data="ERR_OK";
+            }
+            return *token;
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN;
+            (*token)->data="ERR_SYNTAX"; printf("Chybny oef\n");
+            return *token;
+        }
+
+    }
+    else if ((*token)->type==T_RCBR)
+    {
+        (*token)=(*token)->prevToken;
         return *token;
     }
-    //ZADNE FIRST z BODY nesedi
+        //ZADNE FIRST z BODY nesedi
     else
     {
         (*token)->type=T_UNKNOWN;
@@ -250,7 +265,7 @@ tToken if_rule(tToken *token) //TODO KONTROLA zda nakonci IFU }
 }
 
 tToken func_rule(tToken *token) //TODO KONTROLA zda nakonci FUNC }
-{
+{   PossibleEof=false;
     if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0))
     {
         if (BylMain==false)
@@ -261,14 +276,30 @@ tToken func_rule(tToken *token) //TODO KONTROLA zda nakonci FUNC }
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_RDBR) // )
                 {
-                    BylMain=true;
                     (*token)=(*token)->nextToken;
-
-                    (*token)=body(token);
-                    if((*token)->type==T_UNKNOWN)
+                    if ((*token)->type==T_LCBR) // {
                     {
-                        return *token;
+                        BylMain=true;
+                        (*token)=(*token)->nextToken;
+
+                        (*token)=body(token);
+                        if((*token)->type==T_UNKNOWN)
+                        {
+                            return *token;
+                        }
+                        else
+                        {
+                            (*token)=(*token)->nextToken;
+                            if ((*token)->type==T_RCBR) // }
+                            {   PossibleEof=true;
+                                (*token)=(*token)->nextToken; //ted se ceka eof
+                                (*token)=body(token);
+                                return *token;
+                            }
+                        }
+
                     }
+
                 }
                 else //pokud to neni main()
                 {   printf("chyba main()");
@@ -388,7 +419,7 @@ tToken id_n(tToken *token)
         (*token)=vice_id_vlevo(token);
         if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_vice_vlevo
         {
-         printf ("chyba vice_id_vlevo\n");   return *token;
+            printf ("chyba vice_id_vlevo\n");   return *token;
         }
     }
     else //neco jinyho nez carka nebo = automaticky error
@@ -406,7 +437,7 @@ tToken vice_id_vlevo(tToken *token)
         (*token) = paramscall(token);
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri paramscall
         {
-           printf("chyba v paramscall\n"); return *token;
+            printf("chyba v paramscall\n"); return *token;
         }
         (*token) = (*token)->nextToken;
         (*token) = body(token);
