@@ -12,14 +12,21 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #define _PARSER_H
 #include "scanner.h"
 #include "error.h"
+#include "exprBottomUp.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
 int StartParser(tToken *token);
-int body(tToken *token);
-int id_next(tToken *token);
-int id_n(tToken *token);
-int vice_id_vlevo(tToken *token);
+tToken body(tToken *token);
+tToken id_next(tToken *token);
+tToken  id_n(tToken *token);
+tToken  vice_id_vlevo(tToken *token);
+tToken  paramscall(tToken *token);
+tToken  paramscall_n(tToken *token);
+tToken if_rule(tToken *token);
+tToken func_rule(tToken *token);
+tToken for_rule(tToken *token);
+
 
 #endif /* prarser.h */
