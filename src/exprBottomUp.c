@@ -80,10 +80,55 @@ tToken exprBUParse (tToken *token) {
 }
 
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
-
-
-
-
+    switch (currOperator) {
+        case X_$:
+            if (nextOperator == X_$ || nextOperator == X_RDBR)
+            {
+                return X_EMPTY;
+            }
+            else return X_OPEN;
+        case X_MULDIV:
+            if (nextOperator == X_LDBR || nextOperator == X_N)
+            {
+                return X_OPEN;
+            }
+            else return X_CLOSE;
+        case X_ADDSUB:
+            if (nextOperator == X_LDBR || nextOperator == X_N || nextOperator == X_MULDIV)
+            {
+                return X_OPEN;
+            }
+            else return X_CLOSE;
+        case X_LEQGEQ:
+            if (nextOperator == X_LEQGEQ)
+            {
+                return X_EMPTY;
+            }
+            else if (nextOperator == X_$ || nextOperator == X_RDBR)
+            {
+                return X_CLOSE;
+            }
+            else return X_OPEN;
+        case X_LDBR:
+            if (nextOperator == X_$)
+            {
+                return X_EMPTY;
+            }
+            else if (nextOperator == X_RDBR)
+            {
+                return X_EQUAL;
+            }
+            else return X_OPEN;
+        case X_RDBR:
+        case X_N:
+            if (nextOperator == X_LDBR || nextOperator == X_N)
+            {
+                return X_EMPTY;
+            }
+            else return X_CLOSE;
+        default:
+            break;
+    }
     return X_EMPTY;
 }
 
