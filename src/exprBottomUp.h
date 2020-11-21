@@ -17,7 +17,18 @@ Precedencni analyza zdola nahoru pro vyrazy
 
 #endif //GETC_EXPRBOTTOMUP_H
 
-#define EXPR_STACK_ALOC_SIZE 64
+#define EXPR_STACK_ALLOC_SIZE 64
+
+// typy neterminalu
+
+typedef enum {
+    X_INT,
+    X_FLOAT,
+    X_STRING,
+    X_UNKNOWN
+    //mozna pridat nil
+} xNTermType;
+
 
 // operátory z tabulky pro precedenční analýzu
 
@@ -52,12 +63,21 @@ typedef enum{
     XT_NONTERM,	// neterminál
 } xItemType;
 
+// unie dat prvku na zasobniku
+
+typedef union{
+    tToken token; // token / terminal
+    xNTermType ntype; // typ neterminalu
+} xItemData;
+
+
 // prvek na zasobniku
 
 typedef struct xItem{
     xItemType type;
-    tToken xToken; //TODO mozna to chce rozsirit
+    xItemData data;
 } *txItem;
+
 
 // zásobník pro precedenční analýzu
 
@@ -73,6 +93,11 @@ tToken exprBUParse (tToken *token);
 void exprBUStackInit (txStack *stack);
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
 xOperator exprTokenTypeToOperator(tType tokenType);
+void exprBUStackPush (txStack stack, txItem item);
+txItem exprBUStackPop(txStack stack);
+void exprBUStackOpen (txStack stack, int posun); // < shift
+unsigned exprBUStackClose(txStack stack); // > parse
+
 
 
 
