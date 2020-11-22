@@ -194,11 +194,9 @@ tToken body(tToken *token)
         (*token)->data="ERR_SYNTAX";  printf("Chybne FIRST v body\n");
         return *token;
     }
-
-
 }
 
-tToken if_rule(tToken *token) //TODO KONTROLA zda nakonci IFU }
+tToken if_rule(tToken *token)
 {
     //TED MUSI BYT VYRAZ
     //(*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
@@ -216,7 +214,7 @@ tToken if_rule(tToken *token) //TODO KONTROLA zda nakonci IFU }
         {
             (*token)=(*token)->nextToken;
 
-            (*token)=body(token); //TODO je return kdyz neni chyba?
+            (*token)=body(token);
             if((*token)->type==T_UNKNOWN) //pokud v tele ife nastala chyba
             {
                 return *token;
