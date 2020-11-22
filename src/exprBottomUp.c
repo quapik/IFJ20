@@ -301,23 +301,166 @@ unsigned exprBUStackClose(txStack stack)
     switch (item->data.token->type) {
         //reseni operaci TODO
         case T_ADD:
+            if (isSingle)
+            {
+                //TODO generovani kodu
+            }
+            if (unknownType) /*TODO generovani kodu */;
+            if (!(isSingle) && !(isSame))
+            {
+                //TODO PRINT ERROR
+                free(item);
+                free((rItem));
+                free(lItem);
+                return 4;
+            }
+            if (!unknownType)
+            {
+                if (type == X_STRING)
+                {
+                    //TODO Generovani kodu
+                }
+                else
+                {
+                    //TODO Generovani kodu
+                }
+            }
+            break;
+
         case T_SUB:
+            if (isSingle)
+            {
+                //TODO generovani kodu
+            }
+            if (unknownType) /*TODO generovani kodu*/;
+            if ((!(isSingle) && !(isSame)) || (type == X_STRING))
+            {
+                //TODO PRINT ERROR
+                free(item);
+                free(rItem);
+                free(lItem);
+                return 4;
+            }
+            //TODO Generovani kodu
+            break;
         case T_MUL:
+            if (unknownType) /* TODO Generovani kodu */;
+            if (!(isSame) || (type == X_STRING))
+            {
+                free(item);
+                free(rItem);
+                free(lItem);
+                return isSingle ? 2 : 4;
+            }
+            //TODO Generovani kodu
+            break;
         case T_DIV:
+            if (unknownType) /* TODO Generovani kodu */;
+            if (!(isSame) || (type == X_STRING))
+            {
+                //TODO PRINT ERROR
+                free(item);
+                free(rItem);
+                free(lItem);
+                return isSingle ? 2 : 4;
+            }
+            //TODO Generovani kodu (DELENI NULOU)
+            if (unknownType) /*TODO Generovani kodu*/;
+            else if (type == X_FLOAT)
+            {
+                //TODO Generovani kodu
+            }
+            else if (type == X_INT)
+            {
+                //TODO Generovani kodu
+            }
+            else
+            {
+                free(item);
+                free(rItem);
+                free(lItem);
+                return 4;
+            }
+            break;
         case T_LESS:
         case T_GREAT:
         case T_LEQ:
         case T_GREQ:
-        case T_EOL:
-        case T_NEQ:
-        default:
+            if (isSingle)
+            {
+                //TODO generovani kodu
+            }
+            if (unknownType) /*TODO generovani kodu*/;
+            if ((!(isSingle) && !(isSame)) || (type == X_STRING))
+            {
+                //TODO PRINT ERROR
+                free(item);
+                free(rItem);
+                free(lItem);
+                return isSingle ? 2 : 4;
+            }
             break;
+        case T_EQL:
+        case T_NEQ:
+                if (isSingle)
+                {
+                    //TODO PRINT ERROR
+                    free(item);
+                    free(rItem);
+                    free(lItem);
+                    return 2;
+                }
+                else if (unknownType)
+                {
+                    //TODO Generovani kodu
+                }
+                else if (!(isSame))
+                {
+                    //TODO Generovani kodu
+                }
+                break;
 
-
+        default:
+            fprintf(stderr, "[UNKNOWN ERROR] chyba ve vyrazu, neocekavany operand\n");
+            free(item);
+            free(rItem);
+            free(lItem);
+            return 99;
     }
 
+    switch (item->data.token->type) {
+        case T_GREAT:
+            //TODO Generovani kodu
+            break;
+        case T_LESS:
+            //TODO Generovani kodu
+            break;
+        case T_LEQ:
+            //TODO Generovani kodu
+            break;
+        case T_GREQ:
+            //TODO Generovani kodu
+            break;
+        case T_EQL:
+            if (isSame) /*TODO Generovani kodu*/;
+            //TODO Generovani kodu
+            break;
+        case T_NEQ:
+            if (isSame) /*TODO Generovani kodu*/;
+            //TODO Generovani kodu
+            break;
+        default:
+            break;
+    }
+    free(rItem);
+    free(lItem);
+    item->type = XT_NONTERM;
+    item->data.ntype = type;
+    if (!(isSingle))
+    {
+        free(exprBUStackPop(stack));
+    }
     return 0;
-
 }
 
 
