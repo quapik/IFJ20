@@ -27,6 +27,9 @@ tToken  paramscall_n(tToken *token);
 tToken if_rule(tToken *token);
 tToken func_rule(tToken *token);
 tToken for_rule(tToken *token);
+tToken params(tToken *token);
+tToken params_n(tToken *token);
+tToken narvrattype_n(tToken *token);
 
 
 #endif /* prarser.h */
