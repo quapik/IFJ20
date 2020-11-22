@@ -70,14 +70,11 @@ tToken body(tToken *token)
         {
             return *token;
         }
-        else
-        {
+            (*token)=(*token)->nextToken;
             (*token)=body(token);
-            if ((*token)->type==T_UNKNOWN) //chyba v body nebo EOF (ten urcite jednou musi prijit)
-            {
-                return *token;
-            }
-        }
+            return *token;
+
+
 
 
     }
@@ -142,14 +139,16 @@ tToken body(tToken *token)
     else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
     {
         (*token)=(*token)->nextToken;
-        *(token)=id_next(token);
+        (*token)=id_next(token);
+
         if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_NEXT
         {
-            printf("chyba v ID_NEXT\n");  return *token;
+            printf("chyba v ID_NEXT_body\n");  return *token;
         }
+
         (*token)=(*token)->nextToken;
         (*token)=body(token);
-        return *token; //TODO melo by to asi stacit takto
+        return *token;
     }
 
         //PRAVIDLO <BODY> -> EOL
@@ -157,16 +156,14 @@ tToken body(tToken *token)
     {
         (*token)=(*token)->nextToken;
         (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
-        if((*token)->type==T_UNKNOWN)
-        {
-            return *token;
-        }
+
+        return *token;
+
     }
         //PRAVIDLO <BODY> -> EOF
     else if ((*token)->type==T_EOF)
     {   if (PossibleEof==true)
-        {
-        (*token)->type=T_UNKNOWN;
+        { (*token)->type=T_UNKNOWN;
             if (BylMain==false)
             {
                 (*token)->data="ERR_SEM_PROG"; printf("Chybi fce main\n");
@@ -264,7 +261,7 @@ tToken if_rule(tToken *token) //TODO KONTROLA zda nakonci IFU }
     return *token;
 }
 
-tToken func_rule(tToken *token) //TODO KONTROLA zda nakonci FUNC }
+tToken func_rule(tToken *token)
 {   PossibleEof=false;
     if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0))
     {
@@ -323,8 +320,206 @@ tToken func_rule(tToken *token) //TODO KONTROLA zda nakonci FUNC }
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_LDBR) // (
         {
-            //TODO CALL <PARAMS>
+            (*token)=(*token)->nextToken;
+            (*token)=params(token);
+
+            if ((*token)->type==T_UNKNOWN) //nastala chyba v params
+                {
+                    return *token;
+                }
+            (*token)=(*token)->nextToken; //kdyz ok tak by mel nasledovat ( NEBO { kdyz je seznam navartovych prazdny
+            if ((*token)->type==T_LDBR) // (
+            {
+                (*token)=(*token)->nextToken;
+                (*token)=narvrattype_n(token);
+
+                if ((*token)->type==T_UNKNOWN) //nastala chyba v navrattype_n a nebo je vraceno )
+                {
+                    return *token;
+                }
+                (*token)=(*token)->nextToken;
+                if ((*token)->type==T_LCBR) // {
+                {
+                    (*token)=(*token)->nextToken;
+                    if ((*token)->type==T_EOL)
+                    {
+                        (*token)=(*token)->nextToken;
+                        (*token)=body(token);
+                        if ((*token)->type==T_UNKNOWN) //v body neco spatne
+                        {
+                            return *token;
+                        }
+                        (*token)=(*token)->nextToken;
+                        if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
+                        {
+                            (*token)=(*token)->nextToken;
+
+                            (*token)=body(token);
+                            return *token;
+                        }
+                        else
+                        {
+                            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole1\n"); return *token;
+                        }
+
+                    }
+                    else
+                    {
+                        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole2\n"); return *token;
+                    }
+
+
+                }
+                else
+                {
+                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole3\n"); return *token;
+                }
+
+
+            }
+            else if ((*token)->type==T_LCBR) // je rovnou { ->  nejsou zadne navratove datove typy
+            {
+                (*token)=(*token)->nextToken;
+                if ((*token)->type==T_EOL)
+                {
+                    (*token)=body(token);
+                    if ((*token)->type==T_UNKNOWN) //v body neco spatne
+                    {
+                        return *token;
+                    }
+                    (*token)=(*token)->nextToken;
+                    if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
+                    {
+                        (*token)=(*token)->nextToken;
+                        (*token)=body(token);
+                        return *token;
+                    }
+                    else
+                    {
+                        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole4\n"); return *token;
+                    }
+                }
+                else
+                {
+                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole5\n"); return *token;
+                }
+
+
+            }
+            else
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole6\n"); return *token;
+            }
+
+
+
         }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole7\n"); return *token;
+        }
+    }
+
+
+}
+//PRAVIDLO <navrattype_n> -> <DATATYPE> , <NAVRATTYPE_N>  nebo <navrattype_n> -> EPS
+tToken narvrattype_n(tToken *token)
+{
+    if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
+    {
+        (*token)=(*token)->nextToken;
+        if ((*token)->type==T_COMMA)
+        {
+            (*token)=(*token)->nextToken;
+            (*token)=narvrattype_n(token);
+            return *token;
+        }
+        else if ((*token)->type==T_RDBR)
+        {
+            return *token;
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba navrattype_n1\n"); return *token;
+        }
+    }
+    else if ((*token)->type==T_RDBR)
+    {
+        return *token;
+    }
+    else
+    {
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba navrattype_n2\n"); return *token;
+    }
+
+}
+//pravidla <PARAMS> -> ID <DATATYPE> <PARAMS_N> nebo <PARAMS> ->  EPS
+tToken params(tToken *token)
+{
+
+    if ((*token)->type==T_ID)
+    {
+        (*token)=(*token)->nextToken;
+        if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
+        {
+            (*token)=(*token)->nextToken;
+            (*token)=params_n(token);
+            if ((*token)->type==T_UNKNOWN) //nastala chyba v params
+            {
+                return *token;
+            }
+            return *token; //return do func
+
+
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba params1\n"); return *token;
+        }
+    }
+    else if ((*token)->type==T_RDBR)
+    {
+        return *token; //vraci ) do func
+    }
+    else
+    {
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba params2\n"); return *token;
+    }
+
+}
+//Pravidlo <params_n> -> , ID  <DATATYPE> <PARAMS_N> nebo  <params_n> -> EPS
+tToken params_n(tToken *token)
+{
+    if ((*token)->type==T_COMMA)
+    {
+        (*token)=(*token)->nextToken;
+        if ((*token)->type==T_ID)
+        {   (*token)=(*token)->nextToken;
+            if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
+            {
+                (*token)=(*token)->nextToken;
+                (*token)=params_n(token);
+                return *token;
+            }
+            else
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba params_n1\n"); return *token;
+            }
+
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba params_n2\n"); return *token;
+        }
+
+    }
+    else  if ((*token)->type==T_RDBR) //)
+    {
+        return *token; //ukonceni a vraceni )
+    }
+    else
+    {
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba params_n3\n"); return *token;
     }
 
 
@@ -359,7 +554,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
     }
 
 }
-
+//pravidlo <ID_NEXT> -> := vyraz nebo <ID_NEXT> -> <ID_N>=<vice_id_vlevo>
 tToken id_next(tToken *token)
 {
     if((*token)->type==T_DEFINE) // pokud je :=
@@ -367,13 +562,8 @@ tToken id_next(tToken *token)
         (*token)=(*token)->nextToken;
         //TED MUSI BYT VYRAZ TODO
         //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
-        if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
-        {
-            return *token;
-        }
-        (*token)=(*token)->nextToken;
-        (*token)=body(token);
-        return *token; //TODO MELO BY TO STACIT?
+
+        return *token;
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
     {
@@ -383,13 +573,20 @@ tToken id_next(tToken *token)
         {
             return *token;
         }
-        (*token)=(*token)->nextToken;
-        (*token)=body(token);
-        return *token; //TODO MELO BY TO STACIT?
+        if ((*token)->type==T_ASSIGN) //=
+        {
+            (*token)=(*token)->nextToken;
+            (*token)=vice_id_vlevo(token);
+            return *token; //return do body kde se vola
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_NEXT1\n"); return *token;
+        }
     }
     else
     {
-        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_NEXT\n"); return *token;
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_NEXT2\n"); return *token;
     }
 }
 //pravidlo 15 a 16 <ID_N> -> , ID <ID_N> & <ID_N> -> EPS
@@ -402,29 +599,22 @@ tToken id_n(tToken *token)
         {
             (*token) = (*token)->nextToken;
             (*token) = id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
+            return *token;
 
-            if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_N
-            {
-                return *token;
-            }
         }
         else
         {
-            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_N\n"); return *token;
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_N1\n"); return *token;
         }
 
     }
-    else if ((*token)->type==T_DEFINE) //=
+    else if ((*token)->type==T_ASSIGN) //=
     {
-        (*token)=vice_id_vlevo(token);
-        if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_vice_vlevo
-        {
-            printf ("chyba vice_id_vlevo\n");   return *token;
-        }
+      return *token;
     }
     else //neco jinyho nez carka nebo = automaticky error
     {
-        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_N\n"); return *token;
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_N2\n"); return *token;
     }
 
 }
@@ -434,13 +624,7 @@ tToken vice_id_vlevo(tToken *token)
     if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR))
     {
         (*token) = (*token)->nextToken;  (*token) = (*token)->nextToken;
-        (*token) = paramscall(token);
-        if ((*token)->type==T_UNKNOWN) //nastala chyba pri paramscall
-        {
-            printf("chyba v paramscall\n"); return *token;
-        }
-        (*token) = (*token)->nextToken;
-        (*token) = body(token);
+        (*token) = paramscall(token); //vraceno ) nebo chyba z paramscall
         return *token;
         //TODO SEMANTIKA IDčka
     }
@@ -450,6 +634,7 @@ tToken vice_id_vlevo(tToken *token)
         //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
         {
+
             return *token;
         }
         (*token)=(*token)->nextToken;
@@ -463,15 +648,10 @@ tToken vice_id_vlevo(tToken *token)
 tToken paramscall(tToken *token)
 {
     if ((*token)->type==T_ID)
-    {    //TODO SEMANTIKA ID
+    {
+        //TODO SEMANTIKA ID
         (*token)=(*token)->nextToken;
-        (*token)=paramscall_n(token);
-        if ((*token)->type==T_UNKNOWN) //nastala chyba v paramscall
-        {
-            printf("paramscall chyba\n"); return *token;
-        }
-        (*token)=(*token)->nextToken;
-        (*token)=body(token);
+        (*token)=paramscall_n(token); //je vracenej bud error nebo ) a toto vracime do vice_id_vlevo
         return *token;
     }
     else
@@ -491,16 +671,21 @@ tToken paramscall_n(tToken *token)
         {
             (*token)=(*token)->nextToken;
             (*token)=paramscall_n(token);
-            if ((*token)->type==T_UNKNOWN) //nastala chyba v paramscall_n
-            {
-                printf("paramscall_n chyba\n"); return *token;
-            }
+            return *token;
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba paramscall_n1\n"); return *token;
         }
 
     }
     else if ((*token)->type==T_RDBR) //)
     {
         return *token;
+    }
+    else
+    {
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba paramscall_n2\n"); return *token;
     }
 
 
