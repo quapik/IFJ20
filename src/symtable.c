@@ -12,7 +12,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #include "symtable.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+
 
 //BST(BinarySearchTree - viz IAL projekt2, c401)
 
@@ -30,29 +30,27 @@ BSTInit(&(Symtable->RootPtr));
 	
 
 //Vyhledavani v stromu
-int BSTSearch (tBSTNodePtr RootPtr, char K, int *Content)	{
+tBSTNodePtr BSTSearch (tBSTNodePtr RootPtr, char* K)	{
 
 if(RootPtr==NULL)
-	{
-		return(0); 
+    {
+        return (0);
+    }
 else
 	{
 		if(RootPtr->Key==K)
 			{
-				(*Content)=RootPtr->BSTNodeCont;
-				return(1); //pokud je rootKey roven tak koncime a dal nehledame
-				//TODO co budeme vubec chtit vracet????
-	}
+				return RootPtr; //vraceni aktualniho prvku
 			}
 		else
 			{
 				if(RootPtr->Key>K)
 					{
-						return BSTSearch(RootPtr->LPtr,K,Content); //rekurzivnie prohledavani levyho podstromu
+						return BSTSearch(RootPtr->LPtr,K); //rekurzivnie prohledavani levyho podstromu
 					}
 					else
 						{
-						return BSTSearch(RootPtr->RPtr,K,Content);	//rekurzivnie prohledavani pravyho podstromu	
+						return BSTSearch(RootPtr->RPtr,K);	//rekurzivnie prohledavani pravyho podstromu
 						}
 			}
 
@@ -61,13 +59,13 @@ else
 }
 
 //vyhledavani v tabulce
-void SymtableSearch(tSymtable* Symtable,string K){
+tBSTNodePtr SymtableSearch(tSymtable* Symtable, char* K){
 BSTSearch(&(Symtable->RootPtr),K); //TODO ERROR (string here, char v BST)
 }
 
 
 //Vlozeni do stromu
-void BSTInsert (tBSTNodePtr* RootPtr, char K, int Content)	{
+void BSTInsert (tBSTNodePtr* RootPtr, char* K, tTypUlozenychHodnot PromennaOrFunkce )	{
 	tBSTNodePtr polozka;
 	if((*RootPtr)==NULL) //pokud je prazdno
 	{
@@ -79,7 +77,8 @@ void BSTInsert (tBSTNodePtr* RootPtr, char K, int Content)	{
 		else
 		{
 			polozka->Key=K;
-			polozka->BSTNodeCont=Content;
+			//DATA TODO polozka->BSTNodeCont=Content;
+			polozka->PromennaORFunkce=PromennaOrFunkce;
 			polozka->RPtr=NULL; //konečný list
 			polozka->LPtr=NULL;
 			*(RootPtr)=polozka;
@@ -90,23 +89,36 @@ void BSTInsert (tBSTNodePtr* RootPtr, char K, int Content)	{
 	{
 		if((*RootPtr)->Key>K)
 		{
-			BSTInsert(&((*RootPtr)->LPtr),K,Content); //doleva a rekuzivne jedeme dal
+			BSTInsert(&((*RootPtr)->LPtr),K,PromennaOrFunkce); //doleva a rekuzivne jedeme dal
 		}
 		else
 		{
 			if((*RootPtr)->Key<K)
 			{
-				BSTInsert(&((*RootPtr)->RPtr),K,Content); //doprava
+				BSTInsert(&((*RootPtr)->RPtr),K,PromennaOrFunkce); //doprava
 			}
 
 			else
 			{
-				(*RootPtr)->BSTNodeCont=Content; //pokud jiz existuje tak je nahrazen
+				 // TODO aktulaizace dat
 			}
 			
 		}
 	}
-}   
+}
+void SymtableInsertLocal(tSymtable* Symtable, char* K)
+{
+
+BSTInsert(&(Symtable->RootPtr),K,TypUlozenychHodnotPromenna);
+
+}
+
+void SymtableInsertGlobal(tSymtable* Symtable, char* K)
+{
+    //TODO ukladani vice informaci o funkci
+    BSTInsert(&(Symtable->RootPtr),K,TypUlozenychHodnotFunkce);
+
+}
 //Nahrazeni nejpravejsim
 void ReplaceByRightmost (tBSTNodePtr PtrReplaced, tBSTNodePtr *RootPtr){
 if((*RootPtr)==NULL)
@@ -120,7 +132,7 @@ if((*RootPtr)==NULL)
 	{
 			//presun nejpravejsi polozky do PtrReplaced
 		PtrReplaced->Key=(*RootPtr)->Key;
-		PtrReplaced->BSTNodeCont=(*RootPtr)->BSTNodeCont;
+		//TODO DATA PtrReplaced->BSTNodeCont=(*RootPtr)->BSTNodeCont;
 		polozka=(*RootPtr);	
 		(*RootPtr)=(*RootPtr)->LPtr; //posun rootu na levy 
 		free(polozka); 
@@ -133,7 +145,7 @@ if((*RootPtr)==NULL)
 	}
 }
 //Odstraneni uzlu podle klice
-void BSTDelete (tBSTNodePtr *RootPtr, char K) 		{
+void BSTDelete (tBSTNodePtr *RootPtr, char* K) 		{
     if((*RootPtr)==NULL)
 	{
 			return;
@@ -191,7 +203,7 @@ void BSTDelete (tBSTNodePtr *RootPtr, char K) 		{
 	}
 }
 //Odstraneni prvku symtable
-void SymtableDelete(tSymtable* Symtable,string K){
+void SymtableDelete(tSymtable* Symtable,char* K){
 BSTDelete(&(Symtable->RootPtr),K); //TODO ERROR (string here, char v BST)
 }
 
@@ -214,7 +226,7 @@ void BSTDispose (tBSTNodePtr *RootPtr) {
 } 
 //Zruseni symtadble
 void SymtableDispose(tSymtable* Symtable){
-BSTDispose(&(Symtable->RootPtr);
+BSTDispose(&(Symtable->RootPtr));
 }
 
 

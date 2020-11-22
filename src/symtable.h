@@ -10,24 +10,31 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
-
+#include<string.h>
 
 
 /* uzel stromu */
 typedef struct tBSTNode {
-	char Key;			                                                      /* klíč */
+	char* Key;			                                         /* klíč --jmeno identifikatoru nebo fce (token->data)*/
 	int BSTNodeCont;                                            /* užitečný obsah uzlu */
+	int PromennaORFunkce;                                       /* 1=promenna fce */ //Todo predelat na vlasni dat typ?
 	struct tBSTNode * LPtr;                                    /* levý podstrom */
 	struct tBSTNode * RPtr;                                   /* pravý podstrom */
 } *tBSTNodePtr;
 
+typedef enum {
+    TypUlozenychHodnotPromenna,     /* nodeDataTypeVariable */
+    TypUlozenychHodnotFunkce    /* nodeDataTypeFunction */
+} tTypUlozenychHodnot;
+
 /* prototypy funkcí BVS*/
 
-void BSTInit   (tBSTNodePtr *);
-int BSTSearch  (tBSTNodePtr, char, int *); //TODO nebude to int, nechcem vracet nic
-void BSTInsert (tBSTNodePtr *, char, int);
-void BSTDelete (tBSTNodePtr *, char);
-void BSTDispose(tBSTNodePtr *);
+void BSTInit   (tBSTNodePtr *RootPtr);
+tBSTNodePtr BSTSearch  (tBSTNodePtr RootPtr, char* K);
+void ReplaceByRightmost (tBSTNodePtr PtrReplaced, tBSTNodePtr *RootPtr);
+void BSTInsert (tBSTNodePtr* RootPtr, char* K, tTypUlozenychHodnot PromennaOrFunkce);
+void BSTDelete (tBSTNodePtr *RootPtr, char* K);
+void BSTDispose (tBSTNodePtr *RootPtr);
 
 typedef struct symtable {
     tBSTNodePtr RootPtr;
@@ -41,10 +48,11 @@ int navratovehodnoty_datovytyp[10];
 
 typedef struct promenna{ //is it neccesery?
 int promenna_Datovytyp; ///int=1, flaot64=2, string=3 
-};
+}tPromennaDatovytyp;
 
 void SymtableInit(tSymtable*);
-void SymtableSearch(tSymtable, string); //podle jmena promenne/fce hledani v tabulce
-void SymtableInsert(tSymtable*, string); //vlozeni polozky do symtable, promenna a fce zvlast?
-void SymtableDelete(tSymtable*, string);
-void SyntableDispose(tSymtable*);
+tBSTNodePtr SymtableSearch(tSymtable* Symtable, char* K); //podle jmena promenne/fce hledani v tabulce
+void SymtableInsertGlobal(tSymtable* Symtable, char* K);//vlozeni polozky do symtable globalni (pro funkce)
+void SymtableInsertLocal(tSymtable* Symtable, char* K); //vlozeni polozky do symtable globalni (pro promenne)
+void SymtableDelete(tSymtable* Symtable,char* K);
+void SyntableDispose(tSymtable* Symtable);
