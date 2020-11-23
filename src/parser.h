@@ -8,8 +8,7 @@ Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
 */
 
-#ifndef _PARSER_H
-#define _PARSER_H
+
 #include "scanner.h"
 #include "error.h"
 #include "exprBottomUp.h"
@@ -32,4 +31,3 @@ tToken params_n(tToken *token);
 tToken narvrattype_n(tToken *token);
 
 
-#endif /* prarser.h */
