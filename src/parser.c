@@ -10,9 +10,11 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 */
 
 #include "parser.h"
-bool BylMain=false;
+bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
-bool PossibleEof=false;
+bool PossibleEof=false; //aby nenastal eof v tele ifu apod
+int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
+
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
 {
@@ -74,9 +76,6 @@ tToken body(tToken *token)
             (*token)=body(token);
             return *token;
 
-
-
-
     }
         //PRAVIDLO <IF> if vyraz { EOL <BODY>} else { EOL <BODY> }
     else if ((*token)->type==T_IF)
@@ -88,12 +87,9 @@ tToken body(tToken *token)
             return *token;
         }
         else
-        {
+        {    (*token)=(*token)->nextToken;
             (*token)=body(token);
-            if ((*token)->type==T_UNKNOWN) //chyba v body nebo EOF (ten urcite jednou musi prijit)
-            {
                 return *token;
-            }
         }
 
 
@@ -109,11 +105,9 @@ tToken body(tToken *token)
         }
         else
         {
+            (*token)=(*token)->nextToken;
             (*token)=body(token);
-            if ((*token)->type==T_UNKNOWN) //chyba v body nebo EOF (ten urcite jednou musi prijit)
-            {
-                return *token;
-            }
+            return *token;
         }
 
     }
@@ -132,7 +126,7 @@ tToken body(tToken *token)
             }
             (*token)=(*token)->nextToken;
             (*token)=body(token);
-            return *token; //TODO melo by to asi stacit takto
+            return *token;
 
         }
     }
@@ -162,9 +156,9 @@ tToken body(tToken *token)
     }
         //PRAVIDLO <BODY> -> EOF
     else if ((*token)->type==T_EOF)
-    {   if (PossibleEof==true)
+    {   if ((PossibleEof==true)&&(PocetKoncovychZavorek==0))
         { (*token)->type=T_UNKNOWN;
-            if (BylMain==false)
+            if (BylMain==false) //TODO nejak ti to nevypisuje main chybu kdyz chybi
             {
                 (*token)->data="ERR_SEM_PROG"; printf("Chybi fce main\n");
             }
@@ -197,40 +191,38 @@ tToken body(tToken *token)
 }
 
 tToken if_rule(tToken *token)
-{
+{   PossibleEof=false;
     //TED MUSI BYT VYRAZ
-    //(*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+
+    (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
     if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
     {
         return *token;
     }
 
-    (*token)=(*token)->nextToken;
 
     if ((*token)->type==T_LCBR) // token je {
-    {
+    {   PocetKoncovychZavorek++;
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_EOL)
         {
             (*token)=(*token)->nextToken;
-
-            (*token)=body(token);
+            (*token)=body(token); //telo IF
             if((*token)->type==T_UNKNOWN) //pokud v tele ife nastala chyba
             {
-                return *token;
+                printf ("chybe v IFbody"); return *token;
             }
 
             (*token)=(*token)->nextToken;
 
-            {
-                if ((*token)->type==T_RCBR) // }
-                {
+                if ((*token)->type==T_RCBR) // } ukonocovaci zavorka ifu
+                {   PocetKoncovychZavorek--;
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_ELSE)
                     {
                         (*token)=(*token)->nextToken;
-                        if ((*token)->type==T_LCBR) // token je {
-                        {
+                        if ((*token)->type==T_LCBR) // token je { otviraci zavorku elsu
+                        {   PocetKoncovychZavorek++;
                             (*token)=(*token)->nextToken;
                             if ((*token)->type==T_EOL)
                             {
@@ -243,15 +235,14 @@ tToken if_rule(tToken *token)
                                 (*token)=(*token)->nextToken;
                                 {
                                     if ((*token)->type==T_RCBR) // } konec else
-                                    {
-                                        return *token; //cele pravidlo if je ok takze vracime aktualni
+                                    {   PocetKoncovychZavorek--;
+                                        PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
         }
     }
     (*token)->type=T_UNKNOWN;
@@ -273,7 +264,7 @@ tToken func_rule(tToken *token)
                 {
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_LCBR) // {
-                    {
+                    {   PocetKoncovychZavorek++;
                         BylMain=true;
                         (*token)=(*token)->nextToken;
 
@@ -286,7 +277,7 @@ tToken func_rule(tToken *token)
                         {
                             (*token)=(*token)->nextToken;
                             if ((*token)->type==T_RCBR) // }
-                            {   PossibleEof=true;
+                            {   PossibleEof=true; PocetKoncovychZavorek--;
                                 (*token)=(*token)->nextToken; //ted se ceka eof
                                 (*token)=body(token);
                                 return *token;
@@ -337,7 +328,7 @@ tToken func_rule(tToken *token)
                 }
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_LCBR) // {
-                {
+                {   PocetKoncovychZavorek++;
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_EOL)
                     {
@@ -349,9 +340,8 @@ tToken func_rule(tToken *token)
                         }
                         (*token)=(*token)->nextToken;
                         if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
-                        {
+                        {   PocetKoncovychZavorek--;
                             (*token)=(*token)->nextToken;
-
                             (*token)=body(token);
                             return *token;
                         }
@@ -366,17 +356,15 @@ tToken func_rule(tToken *token)
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole2\n"); return *token;
                     }
 
-
                 }
                 else
                 {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole3\n"); return *token;
                 }
 
-
             }
             else if ((*token)->type==T_LCBR) // je rovnou { ->  nejsou zadne navratove datove typy
-            {
+            {   PocetKoncovychZavorek++;
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_EOL)
                 {
@@ -387,7 +375,7 @@ tToken func_rule(tToken *token)
                     }
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
-                    {
+                    {   PocetKoncovychZavorek--;
                         (*token)=(*token)->nextToken;
                         (*token)=body(token);
                         return *token;
@@ -525,30 +513,89 @@ tToken params_n(tToken *token)
 
 tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
 {
-    //PRAVIDLO <FORDEF> -> <DATATYPE> ID  a <FORDEF>EPS
-    if (((*token)->type==T_STRING) || ((*token)->type==T_INT) || ((*token)->type==T_EXP)) //TODO FLOAT?
+    PossibleEof=false;
+    if ((*token)->type==T_ID)
     {
-        (*token)=(*token)->nextToken;
-        if ((*token)->type==T_ID)
+            (*token)=(*token)->nextToken;
+        if ((*token)->type==T_DEFINE)
         {
-            (*token)=(*token)->nextToken; //mame <DATAYPE> ID a ted musi byt strednik
+            (*token)=(*token)->nextToken;
+            (*token)=exprBUParse(token);
+            if ((*token)->type==T_UNKNOWN)
+            {
+                return *token;
+            }
+
         }
         else
         {
-            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for\n");
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for po ID\n");    return *token;
+        }
+    }
+
+    if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
+    {
+        (*token)=(*token)->nextToken; //ted povinny vyraz
+        (*token)=exprBUParse(token);
+        if ((*token)->type == T_UNKNOWN)
+        {
             return *token;
         }
 
-    }
-    if ((*token)->type==T_SEMICOLON) //
-    {   //uspesne bylo datype ID a nebo bylo prazdne (pouze strednik)
-        //TODO ted musi byt vyraz
+        if ((*token)->type==T_SEMICOLON) //povinny ;
+            {
+                (*token)=(*token)->nextToken; //bud id=vyraz nebo rovnou {
+                if ((*token)->type==T_ID)
+                {   (*token)=(*token)->nextToken;
+                    if ((*token)->type==T_ASSIGN)
+                    {
+                        (*token)=(*token)->nextToken;
+                        (*token) = exprBUParse(token);
+                        if ((*token)->type == T_UNKNOWN)
+                        {
+                            return *token;
+                        }
+                    }
+                }
+
+              if ((*token)->type==T_LCBR)
+              {
+                  PocetKoncovychZavorek++;
+                  (*token)=(*token)->nextToken;
+                  if ((*token)->type==T_EOL) //povinny eol
+                  {   (*token)=(*token)->nextToken;
+                      (*token)=body(token); //telo foru
+                      if ((*token)->type == T_UNKNOWN)
+                      {
+                          return *token; //chyba v tele foru
+                      }
+                      (*token)=(*token)->nextToken;
+                      if ((*token)->type==T_RCBR) //} koncova zavorka tela foru
+                      {
+                          PocetKoncovychZavorek--;
+                          return *token;
+                      }
+                      else
+                      {
+                          (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");   return *token;
+                      }
+                  }
+
+              }
+              else
+              {
+                  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2\n");   return *token;
+              }
+             }
+        else
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for3\n");   return *token;
+        }
 
     }
     else
     {
-        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for\n");
-        return *token;
+        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for4\n");   return *token;
     }
 
 }
