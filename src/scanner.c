@@ -82,7 +82,7 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
         if (scannerDKA(*newToken, file)) dkaError = true;
 
         //debug
-        printf("dkaError je %d\n", dkaError);
+        //printf("dkaError je %d\n", dkaError);
 
         //vypis prvni chyby
         if (dkaError == true && debugPrint == true)
@@ -150,7 +150,8 @@ int scannerDKA(tToken token, FILE *file)
             currChar = getc(file);
         }
 
-        printf("scanning... %c\n", currChar);
+        //debug
+        //printf("scanning... %c\n", currChar);
 
         nextState = STATE_NULL;
 
@@ -159,14 +160,13 @@ int scannerDKA(tToken token, FILE *file)
 			case STATE_START:
 					if (currChar == '\n') nextState = STATE_EOL;
 					else if (currChar == EOF) nextState = STATE_EOF;
-					else if (currChar == '/') nextState = STATE_CMNT0;
+					else if (currChar == '/') nextState = STATE_DIV;
 					else if (currChar == '0') nextState = STATE_INT0;
 					else if (currChar == '"') nextState = STATE_STR0;
 					else if (currChar == '!') nextState = STATE_EXC;
 					else if (currChar == '=') nextState = STATE_ASSIGN;
 					else if (currChar == '>') nextState = STATE_GREAT;
 					else if (currChar == '<') nextState = STATE_LESS;
-					else if (currChar == '/') nextState = STATE_DIV;
 					else if (currChar == '*') nextState = STATE_MUL;
 					else if (currChar == '-') nextState = STATE_SUB;
 					else if (currChar == '+') nextState = STATE_ADD;
@@ -328,7 +328,7 @@ int scannerDKA(tToken token, FILE *file)
                     if (currChar == '*') nextState = STATE_CMNT1;
                     else if (currChar == '/') nextState = STATE_CMNT3;
 			        else token->type = T_DIV;
-					break;
+			        break;
 			case STATE_LESS:
 					if (currChar == '=') nextState = STATE_LEQ;
 					else token->type = T_LESS;
@@ -376,11 +376,13 @@ int scannerDKA(tToken token, FILE *file)
 		if (token->type != T_UNKNOWN) {
 		    ungetc(currChar, file);
             dataString[c] = '\0';
-		    printf("ungeted \n");
+		    //debug
+            //printf("ungeted \n");
 		    break;
 		}
 		else {
-            printf("mame unknown tokens \n");
+            //debug
+		    //printf("mame unknown tokens \n");
 		    if (nextState == STATE_ERROR) {
 		        printf("error \n");
 		        //TODO ERROR VYPIS
@@ -396,7 +398,7 @@ int scannerDKA(tToken token, FILE *file)
 	}
 
 	//debug
-	printf("obsah tokenu: %s\n", dataString);
+	//printf("obsah tokenu: %s\n", dataString);
 
 	//zaplneni datoveho obsahu tokenu
     switch (token->type)
@@ -498,6 +500,17 @@ void scannerPrintDebug (tToken token, unsigned opt) {
             return;
         }
     }
+
+
+}
+
+void scannerPrint (tToken token) {
+    if(token == NULL) return;
+    char *stringtoken = token->data;
+    printf("obsah: %s\n", stringtoken);
+    stringtoken = token->nextToken->data;
+    printf("obsah: %s\n", stringtoken);
+    if (token->type == T_ID) printf("typ tokenu = id\n");
 
 
 }
