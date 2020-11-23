@@ -48,20 +48,30 @@ tToken exprBUParse (tToken *token) {
     txStack stack;
     exprBUStackInit(&stack);
 
-   int ret = -1;
-   unsigned tmpRet;
+    int ret = -1;
+    unsigned tmpRet;
 
     // Algoritmus precedencni analyzy
-    while (ret > 0) {
+    while (ret < 0) {
 
+        //debug
+        printf("%s\n", (*token)->data);
+        if ((*token)->type == T_RDBR)
+        {
+            printf(")\n");
+        }
         xOperator stackOp, newOp;
 
         //posun na spravnou polozku zasobniku
         int posun = stack->top;
 
 
-        while(true) { // hledani na zasobniku
-            if (stack->xs[posun]->type == XT_TERM) break;
+        while(posun >= 0) { // hledani na zasobniku
+            if (stack->xs[posun]->type == XT_TERM)
+            {
+                break;
+            }
+            posun--;
         }
         if (posun < 0) stackOp = X_$;
         else stackOp = exprTokenTypeToOperator(stack->xs[posun]->data.token->type);  //konverze do precedencich prvku
@@ -75,20 +85,73 @@ tToken exprBUParse (tToken *token) {
                 exprBUStackOpen(stack, posun + 1);
                 item = malloc(sizeof(struct xItem));
                 item->type = XT_TERM;
+                item->data.token = *token;
+                exprBUStackPush(stack, item);
+                (*token) = (*token)->nextToken;
+                break;
+            case X_CLOSE: // >
+                tmpRet = exprBUStackClose(stack);
+                if (tmpRet > 0) {
+                    ret = (int)tmpRet;
+                }
+                break;
+            case X_EQUAL: // =
+                item = malloc(sizeof(struct xItem));
+                if (item == NULL)
+                {
+                    fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro stack\n");
+                    exit(99);
+                }
+                item->type = XT_TERM; // na vrcholu nyni token - terminal
                 item->data.token = (*token);
                 exprBUStackPush(stack, item);
                 (*token) = (*token)->nextToken;
                 break;
-            case X_CLOSE:
-                tmpRet = exprBUStackClose(stack);
+            case X_EMPTY: // prazdne pole tabulky
+                if (stackOp == newOp && newOp == X_$) //posledni stav prec. analyzy
+                {
+                    if (stack->top > 0)
+                    {
+                        fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu, prazdny vyraz\n");
+                        ret = 2;
+                    }
+                    else
+                    {
+                        //TODO generovani kodu
+                        ret = 0;
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu\n");
+                    ret = 2;
+                }
+
         }
 
 
 
-
-
-
         //gettingTokens = false;
+    }
+
+    exprBUStackDispose(&stack);
+
+    //error handling
+    if (ret != 0)
+    {
+        (*token)->type = T_UNKNOWN;
+        if (ret == 2)
+        {
+            (*token)->data = "ERR_EXPR_2";
+        }
+        else if (ret == 3)
+        {
+            (*token)->data = "ERR_EXPR_3";
+        }
+        else if (ret == 4)
+        {
+            (*token)->data = "ERR_EXPR_4";
+        }
     }
 
     return *token; //T_UNKNOWN prazdny kdyz error, data ERR_SEM_KOMP
@@ -201,7 +264,7 @@ unsigned exprBUStackClose(txStack stack)
     txItem item = exprBUStackPop(stack);
     if (item == NULL)
     {
-        return 99;
+        exit(99);
     }
 
 
@@ -232,7 +295,7 @@ unsigned exprBUStackClose(txStack stack)
                     break;
                 case T_STRING:
                     //TODO generovani kodu
-                    ntype == X_STRING;
+                    ntype = X_STRING;
                     break;
                 case T_ID:
                     //TODO sémantika
@@ -253,7 +316,12 @@ unsigned exprBUStackClose(txStack stack)
         return 0;
     }
 
-    txItem rItem = item;
+
+    //debug
+    printf("Navrat z nedokoncene casti \n");
+    return 0;
+
+    /*txItem rItem = item;
     item = exprBUStackPop(stack);
     txItem lItem = exprBUStackPop(stack);
 
@@ -305,7 +373,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu */;
+            if (unknownType) *//*TODO generovani kodu *//*;
             if (!(isSingle) && !(isSame))
             {
                 //TODO PRINT ERROR
@@ -332,7 +400,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu*/;
+            if (unknownType) *//*TODO generovani kodu*//*;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -344,7 +412,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_MUL:
-            if (unknownType) /* TODO Generovani kodu */;
+            if (unknownType) *//* TODO Generovani kodu *//*;
             if (!(isSame) || (type == X_STRING))
             {
                 free(item);
@@ -355,7 +423,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_DIV:
-            if (unknownType) /* TODO Generovani kodu */;
+            if (unknownType) *//* TODO Generovani kodu *//*;
             if (!(isSame) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -365,7 +433,7 @@ unsigned exprBUStackClose(txStack stack)
                 return isSingle ? 2 : 4;
             }
             //TODO Generovani kodu (DELENI NULOU)
-            if (unknownType) /*TODO Generovani kodu*/;
+            if (unknownType) *//*TODO Generovani kodu*//*;
             else if (type == X_FLOAT)
             {
                 //TODO Generovani kodu
@@ -390,7 +458,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu*/;
+            if (unknownType) *//*TODO generovani kodu*//*;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -442,11 +510,11 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_EQL:
-            if (isSame) /*TODO Generovani kodu*/;
+            if (isSame) *//*TODO Generovani kodu*//*;
             //TODO Generovani kodu
             break;
         case T_NEQ:
-            if (isSame) /*TODO Generovani kodu*/;
+            if (isSame) *//*TODO Generovani kodu*//*;
             //TODO Generovani kodu
             break;
         default:
@@ -460,7 +528,7 @@ unsigned exprBUStackClose(txStack stack)
     {
         free(exprBUStackPop(stack));
     }
-    return 0;
+    return 0;*/
 }
 
 
@@ -469,4 +537,20 @@ txItem exprBUStackPop(txStack stack)
     if (stack->top < 0) return NULL;
     stack->top--;
     return stack->xs[stack->top + 1];
+}
+
+void exprBUStackDispose(txStack *stack) {
+    if (stack == NULL || (*stack) == NULL)
+    {
+        return;
+    }
+    int del = (*stack)->top;
+    while (del >= 0)
+    {
+        free((*stack)->xs[del]);
+        del--;
+    }
+    free((*stack)->xs);
+    free((*stack));
+    (*stack) = NULL;
 }
