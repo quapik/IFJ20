@@ -30,6 +30,8 @@ tToken for_rule(tToken *token);
 tToken params(tToken *token);
 tToken params_n(tToken *token);
 tToken narvrattype_n(tToken *token);
+tToken vyraz_n(tToken *token);
+
 
 
 #endif /* parser.h */
