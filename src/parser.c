@@ -14,6 +14,7 @@ bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
+int IDCounter=0;
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
@@ -118,13 +119,12 @@ tToken body(tToken *token)
         if ((*token)->type==T_ASSIGN) // =
         {
             (*token)=(*token)->nextToken;
-            //TED MUSI BYT VYRAZ
-            //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            (*token)=exprBUParse(token);
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
                 return *token;
             }
-            (*token)=(*token)->nextToken;
+
             (*token)=body(token);
             return *token;
 
@@ -139,7 +139,7 @@ tToken body(tToken *token)
         {
             printf("chyba v ID_NEXT_body\n");  return *token;
         }
-
+        (*token)=(*token)->prevToken;
         (*token)=(*token)->nextToken;
         (*token)=body(token);
         return *token;
@@ -605,9 +605,7 @@ tToken id_next(tToken *token)
     if((*token)->type==T_DEFINE) // pokud je :=
     {
         (*token)=(*token)->nextToken;
-        //TED MUSI BYT VYRAZ TODO
-        //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
-
+        (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
         return *token;
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
@@ -636,7 +634,7 @@ tToken id_next(tToken *token)
 }
 //pravidlo 15 a 16 <ID_N> -> , ID <ID_N> & <ID_N> -> EPS
 tToken id_n(tToken *token)
-{
+{   IDCounter++;
     if((*token)->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
     {
         (*token) = (*token)->nextToken;
@@ -668,22 +666,21 @@ tToken vice_id_vlevo(tToken *token)
 {
     if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR))
     {
-        (*token) = (*token)->nextToken;  (*token) = (*token)->nextToken;
-        (*token) = paramscall(token); //vraceno ) nebo chyba z paramscall
+        (*token)=(*token)->nextToken;  (*token)=(*token)->nextToken;
+        (*token)=paramscall(token); //vraceno ) nebo chyba z paramscall
         return *token;
         //TODO SEMANTIKA IDčka
     }
     else
     {
-        //TED MUSI BYT VYRAZ
-        //(*token)=exprBUParse(&token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+
+        (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
         {
 
             return *token;
         }
-        (*token)=(*token)->nextToken;
-        //TODO CALL VYRAZ_N
+        (*token)=vyraz_n(token);
 
     }
 
@@ -733,6 +730,28 @@ tToken paramscall_n(tToken *token)
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba paramscall_n2\n"); return *token;
     }
 
-
 }
+//PRAVIDLO <vyraz_n> -> , vyraz <vyraz n>
+tToken vyraz_n(tToken *token){
+    IDCounter--; //TODO nehodi to errory kdyz je tam id1,i2=vyraz, NIC
+    if ((*token)->type==T_COMMA) //nastala chyba pri vyrazu
+    {
+        (*token)=(*token)->nextToken;
+        (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
+        {
+            return *token;
+        }
+        (*token)=vyraz_n(token);
+    }
+    else
+        { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
+        if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
+        {
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n"); return *token;
+        }
+        return *token;
+        }
+}
+
 
