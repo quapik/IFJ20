@@ -142,15 +142,15 @@ tToken exprBUParse (tToken *token) {
         (*token)->type = T_UNKNOWN;
         if (ret == 2)
         {
-            (*token)->data = "ERR_EXPR_2";
+            (*token)->data = "ERR_SYNTAX";
         }
         else if (ret == 3)
         {
-            (*token)->data = "ERR_EXPR_3";
+            (*token)->data = "ERR_SEM_PROG";
         }
         else if (ret == 4)
         {
-            (*token)->data = "ERR_EXPR_4";
+            (*token)->data = "ERR_SEM_TYPE";
         }
     }
     else
