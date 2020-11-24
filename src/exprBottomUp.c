@@ -55,18 +55,18 @@ tToken exprBUParse (tToken *token) {
     while (ret < 0) {
 
         //debug
-        printf("%s\n", (*token)->data);
-        if ((*token)->type == T_RDBR)
-        {
-            printf(")\n");
-        }
+        //printf("%s\n", (*token)->data);
+        //if ((*token)->type == T_RDBR)
+        //{
+        //    printf(")\n");
+        //}
         xOperator stackOp, newOp;
 
         //posun na spravnou polozku zasobniku
         int posun = stack->top;
 
 
-        while(posun >= 0) { // hledani na zasobniku
+        while(posun >= 0) { // hledani na zasobniku, preskocime neterminal
             if (stack->xs[posun]->type == XT_TERM)
             {
                 break;
@@ -83,7 +83,7 @@ tToken exprBUParse (tToken *token) {
         switch (exprBUGetPriority(stackOp, newOp)) {
             case X_OPEN: // shift <
                 exprBUStackOpen(stack, posun + 1);
-                item = malloc(sizeof(struct xItem));
+                item = malloc(sizeof(struct xItem)); //TODO CHYBA ALOKACE
                 item->type = XT_TERM;
                 item->data.token = *token;
                 exprBUStackPush(stack, item);
@@ -152,6 +152,10 @@ tToken exprBUParse (tToken *token) {
         {
             (*token)->data = "ERR_EXPR_4";
         }
+    }
+    else
+    {
+        printf("Precedencni: (debug) Vse v poradku.\n");
     }
 
     return *token; //T_UNKNOWN prazdny kdyz error, data ERR_SEM_KOMP
@@ -230,13 +234,19 @@ void exprBUStackOpen (txStack stack, int posun)
 {
     exprBUStackPush(stack, NULL);
 
+    //pro prohození prvků
+    for (int i = stack->top - 1; i>= posun; i--)
+    {
+        stack->xs[i + 1] = stack->xs[i];
+    }
+
     txItem item = malloc(sizeof(struct xItem));
     if (item == NULL)
     {
         fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro stack\n");
         exit(99);
     }
-    //vzdy pridame < pred vlozenim noveho terminalu
+    //vzdy pridame na vrchol nebo pred neterminal <
     item->type = XT_OPEN;
     stack->xs[posun] = item;
 }
@@ -306,6 +316,7 @@ unsigned exprBUStackClose(txStack stack)
                     free(item);
                     return 2;
             }
+            //TODO Generovani kodu
             item->type = XT_NONTERM;
             item->data.ntype = ntype;
 
@@ -318,17 +329,19 @@ unsigned exprBUStackClose(txStack stack)
 
 
     //debug
-    printf("Navrat z nedokoncene casti \n");
-    return 0;
+    //printf("Navrat z nedokoncene casti \n");
+    //return 0;
 
-    /*txItem rItem = item;
+    txItem rItem = item;
     item = exprBUStackPop(stack);
     txItem lItem = exprBUStackPop(stack);
 
+
     xNTermType lType = lItem->data.ntype;
+
     xNTermType rType = rItem->data.ntype;
     xNTermType type = rType;
-    bool isSingle = (lItem->type == X_OPEN);
+    bool isSingle = (lItem->type == XT_OPEN);
     bool unknownType = (rType == X_UNKNOWN);
     bool isSame = false; // stejny typ
 
@@ -373,7 +386,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) *//*TODO generovani kodu *//*;
+            if (unknownType) /*TODO generovani kodu */;
             if (!(isSingle) && !(isSame))
             {
                 //TODO PRINT ERROR
@@ -400,7 +413,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) *//*TODO generovani kodu*//*;
+            if (unknownType) /*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -412,7 +425,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_MUL:
-            if (unknownType) *//* TODO Generovani kodu *//*;
+            if (unknownType) /* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
                 free(item);
@@ -423,7 +436,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_DIV:
-            if (unknownType) *//* TODO Generovani kodu *//*;
+            if (unknownType) /* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -433,7 +446,7 @@ unsigned exprBUStackClose(txStack stack)
                 return isSingle ? 2 : 4;
             }
             //TODO Generovani kodu (DELENI NULOU)
-            if (unknownType) *//*TODO Generovani kodu*//*;
+            if (unknownType) /*TODO Generovani kodu*/;
             else if (type == X_FLOAT)
             {
                 //TODO Generovani kodu
@@ -458,7 +471,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) *//*TODO generovani kodu*//*;
+            if (unknownType) /*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -510,11 +523,11 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_EQL:
-            if (isSame) *//*TODO Generovani kodu*//*;
+            if (isSame) /*TODO Generovani kodu*/;
             //TODO Generovani kodu
             break;
         case T_NEQ:
-            if (isSame) *//*TODO Generovani kodu*//*;
+            if (isSame) /*TODO Generovani kodu*/;
             //TODO Generovani kodu
             break;
         default:
@@ -528,7 +541,8 @@ unsigned exprBUStackClose(txStack stack)
     {
         free(exprBUStackPop(stack));
     }
-    return 0;*/
+    exprBUStackPush(stack, item);
+    return 0;
 }
 
 
