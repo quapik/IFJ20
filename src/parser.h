@@ -12,7 +12,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #define _PARSER_H
 #include "scanner.h"
 #include "error.h"
-#include "exprBottomUp.h"
+#include "exprBottomUp.c"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
@@ -32,4 +32,4 @@ tToken params_n(tToken *token);
 tToken narvrattype_n(tToken *token);
 
 
-#endif /* prarser.h */
+#endif /* parser.h */
