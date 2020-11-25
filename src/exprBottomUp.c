@@ -194,6 +194,11 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
                 return X_CLOSE;
             }
             else return X_OPEN;
+        case X_EQL:
+            if (nextOperator == X_LDBR || nextOperator == X_$)
+                return X_CLOSE;
+            else if (nextOperator == X_EQL) return X_EMPTY;
+            return X_OPEN;
         case X_LDBR:
             if (nextOperator == X_$)
             {
@@ -308,6 +313,8 @@ unsigned exprBUStackClose(txStack stack)
                     break;
                 case T_STRING:
                     //TODO generovani kodu
+                    //debug
+                    printf("mame string\n");
                     ntype = X_STRING;
                     break;
                 case T_ID:
@@ -369,17 +376,18 @@ unsigned exprBUStackClose(txStack stack)
         {
             isSame = true;
         }
-        else if (lType == X_INT && rType == X_FLOAT)
-        {
-            //TODO generovani kodu (zadani str. 10)
-            isSame = true;
-        }
-        else if (rType == X_INT && lType == X_FLOAT)
-        {
-            //TODO generovani kodu (zadani str. 10)
-            type = X_FLOAT;
-            isSame = true;
-        }
+        // Tolerance int a float u sebe
+//        else if (lType == X_INT && rType == X_FLOAT)
+//        {
+//            //TODO generovani kodu (zadani str. 10)
+//            isSame = true;
+//        }
+//        else if (rType == X_INT && lType == X_FLOAT)
+//        {
+//            //TODO generovani kodu (zadani str. 10)
+//            type = X_FLOAT;
+//            isSame = true;
+//        }
     }
 
     switch (item->data.token->type) {
@@ -512,7 +520,21 @@ unsigned exprBUStackClose(txStack stack)
             return 99;
     }
 
+    //reseni kodu
+
     switch (item->data.token->type) {
+        case T_ADD:
+            //TODO Generovani kodu
+            break;
+        case T_SUB:
+            //TODO Generovani kodu
+            break;
+        case T_MUL:
+            //TODO Generovani kodu
+            break;
+        case T_DIV:
+            //TODO Generovani kodu
+            break;
         case T_GREAT:
             //TODO Generovani kodu
             break;
@@ -534,7 +556,10 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         default:
-            break;
+            free(item);
+            free(rItem);
+            free(lItem);
+            return 99;
     }
     free(rItem);
     free(lItem);
