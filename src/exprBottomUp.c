@@ -50,6 +50,7 @@ tToken exprBUParse (tToken *token) {
 
     int ret = -1;
     unsigned tmpRet;
+    //bool first = true;
 
     // Algoritmus precedencni analyzy
     while (ret < 0) {
@@ -76,6 +77,8 @@ tToken exprBUParse (tToken *token) {
         if (posun < 0) stackOp = X_$;
         else stackOp = exprTokenTypeToOperator(stack->xs[posun]->data.token->type);  //konverze do precedencich prvku
         newOp = exprTokenTypeToOperator((*token)->type);
+
+
 
         // inicializace nove polozky
         txItem item;
@@ -110,9 +113,9 @@ tToken exprBUParse (tToken *token) {
             case X_EMPTY: // prazdne pole tabulky
                 if (stackOp == newOp && newOp == X_$) //posledni stav prec. analyzy
                 {
-                    if (stack->top > 0)
+                    if (stack->top < 0)
                     {
-                        fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu, prazdny vyraz\n");
+                        fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu, neuplny vyraz\n");
                         ret = 2;
                     }
                     else
