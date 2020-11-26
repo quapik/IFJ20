@@ -397,7 +397,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu */;
+            if (unknownType) printf("todo");/*TODO generovani kodu */
             if (!(isSingle) && !(isSame))
             {
                 //TODO PRINT ERROR
@@ -424,7 +424,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu*/;
+            if (unknownType) printf("todo")/*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -436,7 +436,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_MUL:
-            if (unknownType) /* TODO Generovani kodu */;
+            if (unknownType) printf("todo")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
                 free(item);
@@ -447,7 +447,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_DIV:
-            if (unknownType) /* TODO Generovani kodu */;
+            if (unknownType) printf("todo")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -457,7 +457,7 @@ unsigned exprBUStackClose(txStack stack)
                 return isSingle ? 2 : 4;
             }
             //TODO Generovani kodu (DELENI NULOU)
-            if (unknownType) /*TODO Generovani kodu*/;
+            if (unknownType) printf("todo")/*TODO Generovani kodu*/;
             else if (type == X_FLOAT)
             {
                 //TODO Generovani kodu
@@ -482,7 +482,7 @@ unsigned exprBUStackClose(txStack stack)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) /*TODO generovani kodu*/;
+            if (unknownType) printf("todo")/*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 //TODO PRINT ERROR
@@ -548,11 +548,11 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_EQL:
-            if (isSame) /*TODO Generovani kodu*/;
+            if (isSame) printf("todo")/*TODO Generovani kodu*/;
             //TODO Generovani kodu
             break;
         case T_NEQ:
-            if (isSame) /*TODO Generovani kodu*/;
+            if (isSame) printf("todo")/*TODO Generovani kodu*/;
             //TODO Generovani kodu
             break;
         default:
