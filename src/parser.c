@@ -30,8 +30,7 @@ int StartParser(tToken *token)
                 (*token)->type == T_RETURN || (*token)->type == T_ID || (*token)->type == T_EOL || (*token)->type == T_EOF)//TODO _, int float string?
             {
                 pomToken=body(token);
-                if((*pomToken).type==T_UNKNOWN) //vzdy to v tomto ifu musi skoncit (bud errorem nebo po EOFU s OK)
-                {
+
                     if(strcmp((*pomToken).data,"ERR_OK")==0) return ERR_OK;
                     if(strcmp((*pomToken).data,"ERR_SYNTAX")==0) return ERR_SYNTAX;
                     if(strcmp((*pomToken).data,"ERR_SEM_PROG")==0) return ERR_SEM_PROG;
@@ -40,8 +39,8 @@ int StartParser(tToken *token)
                     if(strcmp((*pomToken).data,"ERR_SEM_POCET")==0) return ERR_SEM_POCET;
                     if(strcmp((*pomToken).data,"ERR_SEM_OSTATNI")==0) return ERR_SEM_OSTATNI;
                     if(strcmp((*pomToken).data,"ERR_SEM_DELENI")==0) return ERR_SEM_DELENI;
-                    if(strcmp((*pomToken).data,"ERR_INTERNI")==0) return ERR_INTERNI;
-                }
+                    else return ERR_INTERNI;
+
 
             }
             else
@@ -76,7 +75,6 @@ tToken body(tToken *token)
             (*token)=(*token)->nextToken;
             (*token)=body(token);
             return *token;
-
     }
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
@@ -110,8 +108,6 @@ tToken body(tToken *token)
             (*token)=body(token);
                 return *token;
         }
-
-
     }
         //pravidlo <FOR> -> for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
     else if ((*token)->type==T_FOR)
@@ -128,7 +124,6 @@ tToken body(tToken *token)
             (*token)=body(token);
             return *token;
         }
-
     }
         //PRAVIDLO <prirazeni> -> _ = vyraz
     else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
@@ -147,6 +142,8 @@ tToken body(tToken *token)
             return *token;
 
         }
+        else{  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("Chybny oef\n");}
+
     }
     else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
     {
@@ -167,9 +164,7 @@ tToken body(tToken *token)
     {
         (*token)=(*token)->nextToken;
         (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
-
         return *token;
-
     }
         //PRAVIDLO <BODY> -> EOF
     else if ((*token)->type==T_EOF)
@@ -199,14 +194,14 @@ tToken body(tToken *token)
         (*token)=(*token)->prevToken;
         return *token;
     }
-
-        //ZADNE FIRST z BODY nesedi
+    //ZADNE FIRST z BODY nesedi
     else
     {
         (*token)->type=T_UNKNOWN;
         (*token)->data="ERR_SYNTAX";  printf("Chybne FIRST v body\n");
         return *token;
     }
+    return *token; //TODO divny
 }
 
 tToken if_rule(tToken *token)
@@ -301,6 +296,7 @@ tToken func_rule(tToken *token)
                                 (*token)=body(token);
                                 return *token;
                             }
+                            else {(*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; return *token; }
                         }
 
                     }
@@ -314,6 +310,7 @@ tToken func_rule(tToken *token)
                     return *token;
                 }
             }
+            else {(*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; return *token; }
 
         } //pokud jiz byl main a je znovu main
         else
@@ -410,14 +407,11 @@ tToken func_rule(tToken *token)
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole5\n"); return *token;
                 }
 
-
             }
             else
             {
                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole6\n"); return *token;
             }
-
-
 
         }
         else
@@ -425,7 +419,10 @@ tToken func_rule(tToken *token)
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole7\n"); return *token;
         }
     }
-
+    else
+    {
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba func_dole8\n"); return *token;
+    }
 
 }
 //PRAVIDLO <navrattype_n> -> <DATATYPE> , <NAVRATTYPE_N>  nebo <navrattype_n> -> EPS
@@ -600,6 +597,10 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
                           (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");   return *token;
                       }
                   }
+                  else
+                  {
+                      (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2_EOL\n");   return *token;
+                  }
 
               }
               else
@@ -709,7 +710,7 @@ tToken vice_id_vlevo(tToken *token)
             return *token;
         }
         (*token)=vyraz_n(token);
-
+        return *token; //TODO NOT SURE
     }
 
 }
@@ -775,6 +776,7 @@ tToken vyraz_n(tToken *token){
             return *token;
         }
         (*token)=vyraz_n(token);
+        return *token; //TODO tohle ot muze srat
     }
     else
         { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
