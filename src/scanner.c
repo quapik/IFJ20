@@ -112,7 +112,7 @@ int scannerDKA(tToken token, FILE *file)
 	sState nextState;
 
 	int currChar = 0;
-	char *tokenData;
+	//char *tokenData;
 
 	bool gettingLex = true;
 
