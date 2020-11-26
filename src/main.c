@@ -1,4 +1,7 @@
 #include "main.h"
+#include "scanner.c"
+#include "parser.c"
+#include "exprBottomUp.c"
 
 
 int main(int argc, char *argv[]) {

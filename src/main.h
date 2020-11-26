@@ -12,8 +12,5 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #pragma once
 #include <stdio.h>
 #include <stdlib.h>
-#include "scanner.h"
-//#include "parser.h"
-#include "exprBottomUp.h"
 
 int main(int argc, char *argv[]);
