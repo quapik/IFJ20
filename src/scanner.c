@@ -368,9 +368,19 @@ int scannerDKA(tToken token, FILE *file)
 		//}
 
 		//konec souboru:
-		if (token->type == EOF) {
+		if (token->type == EOF)
+		{
 		    break;
 		}
+		if (nextState == STATE_START)
+        {
+		    //debug
+		    //printf("mazu");
+		    if (strlen(dataString) != 0)
+            {
+                free(dataString);
+            }
+        }
 
 		// priprava obsahu tokenu:
 		if (token->type != T_UNKNOWN) {
@@ -384,7 +394,7 @@ int scannerDKA(tToken token, FILE *file)
             //debug
 		    //printf("mame unknown tokens \n");
 		    if (nextState == STATE_ERROR) {
-		        printf("error \n");
+		        //printf("error \n");
 		        //TODO ERROR VYPIS
 		        if (state != STATE_START) {
 		            break;
