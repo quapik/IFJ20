@@ -10,12 +10,10 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 Precedencni analyza zdola nahoru pro vyrazy
 */
 
-#ifndef GETC_EXPRBOTTOMUP_H
-#define GETC_EXPRBOTTOMUP_H
-
+#pragma once
 #include "scanner.h"
 
-#endif //GETC_EXPRBOTTOMUP_H
+
 
 #define EXPR_STACK_ALLOC_SIZE 64
 
@@ -97,6 +95,7 @@ void exprBUStackPush (txStack stack, txItem item);
 txItem exprBUStackPop(txStack stack);
 void exprBUStackOpen (txStack stack, int posun); // < shift
 unsigned exprBUStackClose(txStack stack); // > parse
+void exprBUStackDispose(txStack *stack);
 
 
 
