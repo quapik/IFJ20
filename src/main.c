@@ -1,11 +1,12 @@
-#include "main.h"
-#include "scanner.c"
-#include "parser.c"
-#include "exprBottomUp.c"
+#include <stdio.h>
+#include "scanner.h"
+#include "parser.h"
+#include "exprBottomUp.h"
+#include "error.h"
 
 
 int main(int argc, char *argv[]) {
-    FILE *fp = fopen("str.txt", "r");
+    FILE *fp;
 
     if(argc<2){
         fprintf(stderr,"Nebyl zadan vstupni soubor\n");
@@ -20,11 +21,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-
     tToken token1 = NULL;
-    if (scannerLoadTokens(&token1, fp) != 0) printf("nastala chyba v ramci lexikalni analyzy\n");
+    if (scannerLoadTokens(&token1, fp) != 0)
+    {
+        fprintf(stderr, "Error: scanner skoncil s chybou\n");
+        return ERR_LEX;
+    }
+    int parserErr = StartParser(&token1);
+    if (parserErr != 0)
+    {
+        fprintf(stderr, "Error: parser skoncil s chybou\n");
+        return parserErr;
+    }
+
+    //debug
     //char *data = token1->data;
-    exprBUParse(&token1);
+    //exprBUParse(&token1);
     // scannerPrint(token1);
 
     return 0;

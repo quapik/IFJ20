@@ -510,17 +510,4 @@ void scannerPrintDebug (tToken token, unsigned opt) {
             return;
         }
     }
-
-
-}
-
-void scannerPrint (tToken token) {
-    if(token == NULL) return;
-    char *stringtoken = token->data;
-    printf("obsah: %s\n", stringtoken);
-    stringtoken = token->nextToken->data;
-    printf("obsah: %s\n", stringtoken);
-    if (token->type == T_ID) printf("typ tokenu = id\n");
-
-
 }
