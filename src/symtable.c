@@ -1,12 +1,14 @@
-//Implementace pøekladaèe imperativního jazyka IFJ20
-//Tým èíslo 041, varianta I
-/*Autoøi projektu:
-Šíma Vojtìch 	xsimav01@stud.fit.vutbr.cz
+//Implementace překladače imperativního jazyka IFJ20
+//Tým číslo 041, varianta I
+/*Autoři projektu:
+Šíma Vojtěch 	xsimav01@stud.fit.vutbr.cz
 Fabián Michal   xfabia13@stud.fit.vutbr.cz
-Èábela Radek    xcabel04@stud.fit.vutbr.cz
+Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaèních technologií VUT v Brnì
+Prosinec 2020, Fakulta informačních technologií VUT v Brně
+Lexikalni Analyzator
 */
+
 
 #include "symtable.h"
 
@@ -14,16 +16,16 @@ void STableInit(tSymbolTablePtr *Tab){
 	*Tab=NULL;
 }
 
-tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char Symbol){
+tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
 	if(Tab==NULL){
 		return NULL;
 	}
 	else{
-		if(Tab->Symbol==Symbol){
+		if((strcmp(Symbol,Tab->Symbol))==0){
 			return Tab->Data;
 		}
 		else{
-			if(Tab->Symbol>Symbol){
+			if((strcmp(Symbol,Tab->Symbol))<0){
 				return (STableSearch(Tab->LPtr,Symbol));
 			}
 			else{
@@ -47,11 +49,11 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
 		}
 	}
 	else{
-		if(Symbol<(*Tab)->Symbol){
-			STableInsert(&((*Tab)->LPtr),&Symbol,Data);
+		if((strcmp(Symbol,(*Tab)->Symbol))<0){
+			STableInsert(&((*Tab)->LPtr),Symbol,Data);
 		}
-		else if(Symbol>(*Tab)->Symbol){
-			STableInsert(&((*Tab)->RPtr),&Symbol,Data);
+		else if((strcmp(Symbol,(*Tab)->Symbol))>0){
+			STableInsert(&((*Tab)->RPtr),Symbol,Data);
 		}
 		else{
 			free((*Tab)->Data);
@@ -68,7 +70,7 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
 		if((*Tab)->RPtr==NULL){
 			PtrReplaced->Symbol=(*Tab)->Symbol;
 			PtrReplaced->Data=(*Tab)->Data;
-			BSTDelete(Tab,(*Tab)->Symbol);
+			STableDelete(Tab,(*Tab)->Symbol);
 		}
 		else{
 			ReplaceByRightmost(PtrReplaced,&((*Tab)->RPtr));
@@ -76,7 +78,7 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
 	}
 }
 
-void STableDelete(tSymbolTablePtr *Tab, char Symbol){
+void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
 	if(*Tab==NULL){
 		return;
 	}
@@ -115,15 +117,18 @@ void STableDelete(tSymbolTablePtr *Tab, char Symbol){
 	}
 }
 
-void STableDispose(tSymbolTable *Tab){
+void STableDispose(tSymbolTablePtr *Tab){
 	if(*Tab!=NULL){
+		// pruchod celym stromem
 		STableDispose(&((*Tab)->LPtr));
 		STableDispose(&((*Tab)->RPtr));
 		
+		// pokud jsem narazil na funkci, respektive pomocny podstrom
 		if((*Tab)->Data->LocalFuncData!=NULL){
 			STableDispose(&((*Tab)->Data->LocalFuncData));
 		}
 		
+		// uvolneni pameti
 		free((*Tab)->Data);
 		free(*Tab);
 		*Tab=NULL;

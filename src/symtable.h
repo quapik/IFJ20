@@ -1,12 +1,13 @@
-//Implementace pøekladaèe imperativního jazyka IFJ20
-//Tım èíslo 041, varianta I
-/*Autoøi projektu:
-Šíma Vojtìch 	xsimav01@stud.fit.vutbr.cz
-Fabián Michal   xfabia13@stud.fit.vutbr.cz
-Èábela Radek    xcabel04@stud.fit.vutbr.cz
+//Implementace pÅ™ekladaÄe imperativnÃ­ho jazyka IFJ20
+//TÃ½m ÄÃ­slo 041, varianta I
+/*AutoÅ™i projektu:
+Å Ã­ma VojtÄ›ch 	xsimav01@stud.fit.vutbr.cz
+FabiÃ¡n Michal   xfabia13@stud.fit.vutbr.cz
+ÄŒÃ¡bela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaèních technologií VUT v Brnì
+Prosinec 2020, Fakulta informaÄnÃ­ch technologiÃ­ VUT v BrnÄ›
 */
+
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -52,9 +53,9 @@ typedef struct tSymbolTable{
 }*tSymbolTablePtr;
 
 
-void STableInit(tSymbolTable *Tab);
-tSymbolDataPtr STableSearch(tSymbolTable Tab, char Symbol);
+void STableInit(tSymbolTablePtr *Tab);
+tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol);
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data);
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
-void STableDelete(tSymbolTablePtr *Tab, char Symbol);
-void STableDispose(tSymbolTable *Tab);
+void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
+void STableDispose(tSymbolTablePtr *Tab);
