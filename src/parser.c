@@ -1,4 +1,3 @@
-
 //Implementace překladače imperativního jazyka IFJ20
 //Tým číslo 041, varianta I
 /*Autoři projektu:
@@ -26,21 +25,19 @@ int StartParser(tToken *token)
         {
             (*token)=(*token)->nextToken;
 
-            if ((*token)->type == T_IF || (*token)->type == T_FUNC || (*token)->type == T_FOR ||
-                (*token)->type == T_RETURN || (*token)->type == T_ID || (*token)->type == T_EOL || (*token)->type == T_EOF)//TODO _, int float string?
+            if ((*token)->type == T_EOL || (*token)->type == T_FUNC) //po package main muže byt jen eol nebo func
             {
                 pomToken=body(token);
 
-                    if(strcmp((*pomToken).data,"ERR_OK")==0) return ERR_OK;
-                    if(strcmp((*pomToken).data,"ERR_SYNTAX")==0) return ERR_SYNTAX;
-                    if(strcmp((*pomToken).data,"ERR_SEM_PROG")==0) return ERR_SEM_PROG;
-                    if(strcmp((*pomToken).data,"ERR_SEM_TYPE")==0) return ERR_SEM_TYPE;
-                    if(strcmp((*pomToken).data,"ERR_SEM_KOMP")==0) return ERR_SEM_KOMP;
-                    if(strcmp((*pomToken).data,"ERR_SEM_POCET")==0) return ERR_SEM_POCET;
-                    if(strcmp((*pomToken).data,"ERR_SEM_OSTATNI")==0) return ERR_SEM_OSTATNI;
-                    if(strcmp((*pomToken).data,"ERR_SEM_DELENI")==0) return ERR_SEM_DELENI;
-                    else return ERR_INTERNI;
-
+                if(strcmp((*pomToken).data,"ERR_OK")==0) return ERR_OK;
+                if(strcmp((*pomToken).data,"ERR_SYNTAX")==0) return ERR_SYNTAX;
+                if(strcmp((*pomToken).data,"ERR_SEM_PROG")==0) return ERR_SEM_PROG;
+                if(strcmp((*pomToken).data,"ERR_SEM_TYPE")==0) return ERR_SEM_TYPE;
+                if(strcmp((*pomToken).data,"ERR_SEM_KOMP")==0) return ERR_SEM_KOMP;
+                if(strcmp((*pomToken).data,"ERR_SEM_POCET")==0) return ERR_SEM_POCET;
+                if(strcmp((*pomToken).data,"ERR_SEM_OSTATNI")==0) return ERR_SEM_OSTATNI;
+                if(strcmp((*pomToken).data,"ERR_SEM_DELENI")==0) return ERR_SEM_DELENI;
+                else return ERR_INTERNI;
 
             }
             else
@@ -72,9 +69,9 @@ tToken body(tToken *token)
         {
             return *token;
         }
-            (*token)=(*token)->nextToken;
-            (*token)=body(token);
-            return *token;
+        (*token)=(*token)->nextToken;
+        (*token)=body(token);
+        return *token;
     }
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
@@ -106,7 +103,7 @@ tToken body(tToken *token)
         else
         {    (*token)=(*token)->nextToken;
             (*token)=body(token);
-                return *token;
+            return *token;
         }
     }
         //pravidlo <FOR> -> for <FORDEF>; <vyraz>; <prikaz_prirazeni> { EOL <BODY> }
@@ -194,7 +191,7 @@ tToken body(tToken *token)
         (*token)=(*token)->prevToken;
         return *token;
     }
-    //ZADNE FIRST z BODY nesedi
+        //ZADNE FIRST z BODY nesedi
     else
     {
         (*token)->type=T_UNKNOWN;
@@ -229,34 +226,34 @@ tToken if_rule(tToken *token)
 
             (*token)=(*token)->nextToken;
 
-                if ((*token)->type==T_RCBR) // } ukonocovaci zavorka ifu
-                {   PocetKoncovychZavorek--;
+            if ((*token)->type==T_RCBR) // } ukonocovaci zavorka ifu
+            {   PocetKoncovychZavorek--;
+                (*token)=(*token)->nextToken;
+                if ((*token)->type==T_ELSE)
+                {
                     (*token)=(*token)->nextToken;
-                    if ((*token)->type==T_ELSE)
-                    {
+                    if ((*token)->type==T_LCBR) // token je { otviraci zavorku elsu
+                    {   PocetKoncovychZavorek++;
                         (*token)=(*token)->nextToken;
-                        if ((*token)->type==T_LCBR) // token je { otviraci zavorku elsu
-                        {   PocetKoncovychZavorek++;
+                        if ((*token)->type==T_EOL)
+                        {
                             (*token)=(*token)->nextToken;
-                            if ((*token)->type==T_EOL)
+                            (*token)=body(token);
+                            if((*token)->type==T_UNKNOWN) //pokud v tele ELSE nastala chyba
                             {
-                                (*token)=(*token)->nextToken;
-                                (*token)=body(token);
-                                if((*token)->type==T_UNKNOWN) //pokud v tele ELSE nastala chyba
-                                {
-                                    return *token;
-                                }
-                                (*token)=(*token)->nextToken;
-                                {
-                                    if ((*token)->type==T_RCBR) // } konec else
-                                    {   PocetKoncovychZavorek--;
-                                        PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
-                                    }
+                                return *token;
+                            }
+                            (*token)=(*token)->nextToken;
+                            {
+                                if ((*token)->type==T_RCBR) // } konec else
+                                {   PocetKoncovychZavorek--;
+                                    PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
                                 }
                             }
                         }
                     }
                 }
+            }
         }
     }
     (*token)->type=T_UNKNOWN;
@@ -330,9 +327,9 @@ tToken func_rule(tToken *token)
             (*token)=params(token);
 
             if ((*token)->type==T_UNKNOWN) //nastala chyba v params
-                {
-                    return *token;
-                }
+            {
+                return *token;
+            }
             (*token)=(*token)->nextToken; //kdyz ok tak by mel nasledovat ( NEBO { kdyz je seznam navartovych prazdny
             if ((*token)->type==T_LDBR) // (
             {
@@ -472,8 +469,6 @@ tToken params(tToken *token)
                 return *token;
             }
             return *token; //return do func
-
-
         }
         else
         {
@@ -533,7 +528,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
     PossibleEof=false;
     if ((*token)->type==T_ID)
     {
-            (*token)=(*token)->nextToken;
+        (*token)=(*token)->nextToken;
         if ((*token)->type==T_DEFINE)
         {
             (*token)=(*token)->nextToken;
@@ -560,54 +555,54 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
         }
 
         if ((*token)->type==T_SEMICOLON) //povinny ;
-            {
-                (*token)=(*token)->nextToken; //bud id=vyraz nebo rovnou {
-                if ((*token)->type==T_ID)
-                {   (*token)=(*token)->nextToken;
-                    if ((*token)->type==T_ASSIGN)
+        {
+            (*token)=(*token)->nextToken; //bud id=vyraz nebo rovnou {
+            if ((*token)->type==T_ID)
+            {   (*token)=(*token)->nextToken;
+                if ((*token)->type==T_ASSIGN)
+                {
+                    (*token)=(*token)->nextToken;
+                    (*token) = exprBUParse(token);
+                    if ((*token)->type == T_UNKNOWN)
                     {
-                        (*token)=(*token)->nextToken;
-                        (*token) = exprBUParse(token);
-                        if ((*token)->type == T_UNKNOWN)
-                        {
-                            return *token;
-                        }
+                        return *token;
                     }
                 }
+            }
 
-              if ((*token)->type==T_LCBR)
-              {
-                  PocetKoncovychZavorek++;
-                  (*token)=(*token)->nextToken;
-                  if ((*token)->type==T_EOL) //povinny eol
-                  {   (*token)=(*token)->nextToken;
-                      (*token)=body(token); //telo foru
-                      if ((*token)->type == T_UNKNOWN)
-                      {
-                          return *token; //chyba v tele foru
-                      }
-                      (*token)=(*token)->nextToken;
-                      if ((*token)->type==T_RCBR) //} koncova zavorka tela foru
-                      {
-                          PocetKoncovychZavorek--;
-                          return *token;
-                      }
-                      else
-                      {
-                          (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");   return *token;
-                      }
-                  }
-                  else
-                  {
-                      (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2_EOL\n");   return *token;
-                  }
+            if ((*token)->type==T_LCBR)
+            {
+                PocetKoncovychZavorek++;
+                (*token)=(*token)->nextToken;
+                if ((*token)->type==T_EOL) //povinny eol
+                {   (*token)=(*token)->nextToken;
+                    (*token)=body(token); //telo foru
+                    if ((*token)->type == T_UNKNOWN)
+                    {
+                        return *token; //chyba v tele foru
+                    }
+                    (*token)=(*token)->nextToken;
+                    if ((*token)->type==T_RCBR) //} koncova zavorka tela foru
+                    {
+                        PocetKoncovychZavorek--;
+                        return *token;
+                    }
+                    else
+                    {
+                        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");   return *token;
+                    }
+                }
+                else
+                {
+                    (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2_EOL\n");   return *token;
+                }
 
-              }
-              else
-              {
-                  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2\n");   return *token;
-              }
-             }
+            }
+            else
+            {
+                (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for2\n");   return *token;
+            }
+        }
         else
         {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for3\n");   return *token;
@@ -682,7 +677,7 @@ tToken id_n(tToken *token)
     }
     else if ((*token)->type==T_ASSIGN) //=
     {
-      return *token;
+        return *token;
     }
     else //neco jinyho nez carka nebo = automaticky error
     {
@@ -779,13 +774,11 @@ tToken vyraz_n(tToken *token){
         return *token; //TODO tohle ot muze srat
     }
     else
-        { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
+    { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
         if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
         {   printf("IDCOUNTER %d\n",IDCounter);
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n"); return *token;
         }
         return *token;
-        }
+    }
 }
-
-
