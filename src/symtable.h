@@ -6,6 +6,7 @@ Fabián Michal   xfabia13@stud.fit.vutbr.cz
 Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
+Symtable
 */
 
 
@@ -17,13 +18,13 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 typedef enum{
 	VARIABLE=1,
 	FUNCTION=2
-}SymbolDataType;
+}SymbolType;
 
 typedef enum{
 	TYPE_INT=1,
 	TYPE_FLOAT64=2,
 	TYPE_STRING=3
-}SymbolType;
+}SymbolDataType;
 
 typedef union Value{
 	int i;									// pro hodnotu integer
