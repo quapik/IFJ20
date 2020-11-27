@@ -6,14 +6,14 @@ Fabián Michal   xfabia13@stud.fit.vutbr.cz
 Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
-Lexikalni Analyzator
+Symtable
 */
-
 
 #include "symtable.h"
 
 void STableInit(tSymbolTablePtr *Tab){
 	*Tab=NULL;
+
 }
 
 tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
@@ -36,16 +36,19 @@ tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
 }
 
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
+    tSymbolTablePtr polozka;
 	if(*Tab==NULL){
-		*Tab=malloc(sizeof(struct tSymbolTable));
-		if(*Tab==NULL){
-			return;
+        polozka=(tSymbolTablePtr) malloc(sizeof(struct tSymbolTable));
+		if(polozka==NULL){
+             return;
 		}
 		else{
-			(*Tab)->Symbol=Symbol;
-			(*Tab)->Data=Data;
-			(*Tab)->LPtr=NULL;
-			(*Tab)->RPtr=NULL;
+
+			polozka->Symbol=Symbol;
+			polozka->Data=Data;
+			polozka->LPtr=NULL;
+			polozka->RPtr=NULL;
+            *(Tab)=polozka;
 		}
 	}
 	else{
