@@ -1,58 +1,60 @@
-//Implementace p≈ôekladaƒçe imperativn√≠ho jazyka IFJ20
-//T√Ωm ƒç√≠slo 041, varianta I
-/*Auto≈ôi projektu:
-≈†√≠ma Vojtƒõch 	xsimav01@stud.fit.vutbr.cz
-Fabi√°n Michal   xfabia13@stud.fit.vutbr.cz
-ƒå√°bela Radek    xcabel04@stud.fit.vutbr.cz
+//Implementace p¯ekladaËe imperativnÌho jazyka IFJ20
+//T˝m ËÌslo 041, varianta I
+/*Auto¯i projektu:
+äÌma VojtÏch 	xsimav01@stud.fit.vutbr.cz
+Fabi·n Michal   xfabia13@stud.fit.vutbr.cz
+»·bela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaƒçn√≠ch technologi√≠ VUT v Brnƒõ
+Prosinec 2020, Fakulta informaËnÌch technologiÌ VUT v BrnÏ
 */
+
 #include<stdio.h>
 #include<stdlib.h>
-#include<stdbool.h>
 #include<string.h>
+#include<stdbool.h>
+
+typedef enum{
+	VARIABLE=1,
+	FUNCTION=2
+}SymbolDataType;
+
+typedef enum{
+	TYPE_INT=1,
+	TYPE_FLOAT64=2,
+	TYPE_STRING=3
+}SymbolType;
+
+typedef union Value{
+	int i;									// pro hodnotu integer
+	double f;								// pro hodnotu float64
+	char *s;								// pro obsah stringu
+}SymbolValue;
 
 
-/* uzel stromu */
-typedef struct tBSTNode {
-	char* Key;			                                         /* kl√≠ƒç --jmeno identifikatoru nebo fce (token->data)*/
-	int BSTNodeCont;                                            /* u≈æiteƒçn√Ω obsah uzlu */
-	int PromennaORFunkce;                                       /* 1=promenna fce */ //Todo predelat na vlasni dat typ?
-	struct tBSTNode * LPtr;                                    /* lev√Ω podstrom */
-	struct tBSTNode * RPtr;                                   /* prav√Ω podstrom */
-} *tBSTNodePtr;
+typedef struct tSymbolData{
+	SymbolType Type;						// typ - promenna/funkce
+	SymbolDataType DataType;				// datovy/navratovy typ
+	
+	// data pro promennou
+	SymbolValue Value;						// hodnota promenne
+	
+	// data pro funkci
+	bool Defined;							// zda byla fce definovana
+	struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
+	
+}*tSymbolDataPtr;
 
-typedef enum {
-    TypUlozenychHodnotPromenna,     /* nodeDataTypeVariable */
-    TypUlozenychHodnotFunkce    /* nodeDataTypeFunction */
-} tTypUlozenychHodnot;
+typedef struct tSymbolTable{
+	char *Symbol;							// nazev identifikatoru
+	struct tSymbolData *Data;				// data promenne/funkce predavane strukturou dat
+	struct tSymbolTable *LPtr;				// prvek na globalni urovni s mensim klicem
+	struct tSymbolTable *RPtr;				// prvek na globalni urovni s vetsim klicem
+}*tSymbolTablePtr;
 
-/* prototypy funkc√≠ BVS*/
 
-void BSTInit   (tBSTNodePtr *RootPtr);
-tBSTNodePtr BSTSearch  (tBSTNodePtr RootPtr, char* K);
-void ReplaceByRightmost (tBSTNodePtr PtrReplaced, tBSTNodePtr *RootPtr);
-void BSTInsert (tBSTNodePtr* RootPtr, char* K, tTypUlozenychHodnot PromennaOrFunkce);
-void BSTDelete (tBSTNodePtr *RootPtr, char* K);
-void BSTDispose (tBSTNodePtr *RootPtr);
-
-typedef struct symtable {
-    tBSTNodePtr RootPtr;
-} tSymtable;
-
-typedef struct funkce {
-bool definovana;
-int parametry_datovytyp[10]; //arr pro ulozeni typu parametru a navratovych hodnot int=1, flaot64=2, string=3
-int navratovehodnoty_datovytyp[10];
-}tFunkce;
-
-typedef struct promenna{ //is it neccesery?
-int promenna_Datovytyp; ///int=1, flaot64=2, string=3 
-}tPromennaDatovytyp;
-
-void SymtableInit(tSymtable*);
-tBSTNodePtr SymtableSearch(tSymtable* Symtable, char* K); //podle jmena promenne/fce hledani v tabulce
-void SymtableInsertGlobal(tSymtable* Symtable, char* K);//vlozeni polozky do symtable globalni (pro funkce)
-void SymtableInsertLocal(tSymtable* Symtable, char* K); //vlozeni polozky do symtable globalni (pro promenne)
-void SymtableDelete(tSymtable* Symtable,char* K);
-void SyntableDispose(tSymtable* Symtable);
+void STableInit(tSymbolTable *Tab);
+tSymbolDataPtr STableSearch(tSymbolTable Tab, char Symbol);
+void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data);
+void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
+void STableDelete(tSymbolTablePtr *Tab, char Symbol);
+void STableDispose(tSymbolTable *Tab);
