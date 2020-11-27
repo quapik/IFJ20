@@ -135,13 +135,13 @@ int scannerDKA(tToken token, FILE *file)
                 dataString = realloc(dataString, sizeof(char)*dsMultiplier);
 
             }
-            if (currChar != ' ')
+            if (currChar != ' ' && nextState != STATE_START
+                                && nextState != STATE_DIV
+                                && nextState != STATE_CMNT3) //osetreni komentaru
             {
                 dataString[c] = currChar;
                 c++;
             }
-
-
         }
 
 	    //sken dalsiho znaku
@@ -372,15 +372,15 @@ int scannerDKA(tToken token, FILE *file)
 		{
 		    break;
 		}
-		if (nextState == STATE_START)
-        {
-		    //debug
-		    //printf("mazu");
-		    if (strlen(dataString) != 0)
-            {
-                free(dataString);
-            }
-        }
+//		if (nextState == STATE_START)
+//        {
+//		    //debug
+//		    //printf("mazu");
+//		    if (strlen(dataString) != 0)
+//            {
+//                free(dataString);
+//            }
+//        }
 
 		// priprava obsahu tokenu:
 		if (token->type != T_UNKNOWN) {
