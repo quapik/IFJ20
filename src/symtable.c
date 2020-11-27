@@ -1,12 +1,14 @@
-//Implementace pøekladaèe imperativního jazyka IFJ20
-//Tým èíslo 041, varianta I
-/*Autoøi projektu:
-Šíma Vojtìch 	xsimav01@stud.fit.vutbr.cz
-Fabián Michal   xfabia13@stud.fit.vutbr.cz
-Èábela Radek    xcabel04@stud.fit.vutbr.cz
+//Implementace pÅ™ekladaÄe imperativnÃ­ho jazyka IFJ20
+//TÃ½m ÄÃ­slo 041, varianta I
+/*AutoÅ™i projektu:
+Å Ã­ma VojtÄ›ch 	xsimav01@stud.fit.vutbr.cz
+FabiÃ¡n Michal   xfabia13@stud.fit.vutbr.cz
+ÄŒÃ¡bela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaèních technologií VUT v Brnì
+Prosinec 2020, Fakulta informaÄnÃ­ch technologiÃ­ VUT v BrnÄ›
+Lexikalni Analyzator
 */
+
 
 #include "symtable.h"
 
@@ -48,10 +50,10 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
 	}
 	else{
 		if((strcmp(Symbol,(*Tab)->Symbol))<0){
-			STableInsert(&((*Tab)->LPtr),&Symbol,Data);
+			STableInsert(&((*Tab)->LPtr),Symbol,Data);
 		}
 		else if((strcmp(Symbol,(*Tab)->Symbol))>0){
-			STableInsert(&((*Tab)->RPtr),&Symbol,Data);
+			STableInsert(&((*Tab)->RPtr),Symbol,Data);
 		}
 		else{
 			free((*Tab)->Data);
@@ -68,7 +70,7 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
 		if((*Tab)->RPtr==NULL){
 			PtrReplaced->Symbol=(*Tab)->Symbol;
 			PtrReplaced->Data=(*Tab)->Data;
-			BSTDelete(Tab,(*Tab)->Symbol);
+			STableDelete(Tab,(*Tab)->Symbol);
 		}
 		else{
 			ReplaceByRightmost(PtrReplaced,&((*Tab)->RPtr));
@@ -115,7 +117,7 @@ void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
 	}
 }
 
-void STableDispose(tSymbolTable *Tab){
+void STableDispose(tSymbolTablePtr *Tab){
 	if(*Tab!=NULL){
 		// pruchod celym stromem
 		STableDispose(&((*Tab)->LPtr));
