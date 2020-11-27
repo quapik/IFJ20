@@ -10,15 +10,15 @@ int main(int argc, char *argv[]) {
 
     if(argc<2){
         fprintf(stderr,"Nebyl zadan vstupni soubor\n");
-        return 1;
+        return 99;
     }
     if(argc>2){
         fprintf(stderr,"Nesmi byt zadany zadne dalsi parametry krome nazvu vstupniho souboru\n");
-        return 1;
+        return 99;
     }
     if((fp=fopen(argv[1],"r"))==NULL){
         fprintf(stderr,"Soubor se nepodarilo precist\n");
-        return 1;
+        return 99;
     }
 
     tToken token1 = NULL;
