@@ -39,6 +39,6 @@ int main(int argc, char *argv[]) {
     //exprBUParse(&token1);
     // scannerPrint(token1);
 
-    return 0;
+    return ERR_OK;
 }
 
