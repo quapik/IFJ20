@@ -1,11 +1,11 @@
-//Implementace pÃ¸ekladaÃ¨e imperativnÃ­ho jazyka IFJ20
-//TÃ½m Ã¨Ã­slo 041, varianta I
-/*AutoÃ¸i projektu:
-Å Ã­ma VojtÃ¬ch 	xsimav01@stud.fit.vutbr.cz
-FabiÃ¡n Michal   xfabia13@stud.fit.vutbr.cz
-ÃˆÃ¡bela Radek    xcabel04@stud.fit.vutbr.cz
+//Implementace pøekladaèe imperativního jazyka IFJ20
+//Tým èíslo 041, varianta I
+/*Autoøi projektu:
+Šíma Vojtìch 	xsimav01@stud.fit.vutbr.cz
+Fabián Michal   xfabia13@stud.fit.vutbr.cz
+Èábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaÃ¨nÃ­ch technologiÃ­ VUT v BrnÃ¬
+Prosinec 2020, Fakulta informaèních technologií VUT v Brnì
 */
 
 #include "symtable.h"
@@ -14,16 +14,16 @@ void STableInit(tSymbolTablePtr *Tab){
 	*Tab=NULL;
 }
 
-tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char Symbol){
+tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
 	if(Tab==NULL){
 		return NULL;
 	}
 	else{
-		if(Tab->Symbol==Symbol){
+		if((strcmp(Symbol,Tab->Symbol))==0){
 			return Tab->Data;
 		}
 		else{
-			if(Tab->Symbol>Symbol){
+			if((strcmp(Symbol,Tab->Symbol))<0){
 				return (STableSearch(Tab->LPtr,Symbol));
 			}
 			else{
@@ -47,10 +47,10 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
 		}
 	}
 	else{
-		if(Symbol<(*Tab)->Symbol){
+		if((strcmp(Symbol,(*Tab)->Symbol))<0){
 			STableInsert(&((*Tab)->LPtr),&Symbol,Data);
 		}
-		else if(Symbol>(*Tab)->Symbol){
+		else if((strcmp(Symbol,(*Tab)->Symbol))>0){
 			STableInsert(&((*Tab)->RPtr),&Symbol,Data);
 		}
 		else{
@@ -76,7 +76,7 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
 	}
 }
 
-void STableDelete(tSymbolTablePtr *Tab, char Symbol){
+void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
 	if(*Tab==NULL){
 		return;
 	}
@@ -117,13 +117,16 @@ void STableDelete(tSymbolTablePtr *Tab, char Symbol){
 
 void STableDispose(tSymbolTable *Tab){
 	if(*Tab!=NULL){
+		// pruchod celym stromem
 		STableDispose(&((*Tab)->LPtr));
 		STableDispose(&((*Tab)->RPtr));
 		
+		// pokud jsem narazil na funkci, respektive pomocny podstrom
 		if((*Tab)->Data->LocalFuncData!=NULL){
 			STableDispose(&((*Tab)->Data->LocalFuncData));
 		}
 		
+		// uvolneni pameti
 		free((*Tab)->Data);
 		free(*Tab);
 		*Tab=NULL;

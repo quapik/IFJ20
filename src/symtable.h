@@ -53,8 +53,8 @@ typedef struct tSymbolTable{
 
 
 void STableInit(tSymbolTable *Tab);
-tSymbolDataPtr STableSearch(tSymbolTable Tab, char Symbol);
+tSymbolDataPtr STableSearch(tSymbolTable Tab, char *Symbol);
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data);
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
-void STableDelete(tSymbolTablePtr *Tab, char Symbol);
+void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
 void STableDispose(tSymbolTable *Tab);
