@@ -9,11 +9,15 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 */
 
 #include "parser.h"
+
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
 int IDCounter=0;
+bool VeFunkci=false; bool VMainu=false; bool JdemeZReturnu = false;
+//int AktualniHloubkaZanoreni=0;
+
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
@@ -22,7 +26,7 @@ int StartParser(tToken *token)
     {
         (*token)=(*token)->nextToken;
         if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0)) //id s main
-        {
+        {   CodeGenStart();
             (*token)=(*token)->nextToken;
 
             if ((*token)->type == T_EOL || (*token)->type == T_FUNC) //po package main muže byt jen eol nebo func
@@ -73,6 +77,18 @@ tToken body(tToken *token)
         (*token)=body(token);
         return *token;
     }
+        //PRAVIDLO <BODY> -> EOL
+    else if ((*token)->type==T_EOL)
+    {
+        (*token)=(*token)->nextToken;
+        (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
+        return *token;
+    }
+
+    else if ((BylMain==false&&VeFunkci==false&&VMainu==false)) //kontrola aby pred mainem byly jen funkce
+    {
+        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;
+    }
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
         (*token)=(*token)->nextToken;
@@ -89,7 +105,7 @@ tToken body(tToken *token)
                 return *token;
             }
         }
-        //printf("CHYBA FIRST\n");
+        printf("CHYBA FIRST\n");
         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;
     }
         //PRAVIDLO <IF> if vyraz { EOL <BODY>} else { EOL <BODY> }
@@ -141,7 +157,7 @@ tToken body(tToken *token)
 
         }
         else{  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
-            //printf("Chybny oef\n");
+            printf("Chybny oef\n");
             }
 
     }
@@ -160,13 +176,6 @@ tToken body(tToken *token)
         return *token;
     }
 
-        //PRAVIDLO <BODY> -> EOL
-    else if ((*token)->type==T_EOL)
-    {
-        (*token)=(*token)->nextToken;
-        (*token)=body(token); //kontrola za kdyz zavolame body tak probehlo vporadku
-        return *token;
-    }
         //PRAVIDLO <BODY> -> EOF
     else if ((*token)->type==T_EOF)
     {  // printf("Pocet koncovych zavorek %d\n",PocetKoncovychZavorek);
@@ -175,7 +184,7 @@ tToken body(tToken *token)
             if (BylMain==false) //TODO nejak ti to nevypisuje main chybu kdyz chybi
             {
                 (*token)->data="ERR_SEM_PROG";
-                //printf("Chybi fce main\n");
+                printf("Chybi fce main\n");
             }
             else
             {
@@ -187,7 +196,7 @@ tToken body(tToken *token)
         {
             (*token)->type=T_UNKNOWN;
             (*token)->data="ERR_SYNTAX";
-            //printf("Chybny oef\n");
+            printf("Chybny oef\n");
             return *token;
         }
 
@@ -197,12 +206,41 @@ tToken body(tToken *token)
         (*token)=(*token)->prevToken;
         return *token;
     }
+    //pravidlo return -> return
+    else if ((*token)->type==T_RETURN)
+    {   if (VeFunkci==true)
+        {
+            (*token)=(*token)->nextToken;
+            (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
+            {
+                return *token;
+            }
+            JdemeZReturnu=true;
+            (*token)=vyraz_n(token);
+            JdemeZReturnu=false;
+            if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
+            {
+                return *token;
+            }
+            (*token)=body(token);
+            return *token;
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN;
+            (*token)->data="ERR_SYNTAX";
+            printf("Chybny return\n");
+            return *token;
+        }
+
+    }
         //ZADNE FIRST z BODY nesedi
     else
     {
         (*token)->type=T_UNKNOWN;
         (*token)->data="ERR_SYNTAX";
-        //printf("Chybne FIRST v body\n");
+        printf("Chybne FIRST v body\n");
         return *token;
     }
     return *token; //TODO divny
@@ -221,6 +259,7 @@ tToken if_rule(tToken *token)
 
     if ((*token)->type==T_LCBR) // token je {
     {   PocetKoncovychZavorek++;
+
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_EOL)
         {
@@ -228,7 +267,7 @@ tToken if_rule(tToken *token)
             (*token)=body(token); //telo IF
             if((*token)->type==T_UNKNOWN) //pokud v tele ife nastala chyba
             {
-                //printf ("chybe v IFbody");
+                printf ("chybe v IFbody");
                 return *token;
             }
 
@@ -266,7 +305,7 @@ tToken if_rule(tToken *token)
     }
     (*token)->type=T_UNKNOWN;
     (*token)->data="ERR_SYNTAX";
-    //printf("Chybne v ifu (konec)\n");
+    printf("Chybne v ifu (konec)\n");
     return *token;
 }
 
@@ -284,7 +323,7 @@ tToken func_rule(tToken *token)
                 {
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_LCBR) // {
-                    {   PocetKoncovychZavorek++;
+                    {   PocetKoncovychZavorek++; VMainu=true;
                         BylMain=true;
                         (*token)=(*token)->nextToken;
 
@@ -297,7 +336,7 @@ tToken func_rule(tToken *token)
                         {
                             (*token)=(*token)->nextToken;
                             if ((*token)->type==T_RCBR) // }
-                            {   PossibleEof=true; PocetKoncovychZavorek--;
+                            {   PossibleEof=true; PocetKoncovychZavorek--; VMainu=false;
                                 (*token)=(*token)->nextToken; //ted se ceka eof
                                 (*token)=body(token);
                                 return *token;
@@ -310,7 +349,7 @@ tToken func_rule(tToken *token)
 
                 }
                 else //pokud to neni main()
-                {   //printf("chyba main()");
+                {   printf("chyba main()");
                     (*token)->type=T_UNKNOWN;
                     (*token)->data="ERR_SEM_POCET";
                     return *token;
@@ -323,7 +362,7 @@ tToken func_rule(tToken *token)
         {
             (*token)->type=T_UNKNOWN;
             (*token)->data="ERR_SYNTAX";
-            //printf("main again");
+            printf("main again");
             return *token;
         }
 
@@ -352,7 +391,7 @@ tToken func_rule(tToken *token)
                 }
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_LCBR) // {
-                {   PocetKoncovychZavorek++;
+                {   PocetKoncovychZavorek++; VeFunkci=true;
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_EOL)
                     {
@@ -364,7 +403,7 @@ tToken func_rule(tToken *token)
                         }
                         (*token)=(*token)->nextToken;
                         if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
-                        {   PocetKoncovychZavorek--;
+                        {   PocetKoncovychZavorek--; VeFunkci=false;
                             (*token)=(*token)->nextToken;
                             (*token)=body(token);
                             return *token;
@@ -372,7 +411,7 @@ tToken func_rule(tToken *token)
                         else
                         {
                             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                            //printf("Chyba func_dole1\n");
+                            printf("Chyba func_dole1\n");
                             return *token;
                         }
 
@@ -380,7 +419,7 @@ tToken func_rule(tToken *token)
                     else
                     {
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                        //printf("Chyba func_dole2\n");
+                        printf("Chyba func_dole2\n");
                         return *token;
                     }
 
@@ -388,7 +427,7 @@ tToken func_rule(tToken *token)
                 else
                 {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                    //printf("Chyba func_dole3\n");
+                    printf("Chyba func_dole3\n");
                     return *token;
                 }
 
@@ -413,14 +452,14 @@ tToken func_rule(tToken *token)
                     else
                     {
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                        //printf("Chyba func_dole4\n");
+                        printf("Chyba func_dole4\n");
                          return *token;
                     }
                 }
                 else
                 {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                    //printf("Chyba func_dole5\n");
+                    printf("Chyba func_dole5\n");
                     return *token;
                 }
 
@@ -436,14 +475,14 @@ tToken func_rule(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba func_dole7\n");
+            printf("Chyba func_dole7\n");
             return *token;
         }
     }
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba func_dole8\n");
+        printf("Chyba func_dole8\n");
         return *token;
     }
 
@@ -467,7 +506,7 @@ tToken narvrattype_n(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba navrattype_n1\n");
+            printf("Chyba navrattype_n1\n");
             return *token;
         }
     }
@@ -478,7 +517,7 @@ tToken narvrattype_n(tToken *token)
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba navrattype_n2\n");
+        printf("Chyba navrattype_n2\n");
         return *token;
     }
 
@@ -503,7 +542,7 @@ tToken params(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba params1\n");
+            printf("Chyba params1\n");
             return *token;
         }
     }
@@ -514,7 +553,7 @@ tToken params(tToken *token)
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba params2\n");
+        printf("Chyba params2\n");
         return *token;
     }
 
@@ -536,7 +575,7 @@ tToken params_n(tToken *token)
             else
             {
                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-                //printf("Chyba params_n1\n");
+                printf("Chyba params_n1\n");
                 return *token;
             }
 
@@ -544,7 +583,7 @@ tToken params_n(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba params_n2\n");
+            printf("Chyba params_n2\n");
             return *token;
         }
 
@@ -556,7 +595,7 @@ tToken params_n(tToken *token)
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba params_n3\n");
+        printf("Chyba params_n3\n");
         return *token;
     }
 
@@ -582,7 +621,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
         else
         {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
-            //printf("chyba for po ID\n");
+            printf("chyba for po ID\n");
             return *token;
         }
     }
@@ -631,14 +670,14 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
                     }
                     else
                     {
-                        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; //printf("chyba for1\n");
+                        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");
                          return *token;
                     }
                 }
                 else
                 {
                     (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
-                    //printf("chyba for2_EOL\n");
+                    printf("chyba for2_EOL\n");
                     return *token;
                 }
 
@@ -652,7 +691,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
         }
         else
         {
-            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; //printf("chyba for3\n");
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for3\n");
             return *token;
         }
 
@@ -660,7 +699,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
     else
     {
         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
-        //printf("chyba for4\n");
+        printf("chyba for4\n");
         return *token;
     }
 
@@ -670,7 +709,7 @@ tToken id_next(tToken *token)
 {
     if((*token)->type==T_DEFINE) // pokud je :=
     {
-        //printf("DEFVAR @GF %s",((*token)->prevToken->data));
+        CodeGenDefVar((*token)->prevToken->data);
         (*token)=(*token)->nextToken;
         (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
         return *token;
@@ -693,12 +732,13 @@ tToken id_next(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba ID_NEXT1\n");
+            printf("Chyba ID_NEXT1\n");
             return *token;
         }
     }
     else if ((*token)->type==T_ASSIGN) // JEN ID=
     {   IDCounter=1;
+
         (*token)=(*token)->nextToken;
         (*token)=vice_id_vlevo(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         return *token;
@@ -706,7 +746,7 @@ tToken id_next(tToken *token)
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba ID_NEXT2\n");
+        printf("Chyba ID_NEXT2\n");
         return *token;
     }
 }
@@ -726,7 +766,7 @@ tToken id_n(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba ID_N1\n");
+            printf("Chyba ID_N1\n");
             return *token;
         }
 
@@ -737,7 +777,7 @@ tToken id_n(tToken *token)
     }
     else //neco jinyho nez carka nebo = automaticky error
     {
-        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; //printf("Chyba ID_N2\n");
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba ID_N2\n");
         return *token;
     }
 
@@ -784,7 +824,7 @@ tToken paramscall(tToken *token)
     else
     {
         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-        //printf("Chyba paramscall\n");
+        printf("Chyba paramscall\n");
         return *token;
     }
 
@@ -805,7 +845,7 @@ tToken paramscall_n(tToken *token)
         else
         {
             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
-            //printf("Chyba paramscall_n1\n");
+            printf("Chyba paramscall_n1\n");
             return *token;
         }
 
@@ -816,7 +856,7 @@ tToken paramscall_n(tToken *token)
     }
     else
     {
-        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; //printf("Chyba paramscall_n2\n");
+        (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("Chyba paramscall_n2\n");
         return *token;
     }
 
@@ -837,11 +877,19 @@ tToken vyraz_n(tToken *token){
     }
     else
     { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
-        if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
-        {  // printf("IDCOUNTER %d\n",IDCounter);
-            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; //printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n");
+        if (JdemeZReturnu==false)
+        {
+            if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
+            {  // printf("IDCOUNTER %d\n",IDCounter);
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n");
+                return *token;
+            }
+        }
+        else
+        {
             return *token;
         }
+
         return *token;
     }
 }
