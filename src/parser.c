@@ -14,7 +14,9 @@ bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
-int IDCounter=0;
+int IDCounter=0; int IDCounterOpacny=0;
+int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
+char* UchovaniID[10];
 bool VeFunkci=false; bool VMainu=false; bool JdemeZReturnu = false;
 //int AktualniHloubkaZanoreni=0;
 
@@ -158,7 +160,7 @@ tToken body(tToken *token)
         }
         else{  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
             printf("Chybny oef\n");
-            }
+        }
 
     }
     else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
@@ -206,7 +208,7 @@ tToken body(tToken *token)
         (*token)=(*token)->prevToken;
         return *token;
     }
-    //pravidlo return -> return
+        //pravidlo return -> return
     else if ((*token)->type==T_RETURN)
     {   if (VeFunkci==true)
         {
@@ -256,12 +258,12 @@ tToken if_rule(tToken *token)
         return *token;
     }
 
-    printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-    printf("JUMPIFNEQ $elselabel TF@$return bool@true\n");
+
 
     if ((*token)->type==T_LCBR) // token je {
-    {   PocetKoncovychZavorek++;
-
+    {   PocetKoncovychZavorek++; IFCounter++; ELSECounter=IFCounter;
+        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+        printf("JUMPIFNEQ $elsedlabel%d TF@$return bool@true\n",IFCounter);
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_EOL)
         {
@@ -276,8 +278,8 @@ tToken if_rule(tToken *token)
             (*token)=(*token)->nextToken;
 
             if ((*token)->type==T_RCBR) // } ukoncovaci zavorka ifu
-            {   printf("JUMP $endif\n");
-                printf("LABEL $elselabel\n");
+            {   printf("JUMP $endiflabel%d\n",IFCounter);
+                printf("LABEL $elselabel%d\n",IFCounter);
                 PocetKoncovychZavorek--;
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_ELSE)
@@ -298,8 +300,8 @@ tToken if_rule(tToken *token)
                             {
                                 if ((*token)->type==T_RCBR) // } konec else
                                 {
-                                    printf("LABEL $endif\n");
-                                    PocetKoncovychZavorek--;
+                                    printf("LABEL $endiflabel%d\n",ELSECounter);
+                                    PocetKoncovychZavorek--; ELSECounter--;
                                     PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
                                 }
                             }
@@ -318,7 +320,7 @@ tToken if_rule(tToken *token)
 tToken func_rule(tToken *token)
 {   PossibleEof=false;
     if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0))
-    {
+    { printf("LABEL $$main\n");
         if (BylMain==false)
         {
             (*token)=(*token)->nextToken;
@@ -459,7 +461,7 @@ tToken func_rule(tToken *token)
                     {
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX";
                         printf("Chyba func_dole4\n");
-                         return *token;
+                        return *token;
                     }
                 }
                 else
@@ -677,7 +679,7 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
                     else
                     {
                         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("chyba for1\n");
-                         return *token;
+                        return *token;
                     }
                 }
                 else
@@ -724,7 +726,7 @@ tToken id_next(tToken *token)
         return *token;
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
-    {
+    {   UchovaniID[IDCounter+1]=(*token)->prevToken->data;
         (*token)=id_n(token); //volat <ID_N> (vice identifikatoru za sebou)
 
         if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_N
@@ -733,7 +735,7 @@ tToken id_next(tToken *token)
         }
         if ((*token)->type==T_ASSIGN) //=
         {
-            (*token)=(*token)->nextToken;
+            (*token)=(*token)->nextToken; IDCounterOpacny=0;
             (*token)=vice_id_vlevo(token);
             return *token; //return do body kde se vola
         }
@@ -747,8 +749,8 @@ tToken id_next(tToken *token)
     }
     else if ((*token)->type==T_ASSIGN) // JEN ID=
     {   IDCounter=1;
-
-        (*token)=(*token)->nextToken;
+        UchovaniID[IDCounter]=(*token)->prevToken->data;
+        (*token)=(*token)->nextToken; IDCounterOpacny=0;
         (*token)=vice_id_vlevo(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         return *token;
     }
@@ -766,7 +768,7 @@ tToken id_n(tToken *token)
     {
         (*token) = (*token)->nextToken;
         if ((*token)->type == T_ID) //ted musi byt id jinak chyba
-        {
+        {   UchovaniID[IDCounter+1]=(*token)->data;
             (*token) = (*token)->nextToken;
             (*token) = id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
             return *token;
@@ -793,7 +795,7 @@ tToken id_n(tToken *token)
 }
 //PRAVIDLA <VICE_ID_VLEVO> -> vyraz <vyraz_n> NEBO <VICE_ID_VLEVO> -> ID (<PARAMSCALL>
 tToken vice_id_vlevo(tToken *token)
-{
+{IDCounterOpacny++;
     if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR))
     {
         (*token)=(*token)->nextToken;  (*token)=(*token)->nextToken;
@@ -809,8 +811,13 @@ tToken vice_id_vlevo(tToken *token)
         {
             return *token;
         }
+
+        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+        printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
+
+
         (*token)=vyraz_n(token);
-        return *token; //TODO NOT SURE
+        return *token;
     }
 
 }
@@ -883,6 +890,9 @@ tToken vyraz_n(tToken *token){
         {
             return *token;
         }
+        IDCounterOpacny++;
+        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+        printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
         (*token)=vyraz_n(token);
         return *token; //TODO tohle ot muze srat
     }
