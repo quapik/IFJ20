@@ -10,6 +10,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 Lexikalni Analyzator
 */
 
+
 #pragma once
 #include <stddef.h>
 #include <stdlib.h>
@@ -133,10 +134,9 @@ Lexikalni Analyzator
 
 // funkce
 
-int scannerLoadTokens(tToken *firstToken, FILE *file);
-int scannerDKA(tToken token, FILE *file);
-int scannerGetValidToken (tToken *newToken, FILE *file);
+int scannerLoadTokens(tToken *firstToken);
+int scannerDKA(tToken token);
+int scannerGetValidToken (tToken *newToken);
 tType scannerKeywordCheck (tToken token);
 void scannerTokenListDealloc (tToken *firstToken);
 void scannerPrintDebug (tToken token, unsigned opt); //opt = 1 -> chybovy vypis , opt = 0 -> vypis obsahu tokenu (pro syntax, pozdejsi chyby)
-
