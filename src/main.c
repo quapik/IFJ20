@@ -5,24 +5,24 @@
 #include "error.h"
 
 
-int main(int argc, char *argv[]) {
-    FILE *fp;
-
-    if(argc<2){
-        fprintf(stderr,"Nebyl zadan vstupni soubor\n");
-        return 99;
-    }
-    if(argc>2){
-        fprintf(stderr,"Nesmi byt zadany zadne dalsi parametry krome nazvu vstupniho souboru\n");
-        return 99;
-    }
-    if((fp=fopen(argv[1],"r"))==NULL){
-        fprintf(stderr,"Soubor se nepodarilo precist\n");
-        return 99;
-    }
+int main() {
+//    FILE *fp;
+//
+//    if(argc<2){
+//        fprintf(stderr,"Nebyl zadan vstupni soubor\n");
+//        return 99;
+//    }
+//    if(argc>2){
+//        fprintf(stderr,"Nesmi byt zadany zadne dalsi parametry krome nazvu vstupniho souboru\n");
+//        return 99;
+//    }
+//    if((fp=fopen(argv[1],"r"))==NULL){
+//        fprintf(stderr,"Soubor se nepodarilo precist\n");
+//        return 99;
+//    }
 
     tToken token1 = NULL;
-    if (scannerLoadTokens(&token1, fp) != 0)
+    if (scannerLoadTokens(&token1) != 0)
     {
         fprintf(stderr, "Error: scanner skoncil s chybou\n");
         return ERR_LEX;
