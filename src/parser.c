@@ -256,6 +256,8 @@ tToken if_rule(tToken *token)
         return *token;
     }
 
+    printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+    printf("JUMPIFNEQ $elselabel TF@$return bool@true\n");
 
     if ((*token)->type==T_LCBR) // token je {
     {   PocetKoncovychZavorek++;
@@ -273,8 +275,10 @@ tToken if_rule(tToken *token)
 
             (*token)=(*token)->nextToken;
 
-            if ((*token)->type==T_RCBR) // } ukonocovaci zavorka ifu
-            {   PocetKoncovychZavorek--;
+            if ((*token)->type==T_RCBR) // } ukoncovaci zavorka ifu
+            {   printf("JUMP $endif\n");
+                printf("LABEL $elselabel\n");
+                PocetKoncovychZavorek--;
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_ELSE)
                 {
@@ -293,7 +297,9 @@ tToken if_rule(tToken *token)
                             (*token)=(*token)->nextToken;
                             {
                                 if ((*token)->type==T_RCBR) // } konec else
-                                {   PocetKoncovychZavorek--;
+                                {
+                                    printf("LABEL $endif\n");
+                                    PocetKoncovychZavorek--;
                                     PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
                                 }
                             }
@@ -707,11 +713,14 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
 //pravidlo <ID_NEXT> -> := vyraz nebo <ID_NEXT> -> <ID_N>=<vice_id_vlevo>
 tToken id_next(tToken *token)
 {
+    char* prom = (*token)->prevToken->data;
     if((*token)->type==T_DEFINE) // pokud je :=
     {
-        CodeGenDefVar((*token)->prevToken->data);
+        CodeGenDefVar(prom);
         (*token)=(*token)->nextToken;
         (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
+        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+        printf("MOVE %s TF@$return\n", prom);
         return *token;
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
@@ -798,7 +807,6 @@ tToken vice_id_vlevo(tToken *token)
         (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
         {
-
             return *token;
         }
         (*token)=vyraz_n(token);
@@ -868,6 +876,9 @@ tToken vyraz_n(tToken *token){
     {
         (*token)=(*token)->nextToken;
         (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+
+        //TODO Zasobnik / pole
+
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
         {
             return *token;

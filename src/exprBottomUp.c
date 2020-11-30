@@ -304,7 +304,7 @@ unsigned exprBUStackClose(txStack stack)
 
             switch (item->data.token->type) {
                 case T_INT:
-                    //TODO generovani kodu
+                    printf("PUSH int@%s\n", item->data.token->data);
                     ntype = X_INT;
                     break;
                 case T_EXP:
@@ -524,7 +524,10 @@ unsigned exprBUStackClose(txStack stack)
 
     switch (item->data.token->type) {
         case T_ADD:
-            //TODO Generovani kodu
+
+            // TODO STRING
+            printf("ADDS\n");
+
             break;
         case T_SUB:
             //TODO Generovani kodu
@@ -537,6 +540,7 @@ unsigned exprBUStackClose(txStack stack)
             break;
         case T_GREAT:
             //TODO Generovani kodu
+            printf("GTS\n");
             break;
         case T_LESS:
             //TODO Generovani kodu
