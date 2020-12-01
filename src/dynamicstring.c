@@ -9,3 +9,10 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 */
 
 #include "dynamicstring.h"
+
+int DynamicStringInit(DynamicString *Dstr){
+Dstr->delka=0;
+Dstr->str= (char *)malloc(sizeof(char)*16);
+//todo kdyz selze
+Dstr->str[0]='\0; //pridani konce stringu  
+}
