@@ -14,8 +14,34 @@ Generování kódu
 void CodeGenStart()
 {
     printf(".IFJcode20\n");
+    printf("JUMP $$main\n");
 }
 void CodeGenDefVar(char* id)
 {
-    printf("DEFVAR @GF %s\n",id);
+    printf("DEFVAR @LF %s\n",id);
 }
+
+void CodeGenPrint(tToken *token)
+{
+    if((*token)->type==T_INT)
+    {
+        printf("WRITE INT");
+        //print cislo
+    }
+    else if((*token)->type==T_STRING)
+    {
+        //print string
+        printf("WRITE string");
+    }
+    else if((*token)->type==T_EXP)
+    {
+        printf("WRITE exp");
+        //print flaot? TODO co double?
+    }
+    else if((*token)->type==T_ID)
+    {
+        printf("WRITE LF@%s\n",(*token)->data);//print variable
+    }
+
+}
+
