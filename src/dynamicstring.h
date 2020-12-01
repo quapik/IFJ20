@@ -1,0 +1,15 @@
+//Implementace překladače imperativního jazyka IFJ20
+//Tým číslo 041, varianta I
+/*Autoři projektu:
+Šíma Vojtěch 	xsimav01@stud.fit.vutbr.cz
+Fabián Michal   xfabia13@stud.fit.vutbr.cz
+Čábela Radek    xcabel04@stud.fit.vutbr.cz
+Poposki Vasil   xpopos00@stud.fit.vutbr.cz
+Prosinec 2020, Fakulta informačních technologií VUT v Brně
+*/
+
+  typedef struct dynamicstring {
+        char *str; //samotne jmeno retezce 
+        int delka; //delka retezce
+       
+    } DynamicString;
