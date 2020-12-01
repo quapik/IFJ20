@@ -13,6 +13,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
+bool Porovnavani=false;
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
 int IDCounter=0; int IDCounterOpacny=0;
 int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
@@ -91,15 +92,19 @@ tToken body(tToken *token)
     {
         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;
     }
+    //print TODO 
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
         (*token)=(*token)->nextToken;
         if((*token)->type==T_LDBR)
-        {   (*token)=(*token)->nextToken;
-            while((*token)->type==T_STRING||(*token)->type==T_ID||(*token)->type==T_COMMA)
+        {
+            (*token)=(*token)->nextToken;
+            (*token)=print_rule(token);
+            if ((*token)->type==T_UNKNOWN)
             {
-                (*token)=(*token)->nextToken;
+                return *token;
             }
+
             if((*token)->type==T_RDBR)
             {
                 (*token)=(*token)->nextToken;
@@ -247,12 +252,37 @@ tToken body(tToken *token)
     }
     return *token; //TODO divny
 }
+tToken print_rule(tToken *token)
+{
+    if((*token)->type==T_DOUBLE||(*token)->type==T_STRING||(*token)->type==T_ID||(*token)->type==T_EXP||(*token)->type==T_INT)
+    {
+        CodeGenPrint(token);
+        (*token)=(*token)->nextToken;
+        if((*token)->type==T_COMMA)
+        {   (*token)=(*token)->nextToken;
+            (*token)=print_rule(token);
+            return *token;
+        }
+        else if((*token)->type==T_RDBR){
+            return *token;
+        }
+        else
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("Chyba v printu \n");  return *token;
+        }
+    }
+    else
+    {
+        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX"; printf("Chyba v printu \n");  return *token;
+    }
 
+}
 tToken if_rule(tToken *token)
 {   PossibleEof=false;
     //TED MUSI BYT VYRAZ
-
+    Porovnavani=true;
     (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+    Porovnavani=false;
     if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
     {
         return *token;
