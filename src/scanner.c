@@ -12,12 +12,12 @@ Lexikalni Analyzator
 
 #include "scanner.h"
 
-int scannerLoadTokens(tToken *firstToken)
+int scannerLoadTokens(tToken *firstToken, FILE *file)
 {
     // pocitame s platnym souborem
 
     tToken prevToken = NULL;
-    int dkaError = 0;
+    int dkaError;
     //cyklus, ktery vytvori linked seznam
     while (prevToken == NULL || prevToken->type != T_EOF) {
 
@@ -25,7 +25,7 @@ int scannerLoadTokens(tToken *firstToken)
 
 
         // filling token:
-        dkaError = scannerGetValidToken(&newToken);
+        dkaError = scannerGetValidToken(&newToken, file);
 
         if (prevToken == NULL)
         // Prvni token
@@ -44,9 +44,6 @@ int scannerLoadTokens(tToken *firstToken)
         // Nove vytvoreny je predchozi pro dalsi cyklus
         prevToken = newToken;
 
-        //debug
-        printf("obsah tokenu: %s\n", newToken->data);
-
         //osetreni erroru
         if(dkaError)
         {
@@ -60,10 +57,10 @@ int scannerLoadTokens(tToken *firstToken)
 
 }
 
-int scannerGetValidToken (tToken *newToken)
+int scannerGetValidToken (tToken *newToken, FILE *file)
 {
     //pocitame s platnym souborem
-    if (newToken == NULL) return -1; //TODO fix code
+    if (newToken == NULL) return 99;
 
     *newToken = malloc(sizeof(struct Token));
     if(newToken == NULL){
@@ -75,24 +72,24 @@ int scannerGetValidToken (tToken *newToken)
     (*newToken)->nextToken = NULL;
 
     bool dkaError = false;
-    bool debugPrint = true;
+    //bool debugPrint = true;
 
 
     // cyklus naplneni jednoho tokenu
     do {
         free((*newToken)->data);
         (*newToken)->data = NULL;
-        if (scannerDKA(*newToken)) dkaError = true;
+        if (scannerDKA(*newToken, file)) dkaError = true;
 
         //debug
         //printf("dkaError je %d\n", dkaError);
 
         //vypis prvni chyby
-        if (dkaError == true && debugPrint == true)
-        {
-            scannerPrintDebug((*newToken), 1);
-            debugPrint = false;
-        }
+//        if (dkaError == true && debugPrint == true)
+//        {
+//            scannerPrintDebug((*newToken), 1);
+//            debugPrint = false;
+//        }
 
 
 
@@ -106,7 +103,7 @@ int scannerGetValidToken (tToken *newToken)
     return dkaError ? 1 : 0;
 }
 
-int scannerDKA(tToken token)
+int scannerDKA(tToken token, FILE *file)
 {
 
 	// pocitame s platnym souborem
@@ -125,6 +122,10 @@ int scannerDKA(tToken token)
     unsigned int c = 0; //data string counter
     unsigned int dsMultiplier = 16; // data string multiplier - k alokaci a realokaci //TODO fix to var
     char *dataString = malloc(sizeof(char)*dsMultiplier);
+    if(dataString == NULL){
+        fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
+        exit(99);
+    }
 
 	while(gettingLex) {
 
@@ -136,6 +137,10 @@ int scannerDKA(tToken token)
             {
                 dsMultiplier += 16; //TODO fix to var
                 dataString = realloc(dataString, sizeof(char)*dsMultiplier);
+                if(dataString == NULL){
+                    fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
+                    exit(99);
+                }
 
             }
             if (currChar != ' ' && nextState != STATE_START
@@ -150,7 +155,7 @@ int scannerDKA(tToken token)
 	    //sken dalsiho znaku
         if (currChar != EOF)
         {
-            currChar = getc(stdin);
+            currChar = getc(file);
         }
 
         //debug
@@ -387,7 +392,7 @@ int scannerDKA(tToken token)
 
 		// priprava obsahu tokenu:
 		if (token->type != T_UNKNOWN) {
-		    ungetc(currChar, stdin);
+		    ungetc(currChar, file);
             dataString[c] = '\0';
 		    //debug
             //printf("ungeted \n");
@@ -398,7 +403,11 @@ int scannerDKA(tToken token)
 		    //printf("mame unknown tokens \n");
 		    if (nextState == STATE_ERROR) {
 		        //printf("error \n");
-		        //TODO ERROR VYPIS
+
+		        fprintf(stderr, "Error: Neocekavany znak ");
+		        if (currChar == '\n') fprintf(stderr, "EOL\n");
+		        else if (currChar == EOF) fprintf(stderr, "EOF\n");
+		        else fprintf(stderr, "%c \n", currChar);
 		        if (state != STATE_START) {
 		            break;
 		        }
