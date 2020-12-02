@@ -155,7 +155,16 @@ tToken exprBUParse (tToken *token) {
         {
             (*token)->data = "ERR_SEM_TYPE";
         }
+        else if (ret == 5)
+        {
+            (*token)->data = "ERR_SEM_KOMP";
+        }
     }
+    //debug
+//    if (Porovnavani == true)
+//    {
+//        printf("Porovnáváme\n");
+//    }
 //    else
 //    {
 //        printf("Precedencni: (debug) Vse v poradku.\n");
@@ -185,6 +194,7 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
             }
             else return X_CLOSE;
         case X_LEQGEQ:
+            Porovnavani = true;
             if (nextOperator == X_LEQGEQ)
             {
                 return X_EMPTY;
@@ -195,6 +205,7 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
             }
             else return X_OPEN;
         case X_EQL:
+            Porovnavani = true;
             if (nextOperator == X_LDBR || nextOperator == X_$)
                 return X_CLOSE;
             else if (nextOperator == X_EQL) return X_EMPTY;
@@ -304,7 +315,7 @@ unsigned exprBUStackClose(txStack stack)
 
             switch (item->data.token->type) {
                 case T_INT:
-                    printf("PUSH int@%s\n", item->data.token->data);
+                    printf("PUSHS int@%s\n", item->data.token->data);
                     ntype = X_INT;
                     break;
                 case T_EXP:
@@ -367,12 +378,12 @@ unsigned exprBUStackClose(txStack stack)
         {
             isSame = true;
         }
-        else if (rType == X_UNKNOWN)
+        else if (rType == X_UNKNOWN) //nejsou stejne typy a vpravo je prom
         {
             type = lType;
             isSame = true;
         }
-        else if (lType == X_UNKNOWN)
+        else if (lType == X_UNKNOWN) //nejsou stejne typy a vlevo je prom
         {
             isSame = true;
         }
@@ -404,7 +415,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free((rItem));
                 free(lItem);
-                return 4;
+                return 5;
             }
             if (!unknownType)
             {
@@ -471,7 +482,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return 4;
+                return 5;
             }
             break;
         case T_LESS:
@@ -485,7 +496,7 @@ unsigned exprBUStackClose(txStack stack)
             if (unknownType) printf("todo\n")/*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
-                //TODO PRINT ERROR
+                fprintf(stderr, "Error: ve vyrazu: porovnavame operandy rozdilnych typu\n");
                 free(item);
                 free(rItem);
                 free(lItem);
@@ -530,34 +541,45 @@ unsigned exprBUStackClose(txStack stack)
 
             break;
         case T_SUB:
-            //TODO Generovani kodu
+            printf("SUBS\n");
             break;
         case T_MUL:
-            //TODO Generovani kodu
+            printf("MULS\n");
             break;
         case T_DIV:
-            //TODO Generovani kodu
+            //TODO Generovani kodu - 0 a id
+            if (!unknownType)
+            {
+                if (type == X_INT)
+                {
+                    printf("IDIVS\n");
+                }
+                else if (type == X_FLOAT)
+                {
+                    printf("DIVS\n");
+                }
+            }
             break;
         case T_GREAT:
-            //TODO Generovani kodu
             printf("GTS\n");
             break;
         case T_LESS:
-            //TODO Generovani kodu
+            printf("LTS\n");
             break;
         case T_LEQ:
-            //TODO Generovani kodu
+            printf("GTS\n");
+            printf("NOTS\n");
             break;
         case T_GREQ:
-            //TODO Generovani kodu
+            printf("LTS\n");
+            printf("NOTS\n");
             break;
         case T_EQL:
-            if (isSame) printf("todo\n")/*TODO Generovani kodu*/;
-            //TODO Generovani kodu
+            if (isSame) printf("EQS\n");
             break;
         case T_NEQ:
-            if (isSame) printf("todo\n")/*TODO Generovani kodu*/;
-            //TODO Generovani kodu
+            if (isSame) printf("EQS\n");
+            printf("NOTS\n");
             break;
         default:
             free(item);
