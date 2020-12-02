@@ -31,7 +31,7 @@ tToken params(tToken *token);
 tToken params_n(tToken *token);
 tToken narvrattype_n(tToken *token);
 tToken vyraz_n(tToken *token);
-
+bool Porovnavani=false;
 
 
 #endif /* parser.h */
