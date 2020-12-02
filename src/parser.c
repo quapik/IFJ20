@@ -13,11 +13,13 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
+bool Porovnavani=false;
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
-int IDCounter=0; int IDCounterOpacny=0;
+int IDCounter=0; int IDCounterOpacny=0; int FORCounter=0;
 int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
 char* UchovaniID[10];
 bool VeFunkci=false; bool VMainu=false; bool JdemeZReturnu = false;
+char* JmenoPromenne;
 //int AktualniHloubkaZanoreni=0;
 
 
@@ -91,7 +93,7 @@ tToken body(tToken *token)
     {
         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;
     }
-    //print TODO 
+    //print TODO
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
         (*token)=(*token)->nextToken;
@@ -152,10 +154,14 @@ tToken body(tToken *token)
         if ((*token)->type==T_ASSIGN) // =
         {
             (*token)=(*token)->nextToken;
-            (*token)=exprBUParse(token);
+            (*token)=exprBUParse(token); //TODO zahodit to co jsme dostali
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
                 return *token;
+            }
+            if(Porovnavani==true) //Vyskytlo se porovnavani na miste kde nemá být
+            {
+                (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba v _ \n");  return *token;
             }
 
             (*token)=body(token);
@@ -222,6 +228,10 @@ tToken body(tToken *token)
             {
                 return *token;
             }
+                if(Porovnavani==true) //pokud ve vyrazu vyskytlo porovnavani
+                {
+                    (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba v returnu \n");  return *token;
+                }
             JdemeZReturnu=true;
             (*token)=vyraz_n(token);
             JdemeZReturnu=false;
@@ -279,9 +289,12 @@ tToken print_rule(tToken *token)
 tToken if_rule(tToken *token)
 {   PossibleEof=false;
     //TED MUSI BYT VYRAZ
-    Porovnavani=true;
+
     (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
-    Porovnavani=false;
+    if(Porovnavani==false) //pokud ve vyrazu nebylo porovnavani
+    {
+        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba ifu-nebylo porovnavani \n");  return *token;
+    }
     if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
     {
         return *token;
@@ -639,20 +652,30 @@ tToken params_n(tToken *token)
 
 }
 
-tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
-{
+tToken for_rule(tToken *token) //TODO spravne cislovani for labelu (jako u ifu)
+{ FORCounter++;
     PossibleEof=false;
     if ((*token)->type==T_ID)
-    {
+    {  JmenoPromenne=(*token)->data;
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_DEFINE)
-        {
+        {   CodeGenDefVar(JmenoPromenne);
+
             (*token)=(*token)->nextToken;
             (*token)=exprBUParse(token);
+
+            if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
+            {
+                (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba foru1\n");  return *token;
+            }
+
             if ((*token)->type==T_UNKNOWN)
             {
                 return *token;
             }
+            //GENEROVNAI KODU prirazeni do promenne
+            printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+            printf("MOVE %s TF@$return\n", JmenoPromenne);
 
         }
         else
@@ -662,11 +685,21 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
             return *token;
         }
     }
+    //GENEROVANI KODU FOR label (zacatek foru na ktery se jumpuje)
+    printf("LABEL for%d\n",FORCounter);
 
     if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
     {
         (*token)=(*token)->nextToken; //ted povinny vyraz
         (*token)=exprBUParse(token);
+        if(Porovnavani==false) //pokud by se ve vyrazu nevyskytlo porovnani
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for vyraz\n"); return *token;
+        }
+        //GENEROVANI KODU podminka FOR
+        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+        printf("JUMPIFNEQ $forendlabel%d TF@$return bool@true\n",FORCounter);
+
         if ((*token)->type == T_UNKNOWN)
         {
             return *token;
@@ -685,6 +718,12 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
                     {
                         return *token;
                     }
+                    if(Porovnavani==true) //pokud by se ve vyrazu vyskytlo porovnani //TODO testovat
+                    {
+                        (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for prikaz_prirazeni\n");
+                        return *token;
+                    }
+
                 }
             }
 
@@ -702,6 +741,10 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_RCBR) //} koncova zavorka tela foru
                     {
+                        //GENEROVANI KODU FOR KONEC
+                        printf("JUMP for%d\n",FORCounter);
+                        printf("LABEL $forendlabel%d\n",FORCounter);
+
                         PocetKoncovychZavorek--;
                         return *token;
                     }
@@ -744,14 +787,20 @@ tToken for_rule(tToken *token) //TODO KONTROLA zda nakonci FORU }
 //pravidlo <ID_NEXT> -> := vyraz nebo <ID_NEXT> -> <ID_N>=<vice_id_vlevo>
 tToken id_next(tToken *token)
 {
-    char* prom = (*token)->prevToken->data;
+    JmenoPromenne = (*token)->prevToken->data;
     if((*token)->type==T_DEFINE) // pokud je :=
     {
-        CodeGenDefVar(prom);
+        CodeGenDefVar(JmenoPromenne);
         (*token)=(*token)->nextToken;
         (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
-        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-        printf("MOVE %s TF@$return\n", prom);
+        if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
+        }
+        //GENEROVANI KODU TODO DO CODEGEN?
+                printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                printf("MOVE %s TF@$return\n", JmenoPromenne);
+
         return *token;
     }
     else if ((*token)->type==T_COMMA) //pokud je carka
@@ -840,10 +889,14 @@ tToken vice_id_vlevo(tToken *token)
         {
             return *token;
         }
+        if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
+        }
 
-        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-        printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
-
+        //GENEROVANI
+                printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
 
         (*token)=vyraz_n(token);
         return *token;
@@ -907,23 +960,29 @@ tToken paramscall_n(tToken *token)
 }
 //PRAVIDLO <vyraz_n> -> , vyraz <vyraz n>
 tToken vyraz_n(tToken *token){
-    IDCounter--; //TODO nehodi to errory kdyz je tam id1,i2=vyraz, NIC
+    IDCounter--;
     if ((*token)->type==T_COMMA) //nastala chyba pri vyrazu
     {
         (*token)=(*token)->nextToken;
         (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
 
-        //TODO Zasobnik / pole
-
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
         {
             return *token;
         }
+
+        if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
+        {
+            (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt vyraz_n \n");  return *token;
+        }
+
         IDCounterOpacny++;
-        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-        printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
-        (*token)=vyraz_n(token);
-        return *token; //TODO tohle ot muze srat
+        //GENEROVANI KODU
+                printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
+
+                (*token)=vyraz_n(token);
+         return *token;
     }
     else
     { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
@@ -932,7 +991,7 @@ tToken vyraz_n(tToken *token){
             if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
             {  // printf("IDCOUNTER %d\n",IDCounter);
                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n");
-                return *token;
+               return *token;
             }
         }
         else
