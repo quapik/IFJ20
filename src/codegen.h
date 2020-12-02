@@ -11,5 +11,8 @@ Generování kódu
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 void CodeGenStart();
 void CodeGenDefVar(char* id);
