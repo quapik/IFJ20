@@ -12,7 +12,6 @@ Precedencni analyza zdola nahoru pro vyrazy
 
 #include "exprBottomUp.h"
 
-
 xOperator exprTokenTypeToOperator(tType tokenType) {
     switch(tokenType) {
         case T_MUL:
@@ -48,9 +47,12 @@ tToken exprBUParse (tToken *token) {
     txStack stack;
     exprBUStackInit(&stack);
 
+    //CodeGenDefVar("dfsdf");
+
     int ret = -1;
     unsigned tmpRet;
     //bool first = true;
+
 
     // Algoritmus precedencni analyzy
     while (ret < 0) {
@@ -319,25 +321,28 @@ unsigned exprBUStackClose(txStack stack)
                     ntype = X_INT;
                     break;
                 case T_EXP:
-                    //TODO generovani kodu
+                    printf("PUSHS float@%s\n", item->data.token->data);
                     ntype = X_FLOAT;
                     break;
                 case T_STRING:
-                    //TODO generovani kodu
+                    //debug
+                    //printf("%s\n", item->data.token->data);
+                    printf("PUSHS ");
+
+                    printf("%s\n", gen_string(item->data.token->data));
                     //debug
                     //printf("mame string\n");
                     ntype = X_STRING;
                     break;
                 case T_ID:
                     //TODO sémantika
-                    //TODO generovani kodu
+                    printf("PUSHS LF@%s\n", item->data.token->data);
                     break;
                 default:
                     fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu, ocekavan operand\n");
                     free(item);
                     return 2;
             }
-            //TODO Generovani kodu
             item->type = XT_NONTERM;
             item->data.ntype = ntype;
 
@@ -406,7 +411,10 @@ unsigned exprBUStackClose(txStack stack)
         case T_ADD:
             if (isSingle)
             {
-                //TODO generovani kodu
+                fprintf(stderr, "error: unarni operator nepodporovan\n");
+                free(item);
+                free(rItem);
+                return 2;
             }
             if (unknownType) printf("todo\n");/*TODO generovani kodu */
             if (!(isSingle) && !(isSame))
@@ -433,7 +441,10 @@ unsigned exprBUStackClose(txStack stack)
         case T_SUB:
             if (isSingle)
             {
-                //TODO generovani kodu
+                fprintf(stderr, "error: unarni operator nepodporovan\n");
+                free(item);
+                free(rItem);
+                return 2;
             }
             if (unknownType) printf("todo\n")/*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
@@ -442,7 +453,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return 4;
+                return 5;
             }
             //TODO Generovani kodu
             break;
@@ -453,7 +464,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return isSingle ? 2 : 4;
+                return isSingle ? 2 : 5;
             }
             //TODO Generovani kodu
             break;
@@ -465,7 +476,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return isSingle ? 2 : 4;
+                return isSingle ? 2 : 5;
             }
             //TODO Generovani kodu (DELENI NULOU)
             if (unknownType) printf("todo\n")/*TODO Generovani kodu*/;
@@ -500,7 +511,7 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return isSingle ? 2 : 4;
+                return isSingle ? 2 : 5;
             }
             break;
         case T_EQL:
@@ -536,7 +547,12 @@ unsigned exprBUStackClose(txStack stack)
     switch (item->data.token->type) {
         case T_ADD:
 
-            // TODO STRING
+            if (type == X_STRING)
+            {
+                printf("#---KONKATENACE---\nCREATEFRAME\nDEFVAR $tmp1\nDEFVAR $tmp2\nDEFVAR $tmpString\n");
+                printf("POPS TF@$tmp2\nPOPS TF@$tmp1\nCONCAT TF@$tmpString TF@$tmp1 TF@$tmp2\nPUSHS TF@$tmpString\n");
+                printf("#---KONEC KONKATENACE---\n");
+            }
             printf("ADDS\n");
 
             break;
