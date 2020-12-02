@@ -14,6 +14,7 @@ Symtable
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
+#include "dynamicstring.h"
 
 typedef enum{
 	VARIABLE=1,
@@ -34,17 +35,24 @@ typedef union Value{
 
 
 typedef struct tSymbolData{
-	SymbolType Type;						// typ - promenna/funkce
-	SymbolDataType DataType;				// datovy/navratovy typ
-	
-	// data pro promennou
-	SymbolValue Value;						// hodnota promenne
+	//SymbolType Type;						// typ - promenna/funkce
+	//SymbolDataType DataType;				// datovy/navratovy typ
+	DynamicString parametry;
+	DynamicString navratovehodnoty;
+    bool Defined;							// zda byla fce definovana
 	
 	// data pro funkci
-	bool Defined;							// zda byla fce definovana
-	struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
+
+	//struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
 	
 }*tSymbolDataPtr;
+
+typedef struct tSymbolDataPromenna{
+
+    SymbolDataType DataType;				// datovy/navratovy typ
+    int HloubkaZanoreni;
+
+}*tSymbolDataPtrPromenna;
 
 typedef struct tSymbolTable{
 	char *Symbol;							// nazev identifikatoru
@@ -57,6 +65,7 @@ typedef struct tSymbolTable{
 void STableInit(tSymbolTablePtr *Tab);
 tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol);
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data);
+void STableInsertPromenna(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtrPromenna Data);
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
 void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
 void STableDispose(tSymbolTablePtr *Tab);
