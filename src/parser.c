@@ -13,7 +13,6 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
-bool Porovnavani=false;
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
 int IDCounter=0; int IDCounterOpacny=0;
 int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
