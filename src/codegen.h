@@ -17,4 +17,4 @@ Generování kódu
 void CodeGenStart();
 void CodeGenDefVar(char* id);
 char *gen_float(char *input_float);
-char *gen_string(char *input_string);
+void gen_string(char *input_string);
