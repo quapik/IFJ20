@@ -27,13 +27,11 @@ char *gen_float(char *input_float)
     char *output_float = (char *) malloc(100);
     sprintf(output_float, "float@%a", ret);
 
-    printf("%s\n", strlen(output_float));
     return output_float;
 }
 
 char *generate_string(char* input_string) 
 {
-    
     int len = strlen(input_string);
     char buffer[5]; 
     
