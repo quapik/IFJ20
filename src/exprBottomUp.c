@@ -208,7 +208,7 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
             else return X_OPEN;
         case X_EQL:
             Porovnavani = true;
-            if (nextOperator == X_LDBR || nextOperator == X_$)
+            if (nextOperator == X_RDBR || nextOperator == X_$)
                 return X_CLOSE;
             else if (nextOperator == X_EQL) return X_EMPTY;
             return X_OPEN;
@@ -411,7 +411,7 @@ unsigned exprBUStackClose(txStack stack)
         case T_ADD:
             if (isSingle)
             {
-                fprintf(stderr, "error: unarni operator nepodporovan\n");
+                fprintf(stderr, "Error: unarni operator nepodporovan\n");
                 free(item);
                 free(rItem);
                 return 2;
@@ -419,7 +419,7 @@ unsigned exprBUStackClose(txStack stack)
             if (unknownType) printf("todo\n");/*TODO generovani kodu */
             if (!(isSingle) && !(isSame))
             {
-                //TODO PRINT ERROR
+                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
                 free(item);
                 free((rItem));
                 free(lItem);
@@ -441,7 +441,7 @@ unsigned exprBUStackClose(txStack stack)
         case T_SUB:
             if (isSingle)
             {
-                fprintf(stderr, "error: unarni operator nepodporovan\n");
+                fprintf(stderr, "Error: unarni operator nepodporovan\n");
                 free(item);
                 free(rItem);
                 return 2;
@@ -449,7 +449,7 @@ unsigned exprBUStackClose(txStack stack)
             if (unknownType) printf("todo\n")/*TODO generovani kodu*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
-                //TODO PRINT ERROR
+                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
                 free(item);
                 free(rItem);
                 free(lItem);
@@ -464,7 +464,15 @@ unsigned exprBUStackClose(txStack stack)
                 free(item);
                 free(rItem);
                 free(lItem);
-                return isSingle ? 2 : 5;
+                if (!isSingle)
+                {
+                    fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
+                    return 5;
+                } else
+                {
+                    fprintf(stderr, "Error: chyba ve vyrazu\n");
+                    return 2;
+                }
             }
             //TODO Generovani kodu
             break;
@@ -472,11 +480,19 @@ unsigned exprBUStackClose(txStack stack)
             if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
-                //TODO PRINT ERROR
+                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
                 free(item);
                 free(rItem);
                 free(lItem);
-                return isSingle ? 2 : 5;
+                if (!isSingle)
+                {
+                    fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
+                    return 5;
+                } else
+                {
+                    fprintf(stderr, "Error: chyba ve výrazu\n");
+                    return 2;
+                }
             }
             //TODO Generovani kodu (DELENI NULOU)
             if (unknownType) printf("todo\n")/*TODO Generovani kodu*/;
@@ -518,7 +534,7 @@ unsigned exprBUStackClose(txStack stack)
         case T_NEQ:
                 if (isSingle)
                 {
-                    //TODO PRINT ERROR
+                    fprintf(stderr, "Error: chyba ve vyrazu\n");
                     free(item);
                     free(rItem);
                     free(lItem);
