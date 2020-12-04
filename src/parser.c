@@ -560,10 +560,10 @@ tToken narvrattype_n(tToken *token)
 {
     if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
     {
-        if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
-        else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
-        else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
-        GlobalTable->datastringparametry[paramscounter+1]='\0';
+        if((*token)->type==T_KEYINT) GlobalTable->datastringnavratovehodnoty[paramscounter]='i';
+        else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringnavratovehodnoty[paramscounter]='f';
+        else if((*token)->type==T_KEYSTRING) GlobalTable->datastringnavratovehodnoty[paramscounter]='s';
+        GlobalTable->datastringnavratovehodnoty[paramscounter+1]='\0';
         paramscounter++;
 
         (*token)=(*token)->nextToken;
@@ -575,7 +575,7 @@ tToken narvrattype_n(tToken *token)
         }
         else if ((*token)->type==T_RDBR)
         {
-            printf("Pocet navratovych hodnot %d a jsou %s\n",paramscounter, GlobalTable->datastringparametry);
+            printf("Pocet navratovych hodnot %d a jsou %s\n",paramscounter, GlobalTable->datastringnavratovehodnoty);
             return *token;
 
         }
@@ -841,7 +841,7 @@ tToken id_next(tToken *token)
         CodeGenDefVar(JmenoPromenne);
         (*token)=(*token)->nextToken;
 
-
+        // (*token)=exprBUParse(token,LocalTable);
         (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
         if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni); printf("1qn\n");}//todo predelat hloubku zanoreni
         else if (exprTyp==X_STRING) { STableInsertLocal(&LocalTable,JmenoPromenne,'s',AktualniHloubkaZanoreni); printf("2qn\n");}
@@ -977,13 +977,18 @@ tToken paramscall(tToken *token)
                 printf("promenna nebyla definovana"); (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
             }
            printf("datovy typ definovany promenny %c\n",LocalTable->DatovyTyp);
+            printf("paramscounter %d, datovy typ promenny %c, datovy typ ve fci %c\n", paramscounter,LocalTable->DatovyTyp,GlobalTable->datastringparametry[paramscounter] );
+            if(GlobalTable->datastringparametry[paramscounter]!=LocalTable->DatovyTyp)
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+            }
 
         }
         if((*token)->type==T_INT)
         {
             if(GlobalTable->datastringparametry[paramscounter]!='i') //pokud je čislo, musí se na danem mistě ve funkci nachazet int
             {
-                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET";  return *token;
             }
         }
 
@@ -1074,7 +1079,7 @@ tToken paramscall_n(tToken *token)
 
     }
     else if ((*token)->type==T_RDBR) //)
-    {
+    {   printf("%d paramscouter, delkaass stringu %s\n",paramscounter,GlobalTable->datastringparametry );
         if(paramscounter!=strlen(GlobalTable->datastringparametry)) (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; //SEMANTIKA -> kontrola poctu
         return *token;
     }
