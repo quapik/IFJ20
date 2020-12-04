@@ -363,6 +363,8 @@ unsigned exprBUStackClose(txStack stack)
             item->type = XT_NONTERM;
             item->data.ntype = ntype;
 
+            exprTyp = ntype;
+
         }
         // vlozen redukovany neterminal na vrchol zasobniku
         free(exprBUStackPop(stack));
@@ -387,8 +389,6 @@ unsigned exprBUStackClose(txStack stack)
     bool isSingle = (lItem->type == XT_OPEN);
     bool unknownType = (rType == X_UNKNOWN);
     bool isSame = false; // stejny typ
-
-    exprTyp = type;
 
     if(!(isSingle))
     {
@@ -424,6 +424,8 @@ unsigned exprBUStackClose(txStack stack)
 //            isSame = true;
 //        }
     }
+
+    exprTyp = type;
 
     switch (item->data.token->type) {
         //reseni operaci TODO
