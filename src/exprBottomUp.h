@@ -16,8 +16,8 @@ Precedencni analyza zdola nahoru pro vyrazy
 #include "codegen.h"
 
 
-
 #define EXPR_STACK_ALLOC_SIZE 64
+
 
 // typy neterminalu
 
@@ -87,12 +87,13 @@ typedef struct xStack{
     txItem *xs;	// pole prvků
 } *txStack;
 
-static xNTermType exprTyp = X_UNKNOWN;
+xNTermType exprTyp;
+
 
 // funkce
+xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
 tToken exprBUParse (tToken *token);
 void exprBUStackInit (txStack *stack);
-xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
 xOperator exprTokenTypeToOperator(tType tokenType);
 void exprBUStackPush (txStack stack, txItem item);
 txItem exprBUStackPop(txStack stack);

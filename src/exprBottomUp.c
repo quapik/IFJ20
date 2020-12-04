@@ -44,6 +44,7 @@ xOperator exprTokenTypeToOperator(tType tokenType) {
 
 
 tToken exprBUParse (tToken *token) {
+
     txStack stack;
     exprBUStackInit(&stack);
 
@@ -188,11 +189,11 @@ tToken exprBUParse (tToken *token) {
 //    {
 //        printf("Precedencni: (debug) Vse v poradku.\n");
 //    }
-
     return *token; //T_UNKNOWN prazdny kdyz error, data ERR_SEM_KOMP
 }
 
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
+
     switch (currOperator) {
         case X_$:
             if (nextOperator == X_$ || nextOperator == X_RDBR)
@@ -213,7 +214,6 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
             }
             else return X_CLOSE;
         case X_LEQGEQ:
-            Porovnavani = true;
             if (nextOperator == X_LEQGEQ)
             {
                 return X_EMPTY;
@@ -224,7 +224,6 @@ xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
             }
             else return X_OPEN;
         case X_EQL:
-            Porovnavani = true;
             if (nextOperator == X_RDBR || nextOperator == X_$)
                 return X_CLOSE;
             else if (nextOperator == X_EQL) return X_EMPTY;
@@ -309,6 +308,9 @@ void exprBUStackPush (txStack stack, txItem item)
 
 unsigned exprBUStackClose(txStack stack)
 {
+
+
+
     txItem item = exprBUStackPop(stack);
     if (item == NULL)
     {
@@ -336,10 +338,12 @@ unsigned exprBUStackClose(txStack stack)
                 case T_INT:
                     printf("PUSHS int@%s\n", item->data.token->data);
                     ntype = X_INT;
+                    //exprTyp = 'i';
                     break;
                 case T_EXP:
                     printf("PUSHS float@%s\n", item->data.token->data);
                     ntype = X_FLOAT;
+                    //exprTyp = 'i';
                     break;
                 case T_STRING:
                     //debug
@@ -350,10 +354,12 @@ unsigned exprBUStackClose(txStack stack)
                     //debug
                     //printf("mame string\n");
                     ntype = X_STRING;
+                    //exprTyp = 's';
                     break;
                 case T_ID:
                     //TODO sémantika
                     printf("PUSHS LF@%s\n", item->data.token->data);
+                    //exprTyp = 'u';
                     break;
                 default:
                     fprintf(stderr, "[SYNTAX ERROR] chyba ve vyrazu, ocekavan operand\n");
@@ -362,7 +368,6 @@ unsigned exprBUStackClose(txStack stack)
             }
             item->type = XT_NONTERM;
             item->data.ntype = ntype;
-
             exprTyp = ntype;
 
         }
@@ -406,6 +411,24 @@ unsigned exprBUStackClose(txStack stack)
         {
             type = lType;
             isSame = true;
+
+            //pro parser
+            switch (lType) {
+                case X_UNKNOWN:
+                    exprTyp = 'u';
+                    break;
+                case X_FLOAT:
+                    exprTyp = 'f';
+                    break;
+                case X_INT:
+                    exprTyp = 'i';
+                    break;
+                case X_STRING:
+                    exprTyp = 's';
+                    break;
+                default:
+                    break;
+            }
         }
         else if (lType == X_UNKNOWN) //nejsou stejne typy a vlevo je prom
         {
@@ -425,11 +448,17 @@ unsigned exprBUStackClose(txStack stack)
 //        }
     }
 
+
     exprTyp = type;
+
+
+
+
 
     switch (item->data.token->type) {
         //reseni operaci TODO
         case T_ADD:
+            Porovnavani = false;
             if (isSingle)
             {
                 fprintf(stderr, "Error: unarni operator nepodporovan\n");
@@ -460,6 +489,7 @@ unsigned exprBUStackClose(txStack stack)
             break;
 
         case T_SUB:
+            Porovnavani = false;
             if (isSingle)
             {
                 fprintf(stderr, "Error: unarni operator nepodporovan\n");
@@ -479,6 +509,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_MUL:
+            Porovnavani = false;
             if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
@@ -498,6 +529,7 @@ unsigned exprBUStackClose(txStack stack)
             //TODO Generovani kodu
             break;
         case T_DIV:
+            Porovnavani = false;
             if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
@@ -537,6 +569,7 @@ unsigned exprBUStackClose(txStack stack)
         case T_GREAT:
         case T_LEQ:
         case T_GREQ:
+            Porovnavani = true;
             if (isSingle)
             {
                 //TODO generovani kodu
@@ -553,6 +586,7 @@ unsigned exprBUStackClose(txStack stack)
             break;
         case T_EQL:
         case T_NEQ:
+            Porovnavani = true;
                 if (isSingle)
                 {
                     fprintf(stderr, "Error: chyba ve vyrazu\n");
