@@ -20,13 +20,13 @@ void STableInitLocal(tSymbolTablePtrPromenna *Tab){
 
 }
 
-tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
+tSymbolTablePtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
     if(Tab==NULL){
         return NULL;
     }
     else{
         if((strcmp(Symbol,Tab->Symbol))==0){
-            return Tab->Data;
+            return Tab;
         }
         else{
             if((strcmp(Symbol,Tab->Symbol))<0){
@@ -57,7 +57,7 @@ tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Sym
         }
     }
 }
-void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
+void STableInsert(tSymbolTablePtr *Tab, char *Symbol){
     tSymbolTablePtr polozka;
     if(*Tab==NULL){
         polozka=(tSymbolTablePtr) malloc(sizeof(struct tSymbolTable));
@@ -67,7 +67,7 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
         else{
 
             polozka->Symbol=Symbol;
-            polozka->Data=Data;
+            polozka->defined=true;
             polozka->LPtr=NULL;
             polozka->RPtr=NULL;
             *(Tab)=polozka;
@@ -75,19 +75,19 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
     }
     else{
         if((strcmp(Symbol,(*Tab)->Symbol))<0){
-            STableInsert(&((*Tab)->LPtr),Symbol,Data);
+            STableInsert(&((*Tab)->LPtr),Symbol);
         }
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
-            STableInsert(&((*Tab)->RPtr),Symbol,Data);
+            STableInsert(&((*Tab)->RPtr),Symbol);
         }
         else{
-            free((*Tab)->Data);
-            (*Tab)->Data=Data;
+            //free((*Tab)->Data);
+            //(*Tab)->Data=Data;
         }
     }
 }
 
-void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,int data, int hloubkazanoreni){
+void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, unsigned int hloubkazanoreni){
     tSymbolTablePtrPromenna polozka;
     if(*Tab==NULL){
         polozka=(tSymbolTablePtrPromenna) malloc(sizeof(struct tSymbolTablePromenna));
@@ -125,7 +125,7 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
     else{
         if((*Tab)->RPtr==NULL){
             PtrReplaced->Symbol=(*Tab)->Symbol;
-            PtrReplaced->Data=(*Tab)->Data;
+            //PtrReplaced->Data=(*Tab)->Data;
             STableDelete(Tab,(*Tab)->Symbol);
         }
         else{
@@ -185,8 +185,10 @@ void STableDispose(tSymbolTablePtr *Tab){
         //}
 
         // uvolneni pameti
-        free((*Tab)->Data);
+        free((*Tab)->datastringparametry);
+        free((*Tab)->datastringnavratovehodnoty);//TODO
         free(*Tab);
+
         *Tab=NULL;
     }
 }
