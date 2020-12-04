@@ -12,10 +12,15 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 #define _PARSER_H
 #include "scanner.h"
 #include "error.h"
-#include "exprBottomUp.c"
+#include "codegen.h" //TODO
+#include "exprBottomUp.h"
+#include "symtable.h"
+//#include "dynamicstring.c"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+bool Porovnavani;
+
 
 int StartParser(tToken *token);
 tToken body(tToken *token);
@@ -31,7 +36,7 @@ tToken params(tToken *token);
 tToken params_n(tToken *token);
 tToken narvrattype_n(tToken *token);
 tToken vyraz_n(tToken *token);
-bool Porovnavani=false;
+tToken print_rule(tToken *token);
 
 
 #endif /* parser.h */
