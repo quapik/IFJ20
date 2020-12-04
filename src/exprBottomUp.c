@@ -163,6 +163,23 @@ tToken exprBUParse (tToken *token) {
         }
     }
     //debug
+    switch (exprTyp) {
+        case X_STRING:
+            printf("vraceny typ = string\n");
+            break;
+        case X_FLOAT:
+            printf("vraceny typ = float\n");
+            break;
+        case X_INT:
+            printf("vraceny typ = int\n");
+            break;
+        case X_UNKNOWN:
+            printf("vraceny typ = unknown (id)\n");
+            break;
+        default:
+            break;
+    }
+    //debug
 //    if (Porovnavani == true)
 //    {
 //        printf("Porovnáváme\n");
@@ -329,7 +346,7 @@ unsigned exprBUStackClose(txStack stack)
                     //printf("%s\n", item->data.token->data);
                     printf("PUSHS ");
 
-                    printf("%s\n", gen_string(item->data.token->data));
+                    gen_string(item->data.token->data);
                     //debug
                     //printf("mame string\n");
                     ntype = X_STRING;
@@ -370,6 +387,8 @@ unsigned exprBUStackClose(txStack stack)
     bool isSingle = (lItem->type == XT_OPEN);
     bool unknownType = (rType == X_UNKNOWN);
     bool isSame = false; // stejny typ
+
+    exprTyp = type;
 
     if(!(isSingle))
     {
@@ -579,18 +598,21 @@ unsigned exprBUStackClose(txStack stack)
             printf("MULS\n");
             break;
         case T_DIV:
-            //TODO Generovani kodu - 0 a id
+        printf("#---DELENI---\n");
             if (!unknownType)
             {
                 if (type == X_INT)
                 {
+                    exprBUDivZeroCheck("int");
                     printf("IDIVS\n");
                 }
                 else if (type == X_FLOAT)
                 {
+                    exprBUDivZeroCheck("float");
                     printf("DIVS\n");
                 }
             }
+            printf("#---KONEC DELENI---\n");
             break;
         case T_GREAT:
             printf("GTS\n");
@@ -653,4 +675,30 @@ void exprBUStackDispose(txStack *stack) {
     free((*stack)->xs);
     free((*stack));
     (*stack) = NULL;
+}
+void exprBUDivZeroCheck(char *zero)
+{
+    printf("JUMP $expression\n");
+
+    //error print zatim tady:
+    printf("LABEL $divZeroError\n\tDEFVAR TF@$errorPrint\n\tMOVE TF@$errorPrint str@error:\\032pokus\\032o\\032deleni\\032nulou\n");
+    printf("\tDPRINT TF@$errorPrint\n");
+    printf("\tEXIT int@9\n");
+
+    printf("LABEL $expression\n");
+
+
+    if (zero == NULL)
+    {
+        return;
+    }
+    if (strcmp(zero, "int") == 0)
+    {
+        printf("DEFVAR TF@$RNum\nPOPS TF@$RNum\nJUMPIFEQ $divZeroError TF@$RNum int@0\n");
+    }
+    else if (strcmp(zero, "float") == 0)
+    {
+        printf("DEFVAR TF@$RNum\nPOPS TF@$RNum\nJUMPIFEQ $divZeroError TF@$RNum float@0x0p+0\n");
+    }
+    printf("PUSHS TF@$RNum\n");
 }

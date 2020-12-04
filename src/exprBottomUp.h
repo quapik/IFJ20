@@ -13,6 +13,7 @@ Precedencni analyza zdola nahoru pro vyrazy
 #pragma once
 #include "scanner.h"
 #include "parser.h"
+#include "codegen.h"
 
 
 
@@ -86,6 +87,7 @@ typedef struct xStack{
     txItem *xs;	// pole prvků
 } *txStack;
 
+static xNTermType exprTyp = X_UNKNOWN;
 
 // funkce
 tToken exprBUParse (tToken *token);
@@ -97,6 +99,7 @@ txItem exprBUStackPop(txStack stack);
 void exprBUStackOpen (txStack stack, int posun); // < shift
 unsigned exprBUStackClose(txStack stack); // > parse
 void exprBUStackDispose(txStack *stack);
+void exprBUDivZeroCheck(char *zero); // kontrola deleni nulou, prebira typ 0 (float/int)
 
 
 
