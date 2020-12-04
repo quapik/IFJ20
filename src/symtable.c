@@ -12,128 +12,198 @@ Symtable
 #include "symtable.h"
 
 void STableInit(tSymbolTablePtr *Tab){
-	*Tab=NULL;
+    *Tab=NULL;
+
+}
+void STableInitLocal(tSymbolTablePtrPromenna *Tab){
+    *Tab=NULL;
 
 }
 
 tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
-	if(Tab==NULL){
-		return NULL;
-	}
-	else{
-		if((strcmp(Symbol,Tab->Symbol))==0){
-			return Tab->Data;
-		}
-		else{
-			if((strcmp(Symbol,Tab->Symbol))<0){
-				return (STableSearch(Tab->LPtr,Symbol));
-			}
-			else{
-				return (STableSearch(Tab->RPtr,Symbol));
-			}
-		}
-	}
+    if(Tab==NULL){
+        return NULL;
+    }
+    else{
+        if((strcmp(Symbol,Tab->Symbol))==0){
+            return Tab->Data;
+        }
+        else{
+            if((strcmp(Symbol,Tab->Symbol))<0){
+                return (STableSearch(Tab->LPtr,Symbol));
+            }
+            else{
+                return (STableSearch(Tab->RPtr,Symbol));
+            }
+        }
+    }
 }
 
+tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Symbol){
+    if(Tab==NULL){
+        return NULL;
+    }
+    else{
+        if((strcmp(Symbol,Tab->Symbol))==0){
+            return Tab;
+        }
+        else{
+            if((strcmp(Symbol,Tab->Symbol))<0){
+                return (STableSearchLocal(Tab->LPtr,Symbol));
+            }
+            else{
+                return (STableSearchLocal(Tab->RPtr,Symbol));
+            }
+        }
+    }
+}
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data){
     tSymbolTablePtr polozka;
-	if(*Tab==NULL){
+    if(*Tab==NULL){
         polozka=(tSymbolTablePtr) malloc(sizeof(struct tSymbolTable));
-		if(polozka==NULL){
-             return;
-		}
-		else{
+        if(polozka==NULL){
+            return;
+        }
+        else{
 
-			polozka->Symbol=Symbol;
-			polozka->Data=Data;
-			polozka->LPtr=NULL;
-			polozka->RPtr=NULL;
+            polozka->Symbol=Symbol;
+            polozka->Data=Data;
+            polozka->LPtr=NULL;
+            polozka->RPtr=NULL;
             *(Tab)=polozka;
-		}
-	}
-	else{
-		if((strcmp(Symbol,(*Tab)->Symbol))<0){
-			STableInsert(&((*Tab)->LPtr),Symbol,Data);
-		}
-		else if((strcmp(Symbol,(*Tab)->Symbol))>0){
-			STableInsert(&((*Tab)->RPtr),Symbol,Data);
-		}
-		else{
-			free((*Tab)->Data);
-			(*Tab)->Data=Data;
-		}
-	}
+        }
+    }
+    else{
+        if((strcmp(Symbol,(*Tab)->Symbol))<0){
+            STableInsert(&((*Tab)->LPtr),Symbol,Data);
+        }
+        else if((strcmp(Symbol,(*Tab)->Symbol))>0){
+            STableInsert(&((*Tab)->RPtr),Symbol,Data);
+        }
+        else{
+            free((*Tab)->Data);
+            (*Tab)->Data=Data;
+        }
+    }
+}
+
+void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,int data, int hloubkazanoreni){
+    tSymbolTablePtrPromenna polozka;
+    if(*Tab==NULL){
+        polozka=(tSymbolTablePtrPromenna) malloc(sizeof(struct tSymbolTablePromenna));
+        if(polozka==NULL){
+            return;
+        }
+        else{
+
+            polozka->Symbol=Symbol;
+            polozka->DatovyTyp=data;
+            polozka->HloubkaZanoreni=hloubkazanoreni;
+            polozka->LPtr=NULL;
+            polozka->RPtr=NULL;
+            *(Tab)=polozka;
+        }
+    }
+    else{
+        if((strcmp(Symbol,(*Tab)->Symbol))<0){
+            STableInsertLocal(&((*Tab)->LPtr),Symbol,data,hloubkazanoreni);
+        }
+        else if((strcmp(Symbol,(*Tab)->Symbol))>0){
+            STableInsertLocal(&((*Tab)->RPtr),Symbol,data,hloubkazanoreni);
+        }
+        else{
+            //free((*Tab)->Data);
+            //(*Tab)->Data=Data;
+        }
+    }
 }
 
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
-	if(*Tab==NULL){
-		return;
-	}
-	else{
-		if((*Tab)->RPtr==NULL){
-			PtrReplaced->Symbol=(*Tab)->Symbol;
-			PtrReplaced->Data=(*Tab)->Data;
-			STableDelete(Tab,(*Tab)->Symbol);
-		}
-		else{
-			ReplaceByRightmost(PtrReplaced,&((*Tab)->RPtr));
-		}
-	}
+    if(*Tab==NULL){
+        return;
+    }
+    else{
+        if((*Tab)->RPtr==NULL){
+            PtrReplaced->Symbol=(*Tab)->Symbol;
+            PtrReplaced->Data=(*Tab)->Data;
+            STableDelete(Tab,(*Tab)->Symbol);
+        }
+        else{
+            ReplaceByRightmost(PtrReplaced,&((*Tab)->RPtr));
+        }
+    }
 }
 
 void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
-	if(*Tab==NULL){
-		return;
-	}
-	else{
-		if((*Tab)->Symbol>Symbol){
-			STableDelete(&((*Tab)->LPtr),Symbol);
-		}
-		else{
-			if((*Tab)->Symbol<Symbol){
-				STableDelete(&((*Tab)->RPtr),Symbol);
-			}
-			else{
-				if((*Tab)->LPtr==NULL && (*Tab)->RPtr==NULL){
-					free(*Tab);
-					*Tab=NULL;
-				}
-				else{
-					if((*Tab)->LPtr!=NULL && (*Tab)->RPtr!=NULL){
-						ReplaceByRightmost(*Tab, &((*Tab)->LPtr));
-					}
-					else{
-						if((*Tab)->LPtr!=NULL && (*Tab)->RPtr==NULL){
-							tSymbolTablePtr pomLEFT=((*Tab)->LPtr);
-							free(*Tab);
-							*Tab=pomLEFT;
-						}
-						else{
-							tSymbolTablePtr pomRIGHT=((*Tab)->RPtr);
-							free(*Tab);
-							*Tab=pomRIGHT;
-						}
-					}
-				}
-			}
-		}
-	}
+    if(*Tab==NULL){
+        return;
+    }
+    else{
+        if((*Tab)->Symbol>Symbol){
+            STableDelete(&((*Tab)->LPtr),Symbol);
+        }
+        else{
+            if((*Tab)->Symbol<Symbol){
+                STableDelete(&((*Tab)->RPtr),Symbol);
+            }
+            else{
+                if((*Tab)->LPtr==NULL && (*Tab)->RPtr==NULL){
+                    free(*Tab);
+                    *Tab=NULL;
+                }
+                else{
+                    if((*Tab)->LPtr!=NULL && (*Tab)->RPtr!=NULL){
+                        ReplaceByRightmost(*Tab, &((*Tab)->LPtr));
+                    }
+                    else{
+                        if((*Tab)->LPtr!=NULL && (*Tab)->RPtr==NULL){
+                            tSymbolTablePtr pomLEFT=((*Tab)->LPtr);
+                            free(*Tab);
+                            *Tab=pomLEFT;
+                        }
+                        else{
+                            tSymbolTablePtr pomRIGHT=((*Tab)->RPtr);
+                            free(*Tab);
+                            *Tab=pomRIGHT;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void STableDispose(tSymbolTablePtr *Tab){
-	if(*Tab!=NULL){
-		// pruchod celym stromem
-		STableDispose(&((*Tab)->LPtr));
-		STableDispose(&((*Tab)->RPtr));
-		
-		// pokud jsem narazil na funkci, respektive pomocny podstrom
-		if((*Tab)->Data->LocalFuncData!=NULL){
-			STableDispose(&((*Tab)->Data->LocalFuncData));
-		}
-		
-		// uvolneni pameti
-		free((*Tab)->Data);
-		free(*Tab);
-		*Tab=NULL;
-	}
+    if(*Tab!=NULL){
+        // pruchod celym stromem
+        STableDispose(&((*Tab)->LPtr));
+        STableDispose(&((*Tab)->RPtr));
+
+        // pokud jsem narazil na funkci, respektive pomocny podstrom
+        //if((*Tab)->Data->LocalFuncData!=NULL){
+          //  STableDispose(&((*Tab)->Data->LocalFuncData));
+        //}
+
+        // uvolneni pameti
+        free((*Tab)->Data);
+        free(*Tab);
+        *Tab=NULL;
+    }
+}
+
+void STableDisposeLocal(tSymbolTablePtrPromenna *Tab){
+    if(*Tab!=NULL){
+        // pruchod celym stromem
+        STableDisposeLocal(&((*Tab)->LPtr));
+        STableDisposeLocal(&((*Tab)->RPtr));
+
+        // pokud jsem narazil na funkci, respektive pomocny podstrom
+        //if((*Tab)->Data->LocalFuncData!=NULL){
+        //  STableDispose(&((*Tab)->Data->LocalFuncData));
+        //}
+
+        // uvolneni pameti
+        free(*Tab);
+        *Tab=NULL;
+    }
 }

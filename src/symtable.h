@@ -17,34 +17,34 @@ Symtable
 #include "dynamicstring.h"
 
 typedef enum{
-	VARIABLE=1,
-	FUNCTION=2
+    VARIABLE=1,
+    FUNCTION=2
 }SymbolType;
 
 typedef enum{
-	TYPE_INT=1,
-	TYPE_FLOAT64=2,
-	TYPE_STRING=3
+    TYPE_INT=1,
+    TYPE_FLOAT64=2,
+    TYPE_STRING=3
 }SymbolDataType;
 
 typedef union Value{
-	int i;									// pro hodnotu integer
-	double f;								// pro hodnotu float64
-	char *s;								// pro obsah stringu
+    int i;									// pro hodnotu integer
+    double f;								// pro hodnotu float64
+    char *s;								// pro obsah stringu
 }SymbolValue;
 
 
 typedef struct tSymbolData{
-	//SymbolType Type;						// typ - promenna/funkce
-	//SymbolDataType DataType;				// datovy/navratovy typ
-	DynamicString parametry;
-	DynamicString navratovehodnoty;
+    //SymbolType Type;						// typ - promenna/funkce
+    SymbolDataType DataType;				// datovy/navratovy typ
+    //DynamicString parametry;
+    //DynamicString navratovehodnoty;
     bool Defined;							// zda byla fce definovana
-	
-	// data pro funkci
 
-	//struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
-	
+    // data pro funkci
+
+    //struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
+
 }*tSymbolDataPtr;
 
 typedef struct tSymbolDataPromenna{
@@ -55,11 +55,19 @@ typedef struct tSymbolDataPromenna{
 }*tSymbolDataPtrPromenna;
 
 typedef struct tSymbolTable{
-	char *Symbol;							// nazev identifikatoru
-	struct tSymbolData *Data;				// data promenne/funkce predavane strukturou dat
-	struct tSymbolTable *LPtr;				// prvek na globalni urovni s mensim klicem
-	struct tSymbolTable *RPtr;				// prvek na globalni urovni s vetsim klicem
+    char *Symbol;							// nazev identifikatoru
+    struct tSymbolData *Data;				// data promenne/funkce predavane strukturou dat
+    struct tSymbolTable *LPtr;				// prvek na globalni urovni s mensim klicem
+    struct tSymbolTable *RPtr;				// prvek na globalni urovni s vetsim klicem
 }*tSymbolTablePtr;
+
+typedef struct tSymbolTablePromenna{
+    char *Symbol;							// nazev identifikatoru
+    int DatovyTyp;
+    int HloubkaZanoreni;                            // data promenne/funkce predavane strukturou dat
+    struct tSymbolTablePromenna *LPtr;				// prvek na globalni urovni s mensim klicem
+    struct tSymbolTablePromenna *RPtr;				// prvek na globalni urovni s vetsim klicem
+}*tSymbolTablePtrPromenna;
 
 
 void STableInit(tSymbolTablePtr *Tab);
