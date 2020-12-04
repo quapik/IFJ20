@@ -9,12 +9,12 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 Symtable
 */
 
-
+#pragma once
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 #include<stdbool.h>
-#include "dynamicstring.h"
+
 
 typedef enum{
     VARIABLE=1,
@@ -56,24 +56,30 @@ typedef struct tSymbolDataPromenna{
 
 typedef struct tSymbolTable{
     char *Symbol;							// nazev identifikatoru
-    struct tSymbolData *Data;				// data promenne/funkce predavane strukturou dat
+
+    char *datastringparametry;
+    char *datastringnavratovehodnoty;
+    bool defined;   // data promenne/funkce predavane strukturou dat
     struct tSymbolTable *LPtr;				// prvek na globalni urovni s mensim klicem
     struct tSymbolTable *RPtr;				// prvek na globalni urovni s vetsim klicem
 }*tSymbolTablePtr;
 
 typedef struct tSymbolTablePromenna{
     char *Symbol;							// nazev identifikatoru
-    int DatovyTyp;
-    int HloubkaZanoreni;                            // data promenne/funkce predavane strukturou dat
+    char DatovyTyp;
+    unsigned int HloubkaZanoreni;                            // data promenne/funkce predavane strukturou dat
     struct tSymbolTablePromenna *LPtr;				// prvek na globalni urovni s mensim klicem
     struct tSymbolTablePromenna *RPtr;				// prvek na globalni urovni s vetsim klicem
 }*tSymbolTablePtrPromenna;
 
 
 void STableInit(tSymbolTablePtr *Tab);
-tSymbolDataPtr STableSearch(tSymbolTablePtr Tab, char *Symbol);
-void STableInsert(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtr Data);
-void STableInsertPromenna(tSymbolTablePtr *Tab, char *Symbol, tSymbolDataPtrPromenna Data);
+void STableInitLocal(tSymbolTablePtrPromenna *Tab);
+tSymbolTablePtr STableSearch(tSymbolTablePtr Tab, char *Symbol);
+tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Symbol);
+void STableInsert(tSymbolTablePtr *Tab, char *Symbol);
+void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, unsigned int hloubkazanoreni);
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
 void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
 void STableDispose(tSymbolTablePtr *Tab);
+void STableDisposeLocal(tSymbolTablePtrPromenna *Tab);
