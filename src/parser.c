@@ -13,19 +13,24 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
-bool Porovnavani=false;
+
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
 int IDCounter=0; int IDCounterOpacny=0; int FORCounter=0;
 int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
 char* UchovaniID[10];
 bool VeFunkci=false; bool VMainu=false; bool JdemeZReturnu = false;
 char* JmenoPromenne;
-//int AktualniHloubkaZanoreni=0;
+unsigned int AktualniHloubkaZanoreni=0; unsigned int paramscounter=0;
 
+tSymbolTablePtrPromenna LocalTable;
+tSymbolTablePtr GlobalTable;
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
-{
+{   STableInitLocal(&LocalTable);
+    STableInit(&GlobalTable);
+
+
     if(((*token)->type)==T_PACKAGE) //prvni musi byt package main
     {
         (*token)=(*token)->nextToken;
@@ -69,7 +74,7 @@ tToken body(tToken *token)
 {
     //PRAVIDLO <FUNC> -> func ID (<PARAMS>)(NAVRATTYPE_N){ EOL <BODY>}
     if ((*token)->type==T_FUNC)
-    {
+    {   if((VeFunkci==true)||BylMain==true) {(*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;}
         (*token)=(*token)->nextToken;
         (*token)=func_rule(token);
 
@@ -191,6 +196,8 @@ tToken body(tToken *token)
         //PRAVIDLO <BODY> -> EOF
     else if ((*token)->type==T_EOF)
     {  // printf("Pocet koncovych zavorek %d\n",PocetKoncovychZavorek);
+
+        STableDisposeLocal(&LocalTable);
         if ((PossibleEof==true)&&(PocetKoncovychZavorek==0))
         { (*token)->type=T_UNKNOWN;
             if (BylMain==false) //TODO nejak ti to nevypisuje main chybu kdyz chybi
@@ -418,7 +425,12 @@ tToken func_rule(tToken *token)
 
     }
     else if ((*token)->type==T_ID) //Dalsi typy funkci
-    {
+    {   if(STableSearch(GlobalTable,(*token)->data)!=NULL)
+        {
+        printf("Fce jiz byla jednou definovana\n");
+        }
+        STableInsert(&GlobalTable,(*token)->data);
+
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_LDBR) // (
         {
@@ -433,7 +445,13 @@ tToken func_rule(tToken *token)
             if ((*token)->type==T_LDBR) // (
             {
                 (*token)=(*token)->nextToken;
-                (*token)=narvrattype_n(token);
+                GlobalTable->datastringnavratovehodnoty = malloc(sizeof(char)*16);
+                if(GlobalTable->datastringparametry == NULL){
+                    fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro dynamicstring\n");
+                    exit(99);
+                }
+
+                paramscounter=0; (*token)=narvrattype_n(token);
 
                 if ((*token)->type==T_UNKNOWN) //nastala chyba v navrattype_n a nebo je vraceno )
                 {
@@ -542,6 +560,12 @@ tToken narvrattype_n(tToken *token)
 {
     if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
     {
+        if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
+        else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
+        else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
+        GlobalTable->datastringparametry[paramscounter+1]='\0';
+        paramscounter++;
+
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_COMMA)
         {
@@ -551,7 +575,9 @@ tToken narvrattype_n(tToken *token)
         }
         else if ((*token)->type==T_RDBR)
         {
+            printf("Pocet navratovych hodnot %d a jsou %s\n",paramscounter, GlobalTable->datastringparametry);
             return *token;
+
         }
         else
         {
@@ -573,14 +599,24 @@ tToken narvrattype_n(tToken *token)
 
 }
 //pravidla <PARAMS> -> ID <DATATYPE> <PARAMS_N> nebo <PARAMS> ->  EPS
+
 tToken params(tToken *token)
 {
-
+    GlobalTable->datastringparametry = malloc(sizeof(char)*16);
+    if(GlobalTable->datastringparametry == NULL){
+        fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro dynamicstring\n");
+        exit(99);
+    }
     if ((*token)->type==T_ID)
     {
         (*token)=(*token)->nextToken;
         if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
         {
+            if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
+            else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
+            else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
+            GlobalTable->datastringparametry[paramscounter+1]='\0';
+
             (*token)=(*token)->nextToken;
             (*token)=params_n(token);
             if ((*token)->type==T_UNKNOWN) //nastala chyba v params
@@ -610,7 +646,7 @@ tToken params(tToken *token)
 }
 //Pravidlo <params_n> -> , ID  <DATATYPE> <PARAMS_N> nebo  <params_n> -> EPS
 tToken params_n(tToken *token)
-{
+{ paramscounter++;
     if ((*token)->type==T_COMMA)
     {
         (*token)=(*token)->nextToken;
@@ -618,6 +654,11 @@ tToken params_n(tToken *token)
         {   (*token)=(*token)->nextToken;
             if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
             {
+                if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
+                else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
+                else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
+                GlobalTable->datastringparametry[paramscounter+1]='\0';
+
                 (*token)=(*token)->nextToken;
                 (*token)=params_n(token);
                 return *token;
@@ -639,7 +680,7 @@ tToken params_n(tToken *token)
 
     }
     else  if ((*token)->type==T_RDBR) //)
-    {
+    {   printf("ten string je %s a jeho delka je %d\n",GlobalTable->datastringparametry,strlen(GlobalTable->datastringparametry)); paramscounter=0;
         return *token; //ukonceni a vraceni )
     }
     else
@@ -790,13 +831,28 @@ tToken id_next(tToken *token)
     JmenoPromenne = (*token)->prevToken->data;
     if((*token)->type==T_DEFINE) // pokud je :=
     {
+        if(STableSearchLocal(LocalTable,JmenoPromenne)!=NULL)
+        {
+            printf("definice podruhe!!!!!!!");
+             //TODO ERRORIK
+        }
+
+
         CodeGenDefVar(JmenoPromenne);
         (*token)=(*token)->nextToken;
+
+
         (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
+        if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni); printf("1qn\n");}//todo predelat hloubku zanoreni
+        else if (exprTyp==X_STRING) { STableInsertLocal(&LocalTable,JmenoPromenne,'s',AktualniHloubkaZanoreni); printf("2qn\n");}
+        else if (exprTyp==X_FLOAT) { STableInsertLocal(&LocalTable,JmenoPromenne,'f',AktualniHloubkaZanoreni); printf("3qn\n");}
+
         if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
         {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
         }
+
+
         //GENEROVANI KODU TODO DO CODEGEN?
                 printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
                 printf("MOVE %s TF@$return\n", JmenoPromenne);
@@ -874,10 +930,14 @@ tToken id_n(tToken *token)
 //PRAVIDLA <VICE_ID_VLEVO> -> vyraz <vyraz_n> NEBO <VICE_ID_VLEVO> -> ID (<PARAMSCALL>
 tToken vice_id_vlevo(tToken *token)
 {IDCounterOpacny++;
-    if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR))
-    {
+    if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR)) //volani fce
+    {   if(STableSearch(GlobalTable,(*token)->data)==NULL)
+        {
+        printf("Volame fci co nebyla definovana"); //TODO insert
+        }
+
         (*token)=(*token)->nextToken;  (*token)=(*token)->nextToken;
-        (*token)=paramscall(token); //vraceno ) nebo chyba z paramscall
+      paramscounter=0;  (*token)=paramscall(token); paramscounter=0; //vraceno ) nebo chyba z paramscall
         return *token;
         //TODO SEMANTIKA IDčka
     }
@@ -907,15 +967,54 @@ tToken vice_id_vlevo(tToken *token)
 //PRAVIDLO <paramscall> -> ID <PARAMSCALL_N>
 tToken paramscall(tToken *token)
 {
-    if ((*token)->type==T_ID)
+    if ((*token)->type==T_ID||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP))
     {
-        //TODO SEMANTIKA ID
+        //SEMANTIKA TODO ID
+        if((*token)->type==T_ID)
+        {
+            if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
+            {
+                printf("promenna nebyla definovana"); (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+            }
+           printf("datovy typ definovany promenny %c\n",LocalTable->DatovyTyp);
+
+        }
+        if((*token)->type==T_INT)
+        {
+            if(GlobalTable->datastringparametry[paramscounter]!='i') //pokud je čislo, musí se na danem mistě ve funkci nachazet int
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+            }
+        }
+
+        if((*token)->type==T_STRING)
+        {
+            if(GlobalTable->datastringparametry[paramscounter]!='s')
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+            }
+        }
+
+        if((*token)->type==TYPE_FLOAT64)
+        {
+            if(GlobalTable->datastringparametry[paramscounter]!='f')
+            {
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+            }
+        }
+        paramscounter++;
+        //KONEC SEMANTIKY
         (*token)=(*token)->nextToken;
         (*token)=paramscall_n(token); //je vracenej bud error nebo ) a toto vracime do vice_id_vlevo
         return *token;
     }
     else  if ((*token)->type==T_RDBR) //je tam jen () - nějakej input()
     {
+        if(strlen(GlobalTable->datastringparametry)!=paramscounter)
+        {printf("nesedi pocet vstupnich parametru\n");
+            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+
+        }
         return *token;
     }
     else
@@ -935,6 +1034,33 @@ tToken paramscall_n(tToken *token)
         (*token)=(*token)->nextToken;
         if (((*token)->type==T_ID)||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP))
         {
+            //SEMANTIKA TODO ID
+            if((*token)->type==T_INT)
+            {
+                if(GlobalTable->datastringparametry[paramscounter]!='i') //pokud je čislo, musí se na danem mistě ve funkci nachazet int
+                {
+                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                }
+            }
+
+            if((*token)->type==T_STRING)
+            {
+                if(GlobalTable->datastringparametry[paramscounter]!='s')
+                {
+                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                }
+            }
+
+            if((*token)->type==TYPE_FLOAT64)
+            {
+                if(GlobalTable->datastringparametry[paramscounter]!='f')
+                {
+                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                }
+            }
+            paramscounter++;
+            //KONEC SEMANTIKY
+
             (*token)=(*token)->nextToken;
             (*token)=paramscall_n(token);
             return *token;
@@ -949,6 +1075,7 @@ tToken paramscall_n(tToken *token)
     }
     else if ((*token)->type==T_RDBR) //)
     {
+        if(paramscounter!=strlen(GlobalTable->datastringparametry)) (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; //SEMANTIKA -> kontrola poctu
         return *token;
     }
     else
