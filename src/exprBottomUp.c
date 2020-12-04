@@ -43,7 +43,7 @@ xOperator exprTokenTypeToOperator(tType tokenType) {
 }
 
 
-tToken exprBUParse (tToken *token) {
+tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table) {
 
     txStack stack;
     exprBUStackInit(&stack);
@@ -96,7 +96,7 @@ tToken exprBUParse (tToken *token) {
                 (*token) = (*token)->nextToken;
                 break;
             case X_CLOSE: // >
-                tmpRet = exprBUStackClose(stack);
+                tmpRet = exprBUStackClose(stack, table);
                 if (tmpRet > 0) {
                     ret = (int)tmpRet;
                 }
@@ -191,7 +191,6 @@ tToken exprBUParse (tToken *token) {
 //    }
     return *token; //T_UNKNOWN prazdny kdyz error, data ERR_SEM_KOMP
 }
-
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
 
     switch (currOperator) {
@@ -306,10 +305,8 @@ void exprBUStackPush (txStack stack, txItem item)
     stack->xs[stack->top] = item;
 }
 
-unsigned exprBUStackClose(txStack stack)
+unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
 {
-
-
 
     txItem item = exprBUStackPop(stack);
     if (item == NULL)
@@ -357,8 +354,16 @@ unsigned exprBUStackClose(txStack stack)
                     //exprTyp = 's';
                     break;
                 case T_ID:
-                    //TODO sémantika
-                    printf("PUSHS LF@%s\n", item->data.token->data);
+                    if (STableSearchLocal(table, item->data.token->data) == 0)
+                    {
+                        fprintf(stderr, "Error: Promenna neni definovana\n");
+                        return 3;
+                    } else
+                    {
+                        printf("PUSHS LF@%s\n", item->data.token->data);
+                    }
+
+
                     //exprTyp = 'u';
                     break;
                 default:
@@ -547,7 +552,6 @@ unsigned exprBUStackClose(txStack stack)
                     return 2;
                 }
             }
-            //TODO Generovani kodu (DELENI NULOU)
             if (unknownType) printf("todo\n")/*TODO Generovani kodu*/;
             else if (type == X_FLOAT)
             {

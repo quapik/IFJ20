@@ -14,6 +14,7 @@ Precedencni analyza zdola nahoru pro vyrazy
 #include "scanner.h"
 #include "parser.h"
 #include "codegen.h"
+#include "symtable.h"
 
 
 #define EXPR_STACK_ALLOC_SIZE 64
@@ -92,13 +93,13 @@ xNTermType exprTyp;
 
 // funkce
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
-tToken exprBUParse (tToken *token);
+tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table);
 void exprBUStackInit (txStack *stack);
 xOperator exprTokenTypeToOperator(tType tokenType);
 void exprBUStackPush (txStack stack, txItem item);
 txItem exprBUStackPop(txStack stack);
 void exprBUStackOpen (txStack stack, int posun); // < shift
-unsigned exprBUStackClose(txStack stack); // > parse
+unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table); // > parse
 void exprBUStackDispose(txStack *stack);
 void exprBUDivZeroCheck(char *zero); // kontrola deleni nulou, prebira typ 0 (float/int)
 
