@@ -16,44 +16,6 @@ Symtable
 #include<stdbool.h>
 
 
-typedef enum{
-    VARIABLE=1,
-    FUNCTION=2
-}SymbolType;
-
-typedef enum{
-    TYPE_INT=1,
-    TYPE_FLOAT64=2,
-    TYPE_STRING=3
-}SymbolDataType;
-
-typedef union Value{
-    int i;									// pro hodnotu integer
-    double f;								// pro hodnotu float64
-    char *s;								// pro obsah stringu
-}SymbolValue;
-
-
-typedef struct tSymbolData{
-    //SymbolType Type;						// typ - promenna/funkce
-    SymbolDataType DataType;				// datovy/navratovy typ
-    //DynamicString parametry;
-    //DynamicString navratovehodnoty;
-    bool Defined;							// zda byla fce definovana
-
-    // data pro funkci
-
-    //struct tSymbolTable *LocalFuncData;		// pomocna tabulka pro lokalni funkce a jejich promenne
-
-}*tSymbolDataPtr;
-
-typedef struct tSymbolDataPromenna{
-
-    SymbolDataType DataType;				// datovy/navratovy typ
-    int HloubkaZanoreni;
-
-}*tSymbolDataPtrPromenna;
-
 typedef struct tSymbolTable{
     char *Symbol;							// nazev identifikatoru
 
@@ -83,3 +45,4 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
 void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
 void STableDispose(tSymbolTablePtr *Tab);
 void STableDisposeLocal(tSymbolTablePtrPromenna *Tab);
+void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazanoreni);
