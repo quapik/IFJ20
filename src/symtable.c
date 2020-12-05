@@ -205,7 +205,46 @@ void STableDisposeLocal(tSymbolTablePtrPromenna *Tab){
         //}
 
         // uvolneni pameti
+
         free(*Tab);
         *Tab=NULL;
     }
+}
+
+void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazanoreni){
+
+    if(*Tab!=NULL)
+    {
+        if((*Tab)->HloubkaZanoreni>hloubkazanoreni) //pokud aktualni polozka ma vetsi hloubku zanoreni, byla zanorena a je treba smazat
+        {
+            printf("mazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+        }
+        else if ((*Tab)->LPtr!=NULL) //pokud mame levy podstrom
+        {
+            if((*Tab)->LPtr->HloubkaZanoreni>hloubkazanoreni)
+            {
+                printf("mazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+            }
+            else
+            {
+                STableDisposeZanorene(&(*Tab)->LPtr,hloubkazanoreni);
+            }
+        }
+
+        else if ((*Tab)->RPtr!=NULL) //pokud mame levy podstrom
+        {
+            if((*Tab)->RPtr->HloubkaZanoreni>hloubkazanoreni)
+            {
+                printf("mazumazumazumazumazumazumazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+            }
+            else
+            {
+                STableDisposeZanorene(&(*Tab)->RPtr,hloubkazanoreni);
+            }
+        }
+
+
+
+    }
+
 }

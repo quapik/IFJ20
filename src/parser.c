@@ -159,7 +159,7 @@
             if ((*token)->type==T_ASSIGN) // =
             {
                 (*token)=(*token)->nextToken;
-                (*token)=exprBUParse(token); //TODO zahodit to co jsme dostali
+                (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //TODO zahodit to co jsme dostali
                 if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
                 {
                     return *token;
@@ -235,7 +235,7 @@
                     }
                 (*token)=(*token)->nextToken;
                 //TODO KONTROLA DATOVYCH TYPU
-                (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+                ((*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
                 if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
                 {
                     return *token;
@@ -244,13 +244,48 @@
                     {
                         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba v returnu \n");  return *token;
                     }
-                JdemeZReturnu=true;
-                (*token)=vyraz_n(token);
-                JdemeZReturnu=false;
-                if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
+                if (exprTyp==X_INT) { if(GlobalTable->datastringnavratovehodnoty[0]!='i') printf("chyba navrat"); }
+                if (exprTyp==X_STRING) { if(GlobalTable->datastringnavratovehodnoty[0]!='s') printf("chyba navrat"); }
+                if (exprTyp==X_FLOAT) { if(GlobalTable->datastringnavratovehodnoty[0]!='f') printf("chyba navrat"); }
+               // JdemeZReturnu=true;
+               // (*token)=vyraz_n(token);
+               //JdemeZReturnu=false;
+               int pom=1;
+               while(pom<strlen(GlobalTable->datastringnavratovehodnoty)) //prochazeni v priapde ze je vice navratovych hodnot
+               {
+                  if((*token)->type==T_COMMA)
+                  {
+                      (*token)=(*token)->nextToken;
+                      (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+                      if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
+                      {
+                          return *token;
+                      }
+                      if(Porovnavani==true) //pokud ve vyrazu vyskytlo porovnavani
+                      {
+                          (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba v returnu \n");  return *token;
+                      }
+
+                      if (exprTyp==X_INT) { if(GlobalTable->datastringnavratovehodnoty[pom]!='i') {(*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET";  return *token;}}
+                      if (exprTyp==X_STRING) { if(GlobalTable->datastringnavratovehodnoty[pom]!='s'){ (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET";  return *token; }}
+                      if (exprTyp==X_FLOAT) { if(GlobalTable->datastringnavratovehodnoty[pom]!='f'){ (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET";  return *token; }}
+                      printf("hodnota pom %d a delka co porovanvame %d\n",pom,strlen(GlobalTable->datastringnavratovehodnoty));
+                     pom++;
+
+                  }
+                  else
+                  {
+                      (*token)->type=T_UNKNOWN;   (*token)->data="ERR_SEM_POCET";  return *token;
+                  }
+
+               }
+
+                if ((*token)->type==T_COMMA) //Pokud bylo moc parametru
                 {
-                    return *token;
+                    (*token)->type=T_UNKNOWN;   (*token)->data="ERR_SEM_POCET";  return *token;
                 }
+                //KONEC SEMANTIKY
+
                 (*token)=body(token);
                 return *token;
             }
@@ -299,10 +334,10 @@
 
     }
     tToken if_rule(tToken *token)
-    {   PossibleEof=false;
+    {   PossibleEof=false; AktualniHloubkaZanoreni++;
         //TED MUSI BYT VYRAZ
 
-        (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if(Porovnavani==false) //pokud ve vyrazu nebylo porovnavani
         {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba ifu-nebylo porovnavani \n");  return *token;
@@ -355,7 +390,8 @@
                                     if ((*token)->type==T_RCBR) // } konec else
                                     {
                                         printf("LABEL $endiflabel%d\n",ELSECounter);
-                                        PocetKoncovychZavorek--; ELSECounter--;
+                                        PocetKoncovychZavorek--; ELSECounter--; AktualniHloubkaZanoreni--;
+                                        STableDisposeZanorene(&LocalTable,AktualniHloubkaZanoreni);
                                         PossibleEof=true; return *token; //cele pravidlo if je ok takze vracime aktualni
                                     }
                                 }
@@ -433,9 +469,10 @@
         {   AktualniHloubkaZanoreni++;
             if(STableSearch(GlobalTable,(*token)->data)!=NULL)
             {
-            printf("Fce jiz byla jednou definovana\n");
+            printf("Fce jiz byla jednou definovana\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return* token;
             }
             STableInsert(&GlobalTable,(*token)->data);
+            GlobalTable->defined=true;
 
             (*token)=(*token)->nextToken;
             if ((*token)->type==T_LDBR) // (
@@ -477,7 +514,8 @@
                             }
                             (*token)=(*token)->nextToken;
                             if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
-                            {   PocetKoncovychZavorek--; VeFunkci=false;
+                            {   PocetKoncovychZavorek--; VeFunkci=false; AktualniHloubkaZanoreni--;
+                                STableDisposeZanorene(&LocalTable,AktualniHloubkaZanoreni);
                                 (*token)=(*token)->nextToken;
                                 (*token)=body(token);
                                 return *token;
@@ -519,6 +557,7 @@
                         (*token)=(*token)->nextToken;
                         if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
                         {   PocetKoncovychZavorek--; AktualniHloubkaZanoreni--;
+                            STableDisposeZanorene(&LocalTable,AktualniHloubkaZanoreni);
                             (*token)=(*token)->nextToken;
                             (*token)=body(token);
                             return *token;
@@ -581,7 +620,7 @@
             }
             else if ((*token)->type==T_RDBR)
             {
-                printf("Pocet navratovych hodnot %d a jsou %s\n",paramscounter, GlobalTable->datastringnavratovehodnoty);
+                printf("Pocet navratovych hodnot %d a jsou %s\n",strlen(GlobalTable->datastringnavratovehodnoty), GlobalTable->datastringnavratovehodnoty);
                 return *token;
 
             }
@@ -700,7 +739,7 @@
     }
 
     tToken for_rule(tToken *token) //TODO spravne cislovani for labelu (jako u ifu)
-    { FORCounter++;
+    { FORCounter++; AktualniHloubkaZanoreni++;
         PossibleEof=false;
         if ((*token)->type==T_ID)
         {  JmenoPromenne=(*token)->data;
@@ -709,7 +748,7 @@
             {   CodeGenDefVar(JmenoPromenne);
 
                 (*token)=(*token)->nextToken;
-                (*token)=exprBUParse(token);
+                (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
 
                 if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
                 {
@@ -738,7 +777,7 @@
         if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
         {
             (*token)=(*token)->nextToken; //ted povinny vyraz
-            (*token)=exprBUParse(token);
+            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
             if(Porovnavani==false) //pokud by se ve vyrazu nevyskytlo porovnani
             {
                 (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for vyraz\n"); return *token;
@@ -765,7 +804,7 @@
                     if ((*token)->type==T_ASSIGN)
                     {
                         (*token)=(*token)->nextToken;
-                        (*token) = exprBUParse(token);
+                        (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
                         if ((*token)->type == T_UNKNOWN)
                         {
                             return *token;
@@ -797,7 +836,8 @@
                             printf("JUMP $forprirazeni%d\n",FORCounter);
                             printf("LABEL $forendlabel%d\n",FORCounter);
 
-                            PocetKoncovychZavorek--;
+                            PocetKoncovychZavorek--; AktualniHloubkaZanoreni--;
+                            STableDisposeZanorene(&LocalTable,AktualniHloubkaZanoreni);
                             return *token;
                         }
                         else
@@ -856,10 +896,10 @@
             (*token)=(*token)->nextToken;
 
             // (*token)=exprBUParse(token,LocalTable);
-            (*token)=exprBUParse(token); //do tokenu bud T_UNKNOWN nebo nasledujici znak
-            if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni); printf("1qn\n");}//todo predelat hloubku zanoreni
-            else if (exprTyp==X_STRING) { STableInsertLocal(&LocalTable,JmenoPromenne,'s',AktualniHloubkaZanoreni); printf("2qn\n");}
-            else if (exprTyp==X_FLOAT) { STableInsertLocal(&LocalTable,JmenoPromenne,'f',AktualniHloubkaZanoreni); printf("3qn\n");}
+            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do tokenu bud T_UNKNOWN nebo nasledujici znak
+            if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni);}//todo predelat hloubku zanoreni
+            else if (exprTyp==X_STRING) { STableInsertLocal(&LocalTable,JmenoPromenne,'s',AktualniHloubkaZanoreni); }
+            else if (exprTyp==X_FLOAT) { STableInsertLocal(&LocalTable,JmenoPromenne,'f',AktualniHloubkaZanoreni); }
 
             if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
             {
@@ -971,7 +1011,7 @@
         else
         {
 
-            (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
                 return *token;
@@ -1027,7 +1067,7 @@
                 }
             }
 
-            if((*token)->type==TYPE_FLOAT64)
+            if((*token)->type==T_EXP) //TODO??? je to T_EXP
             {
                 if(GlobalTable->datastringparametry[paramscounter]!='f')
                 {
@@ -1083,7 +1123,7 @@
                     }
                 }
 
-                if((*token)->type==TYPE_FLOAT64)
+                if((*token)->type==T_EXP) //TODO??? je to T_EXP
                 {
                     if(GlobalTable->datastringparametry[paramscounter]!='f')
                     {
@@ -1123,7 +1163,7 @@
         if ((*token)->type==T_COMMA) //nastala chyba pri vyrazu
         {
             (*token)=(*token)->nextToken;
-            (*token)=exprBUParse(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);//do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
 
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
