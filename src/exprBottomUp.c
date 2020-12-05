@@ -50,6 +50,7 @@ tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table) {
 
     //CodeGenDefVar("dfsdf");
 
+    Porovnavani = false;
     int ret = -1;
     unsigned tmpRet;
     //bool first = true;
