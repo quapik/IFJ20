@@ -34,6 +34,7 @@ xOperator exprTokenTypeToOperator(tType tokenType) {
             return X_RDBR;
         case T_INT:
         case T_EXP:
+        case T_DOUBLE:
         case T_STRING:
         case T_ID:
             return X_N;
@@ -344,6 +345,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                     //exprTyp = 'i';
                     break;
                 case T_EXP:
+                case T_DOUBLE:
                     printf("PUSHS float@%s\n", item->data.token->data);
                     ntype = X_FLOAT;
                     //exprTyp = 'i';
@@ -523,13 +525,13 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                     return 2;
                 }
             }
-            else
-            {
-                free(item);
-                free(rItem);
-                free(lItem);
-                return 5;
-            }
+//            else
+//            {
+//                free(item);
+//                free(rItem);
+//                free(lItem);
+//                return 5;
+//            }
         case T_LESS:
         case T_GREAT:
         case T_LEQ:
