@@ -90,6 +90,11 @@ tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table) {
             case X_OPEN: // shift <
                 exprBUStackOpen(stack, posun + 1);
                 item = malloc(sizeof(struct xItem)); //TODO CHYBA ALOKACE
+                if (item == NULL)
+                {
+                    fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet\n");
+                    exit(99);
+                }
                 item->type = XT_TERM;
                 item->data.token = *token;
                 exprBUStackPush(stack, item);
@@ -164,22 +169,22 @@ tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table) {
         }
     }
     //debug
-    switch (exprTyp) {
-        case X_STRING:
-            printf("vraceny typ = string\n");
-            break;
-        case X_FLOAT:
-            printf("vraceny typ = float\n");
-            break;
-        case X_INT:
-            printf("vraceny typ = int\n");
-            break;
-        case X_UNKNOWN:
-            printf("vraceny typ = unknown (id)\n");
-            break;
-        default:
-            break;
-    }
+//    switch (exprTyp) {
+//        case X_STRING:
+//            printf("vraceny typ = string\n");
+//            break;
+//        case X_FLOAT:
+//            printf("vraceny typ = float\n");
+//            break;
+//        case X_INT:
+//            printf("vraceny typ = int\n");
+//            break;
+//        case X_UNKNOWN:
+//            printf("vraceny typ = unknown (id)\n");
+//            break;
+//        default:
+//            break;
+//    }
     //debug
 //    if (Porovnavani == true)
 //    {
@@ -189,7 +194,7 @@ tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table) {
 //    {
 //        printf("Precedencni: (debug) Vse v poradku.\n");
 //    }
-    return *token; //T_UNKNOWN prazdny kdyz error, data ERR_SEM_KOMP
+    return *token; //T_UNKNOWN prazdny, kdyz error - data ERR_SEM_KOMP
 }
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator) {
 
@@ -416,24 +421,6 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
         {
             type = lType;
             isSame = true;
-
-            //pro parser
-            switch (lType) {
-                case X_UNKNOWN:
-                    exprTyp = 'u';
-                    break;
-                case X_FLOAT:
-                    exprTyp = 'f';
-                    break;
-                case X_INT:
-                    exprTyp = 'i';
-                    break;
-                case X_STRING:
-                    exprTyp = 's';
-                    break;
-                default:
-                    break;
-            }
         }
         else if (lType == X_UNKNOWN) //nejsou stejne typy a vlevo je prom
         {
@@ -453,11 +440,8 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
 //        }
     }
 
-
+    //uprava glob. promenne pro typ vyrazu (do parseru)
     exprTyp = type;
-
-
-
 
 
     switch (item->data.token->type) {
@@ -472,27 +456,15 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                 return 2;
             }
             if (unknownType) printf("todo\n");/*TODO generovani kodu */
-            if (!(isSingle) && !(isSame))
+            if (!(isSame)) //umazal jsem issingle
             {
-                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
+                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu (scitani)\n");
                 free(item);
                 free((rItem));
                 free(lItem);
                 return 5;
             }
-            if (!unknownType)
-            {
-                if (type == X_STRING)
-                {
-                    //TODO Generovani kodu
-                }
-                else
-                {
-                    //TODO Generovani kodu
-                }
-            }
             break;
-
         case T_SUB:
             Porovnavani = false;
             if (isSingle)
@@ -503,21 +475,40 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                 return 2;
             }
             if (unknownType) printf("todo\n")/*TODO generovani kodu*/;
-            if ((!(isSingle) && !(isSame)) || (type == X_STRING))
+            if (!(isSame) || (type == X_STRING))
             {
-                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
+                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu (odcitani)\n");
                 free(item);
                 free(rItem);
                 free(lItem);
                 return 5;
             }
-            //TODO Generovani kodu
             break;
         case T_MUL:
             Porovnavani = false;
             if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
+                free(item);
+                free(rItem);
+                free(lItem);
+                if (!isSingle)
+                {
+                    fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu (nasobeni)\n");
+                    return 5;
+                } else
+                {
+                    fprintf(stderr, "Error: chyba ve vyrazu\n");
+                    return 2;
+                }
+            }
+            break;
+        case T_DIV:
+            Porovnavani = false;
+            if (unknownType) printf("todo\n")/* TODO Generovani kodu symtable */;
+            if (!(isSame) || (type == X_STRING))
+            {
+                //fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
                 free(item);
                 free(rItem);
                 free(lItem);
@@ -531,36 +522,6 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                     return 2;
                 }
             }
-            //TODO Generovani kodu
-            break;
-        case T_DIV:
-            Porovnavani = false;
-            if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
-            if (!(isSame) || (type == X_STRING))
-            {
-                fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
-                free(item);
-                free(rItem);
-                free(lItem);
-                if (!isSingle)
-                {
-                    fprintf(stderr, "Error: chybna kombinace datovych typu ve vyrazu\n");
-                    return 5;
-                } else
-                {
-                    fprintf(stderr, "Error: chyba ve výrazu\n");
-                    return 2;
-                }
-            }
-            if (unknownType) printf("todo\n")/*TODO Generovani kodu*/;
-            else if (type == X_FLOAT)
-            {
-                //TODO Generovani kodu
-            }
-            else if (type == X_INT)
-            {
-                //TODO Generovani kodu
-            }
             else
             {
                 free(item);
@@ -568,7 +529,6 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                 free(lItem);
                 return 5;
             }
-            break;
         case T_LESS:
         case T_GREAT:
         case T_LEQ:
@@ -578,7 +538,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             {
                 //TODO generovani kodu
             }
-            if (unknownType) printf("todo\n")/*TODO generovani kodu*/;
+            if (unknownType) printf("todo\n")/*TODO generovani kodu symtable*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
                 fprintf(stderr, "Error: ve vyrazu: porovnavame operandy rozdilnych typu\n");
@@ -601,11 +561,15 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                 }
                 else if (unknownType)
                 {
-                    //TODO Generovani kodu
+                    //TODO Generovani kodu symtable
                 }
-                else if (!(isSame))
+                if (!(isSame) || (type == X_STRING))
                 {
-                    //TODO Generovani kodu
+                    fprintf(stderr, "Error: ve vyrazu: porovnavame operandy rozdilnych typu\n");
+                    free(item);
+                    free(rItem);
+                    free(lItem);
+                    return 5;
                 }
                 break;
 
