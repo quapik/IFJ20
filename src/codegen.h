@@ -13,8 +13,10 @@ Generování kódu
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include "scanner.h"
 
 void CodeGenStart();
 void CodeGenDefVar(char* id);
 char *gen_float(char *input_float);
 void gen_string(char *input_string);
+void CodeGenPrint(tToken *token);
