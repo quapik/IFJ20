@@ -30,7 +30,6 @@
     {   STableInitLocal(&LocalTable);
         STableInit(&GlobalTable);
 
-
         if(((*token)->type)==T_PACKAGE) //prvni musi byt package main
         {
             (*token)=(*token)->nextToken;
@@ -159,7 +158,7 @@
             if ((*token)->type==T_ASSIGN) // =
             {
                 (*token)=(*token)->nextToken;
-                (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //TODO zahodit to co jsme dostali
+                (*token)=exprBUParse(token,LocalTable); //TODO zahodit to co jsme dostali
                 if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
                 {
                     return *token;
@@ -235,7 +234,7 @@
                     }
                 (*token)=(*token)->nextToken;
                 //TODO KONTROLA DATOVYCH TYPU
-                ((*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+                ((*token)=exprBUParse(token,LocalTable)); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
                 if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
                 {
                     return *token;
@@ -256,7 +255,7 @@
                   if((*token)->type==T_COMMA)
                   {
                       (*token)=(*token)->nextToken;
-                      (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+                      (*token)=exprBUParse(token,LocalTable); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
                       if ((*token)->type==T_UNKNOWN) //pokud nastala chyba pri vyrazu
                       {
                           return *token;
@@ -306,7 +305,7 @@
             printf("Chybne FIRST v body\n");
             return *token;
         }
-        return *token; //TODO divny
+        return *token;
     }
     tToken print_rule(tToken *token)
     {
@@ -337,7 +336,7 @@
     {   PossibleEof=false; AktualniHloubkaZanoreni++;
         //TED MUSI BYT VYRAZ
 
-        (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        (*token)=exprBUParse(token,LocalTable); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if(Porovnavani==false) //pokud ve vyrazu nebylo porovnavani
         {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba ifu-nebylo porovnavani \n");  return *token;
@@ -748,7 +747,7 @@
             {   CodeGenDefVar(JmenoPromenne);
 
                 (*token)=(*token)->nextToken;
-                (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
+                (*token)=exprBUParse(token,LocalTable);
 
                 if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
                 {
@@ -777,7 +776,7 @@
         if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
         {
             (*token)=(*token)->nextToken; //ted povinny vyraz
-            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
+            (*token)=exprBUParse(token,LocalTable);
             if(Porovnavani==false) //pokud by se ve vyrazu nevyskytlo porovnani
             {
                 (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for vyraz\n"); return *token;
@@ -804,12 +803,12 @@
                     if ((*token)->type==T_ASSIGN)
                     {
                         (*token)=(*token)->nextToken;
-                        (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);
+                        (*token)=exprBUParse(token,LocalTable);
                         if ((*token)->type == T_UNKNOWN)
                         {
                             return *token;
                         }
-                        if(Porovnavani==true) //pokud by se ve vyrazu vyskytlo porovnani //TODO testovat
+                        if(Porovnavani==true) //pokud by se ve vyrazu vyskytlo porovnani
                         {
                             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for prikaz_prirazeni\n");
                             return *token;
@@ -891,21 +890,20 @@
                     return *token;
                 }
             }
-
             CodeGenDefVar(JmenoPromenne);
-            (*token)=(*token)->nextToken;
 
-            // (*token)=exprBUParse(token,LocalTable);
-            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do tokenu bud T_UNKNOWN nebo nasledujici znak
-            if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni);}//todo predelat hloubku zanoreni
+            (*token)=(*token)->nextToken;
+            (*token)=exprBUParse(token,LocalTable);
+            //SEMANTICKA CAST - vlozeni jmena promenne, datoveho typu a hloubky zanoreni do LocalTable
+            if (exprTyp==X_INT)  {STableInsertLocal(&LocalTable,JmenoPromenne,'i',AktualniHloubkaZanoreni);}
             else if (exprTyp==X_STRING) { STableInsertLocal(&LocalTable,JmenoPromenne,'s',AktualniHloubkaZanoreni); }
             else if (exprTyp==X_FLOAT) { STableInsertLocal(&LocalTable,JmenoPromenne,'f',AktualniHloubkaZanoreni); }
 
             if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
             {
-                (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
+                (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chybas (porovnavani tam kde nema byt \n");
+                return *token;
             }
-
 
             //GENEROVANI KODU TODO DO CODEGEN?
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
@@ -913,7 +911,7 @@
 
             return *token;
         }
-        else if ((*token)->type==T_COMMA) //pokud je carka
+        else if ((*token)->type==T_COMMA) //pokud mame za ID carku
         {   UchovaniID[IDCounter+1]=(*token)->prevToken->data;
             (*token)=id_n(token); //volat <ID_N> (vice identifikatoru za sebou)
 
@@ -921,7 +919,7 @@
             {
                 return *token;
             }
-            if ((*token)->type==T_ASSIGN) //=
+            if ((*token)->type==T_ASSIGN)  //po vice identifikatorech prislo =
             {
                 (*token)=(*token)->nextToken; IDCounterOpacny=0;
                 (*token)=vice_id_vlevo(token);
@@ -937,18 +935,12 @@
         }
         else if ((*token)->type==T_ASSIGN) // JEN ID=
         {
-            if(STableSearchLocal(LocalTable,(*token)->prevToken->data)==NULL)
-            { //TODO kontrola zanoreni
+            if(STableSearchLocal(LocalTable,(*token)->prevToken->data)==NULL) //pokud nebyla promenena nalezna v LocalTable
+            {
                 printf("Promenna nebyla definovana1\n");  (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;
             }
-            else
-            {   printf("%d v table, %d ted",LocalTable->HloubkaZanoreni,AktualniHloubkaZanoreni);
-                if(LocalTable->HloubkaZanoreni>AktualniHloubkaZanoreni)
-                {   //TODO když je define ve fci i v mainu tak to nebere
-                        printf("Promenna nebyla definovana2\n");  (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;
-                }
-            }
-            IDCounter=1;
+            printf("testovaci vypis %c\n\n\n",STableSearchLocalReturnType(LocalTable,(*token)->prevToken->data));
+            IDCounter=1; //nastaaveni napevno aby nekolidovalo s vice id
             UchovaniID[IDCounter]=(*token)->prevToken->data;
             (*token)=(*token)->nextToken; IDCounterOpacny=0;
             (*token)=vice_id_vlevo(token); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
@@ -966,9 +958,15 @@
     {   IDCounter++;
         if((*token)->type==T_COMMA) //pri prvnim volani je to jiste, pak kontrola
         {
-            (*token) = (*token)->nextToken;
+            (*token)=(*token)->nextToken;
             if ((*token)->type == T_ID) //ted musi byt id jinak chyba
-            {   UchovaniID[IDCounter+1]=(*token)->data;
+            {
+                if(STableSearchLocal(LocalTable,(*token)->data)==NULL) //pokud nebyla promenena nalezna v LocalTable
+                {
+                    printf("Promenna nebyla definovana1\n");  (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;
+                }
+
+                UchovaniID[IDCounter+1]=(*token)->data;
                 (*token) = (*token)->nextToken;
                 (*token) = id_n(token); //rekurzivni volani, kde se jiz kontroluje carka nebo =
                 return *token;
@@ -1010,21 +1008,28 @@
         }
         else
         {
-
-            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            //pokud nevolame funkci, musi nasledovat vyraz
+            (*token)=exprBUParse(token,LocalTable); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
                 return *token;
             }
+            //SEMANTICKA CAST
             if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
             {
                 (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
             }
+            //Kontrola zda sedi datove typy, ktere ted prirazujeme a ktere byly definovany
+
+            if (exprTyp==X_INT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='i') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            if (exprTyp==X_STRING) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='s') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            if (exprTyp==X_FLOAT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='f') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            //KONEC SEMANTICKE CASTI
 
             //GENEROVANI
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
                     printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
-
+            IDCounterOpacny++;
             (*token)=vyraz_n(token);
             return *token;
         }
@@ -1067,7 +1072,7 @@
                 }
             }
 
-            if((*token)->type==T_EXP) //TODO??? je to T_EXP
+            if(((*token)->type==T_EXP)||((*token)->type==T_DOUBLE))
             {
                 if(GlobalTable->datastringparametry[paramscounter]!='f')
                 {
@@ -1123,7 +1128,7 @@
                     }
                 }
 
-                if((*token)->type==T_EXP) //TODO??? je to T_EXP
+                if(((*token)->type==T_EXP)||(*token)->type==T_DOUBLE)
                 {
                     if(GlobalTable->datastringparametry[paramscounter]!='f')
                     {
@@ -1163,24 +1168,30 @@
         if ((*token)->type==T_COMMA) //nastala chyba pri vyrazu
         {
             (*token)=(*token)->nextToken;
-            (*token)=exprBUParse(token,LocalTable,AktualniHloubkaZanoreni);//do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+            (*token)=exprBUParse(token,LocalTable);//do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
 
             if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
             {
                 return *token;
             }
-
+            //SEMANTICKA CAST
             if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
             {
                 (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt vyraz_n \n");  return *token;
             }
 
-            IDCounterOpacny++;
+            //Kontrola zda sedi datove typy, ktere ted prirazujeme a ktere byly definovany
+            if (exprTyp==X_INT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='i') { printf("tu1\n"); (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            if (exprTyp==X_STRING) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='s') { printf("tu2\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            if (exprTyp==X_FLOAT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='f') { printf("tu3\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+            //KONEC SEMANTICKE CASTI
+
+
             //GENEROVANI KODU
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
                     printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
-
-                    (*token)=vyraz_n(token);
+            IDCounterOpacny++;
+                    (*token)=vyraz_n(token); //rekurzivni volani teto funkce
              return *token;
         }
         else
@@ -1188,7 +1199,7 @@
             if (JdemeZReturnu==false)
             {
                 if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
-                {  // printf("IDCOUNTER %d\n",IDCounter);
+                {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; printf("chyba-> ruzny pocet id a vyrazu  <vyraz_n>\n");
                    return *token;
                 }
