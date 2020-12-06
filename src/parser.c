@@ -158,7 +158,7 @@
             if ((*token)->type==T_ASSIGN) // =
             {
                 (*token)=(*token)->nextToken;
-                (*token)=exprBUParse(token,LocalTable); //TODO zahodit to co jsme dostali
+                (*token)=exprBUParse(token,LocalTable);
                 if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
                 {
                     return *token;
@@ -167,7 +167,7 @@
                 {
                     (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba v _ \n");  return *token;
                 }
-
+                printf("CLEARS\n"); //vycisteni stacku (zapomenuti hodnoty)
                 (*token)=body(token);
                 return *token;
 
@@ -180,6 +180,67 @@
         else if ((*token)->type==T_ID) //Máme identifikátor (s hodnotou)
         {
             (*token)=(*token)->nextToken;
+            if ((*token)->type==T_LDBR) //pokud mame volani funkce ale nikam neprirazujeme
+            {
+                if(STableSearch(GlobalTable,(*token)->prevToken->data)==NULL) //funkce nenalezena
+                {
+                //TODO INSERT
+                }
+                else //funkce nalezena
+                {
+                    if(strlen(GlobalTable->datastringnavratovehodnoty)!=0) //pokud volana funkce ma nějake navratove hodnoty
+                    {
+                        printf ("tu1\n"); (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET"; return *token;
+                    }
+                    (*token)=(*token)->nextToken;
+                    if(((*token)->type==T_RDBR)&&strlen(GlobalTable->datastringparametry)!=0)
+                    {
+                        printf ("tu2\n"); (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET"; return *token;
+                    }
+                    paramscounter=0;
+                    while((*token)->type!=T_RDBR)
+                    {
+                        if ((*token)->type==T_ID)
+                        {
+                            if(STableSearchLocal(LocalTable,(*token)->data)==NULL) {
+                                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;}
+                            if(STableSearchLocalReturnType(LocalTable,(*token)->data)!=GlobalTable->datastringparametry[paramscounter])
+                            {
+                                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                            }
+
+
+                        }
+                        else if ((*token)->type==T_INT) {
+                            if((GlobalTable->datastringparametry[paramscounter])!='i') {(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;}
+                        }
+                        else if ((*token)->type==T_STRING) {
+                            if((GlobalTable->datastringparametry[paramscounter])!='s') {(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;}
+                        }
+                        else if (((*token)->type==T_EXP)||((*token)->type==T_DOUBLE)) {
+                            if((GlobalTable->datastringparametry[paramscounter])!='f') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;}
+                        }
+                        else
+                        {
+                            (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; return *token;
+                        }
+
+                        (*token)=(*token)->nextToken;
+                        if ((*token)->type==T_COMMA)
+                        {
+                            (*token)=(*token)->nextToken;
+                        }
+                        paramscounter++;
+                    }
+
+                    (*token)=(*token)->nextToken;
+                    (*token)=body(token);
+                    return *token;
+
+                }
+
+            }
+
             (*token)=id_next(token);
 
             if ((*token)->type==T_UNKNOWN) //nastala chyba v ID_NEXT
@@ -470,8 +531,7 @@
             {
             printf("Fce jiz byla jednou definovana\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return* token;
             }
-            STableInsert(&GlobalTable,(*token)->data);
-            GlobalTable->defined=true;
+            STableInsert(&GlobalTable,(*token)->data,true);
 
             (*token)=(*token)->nextToken;
             if ((*token)->type==T_LDBR) // (
@@ -484,15 +544,17 @@
                     return *token;
                 }
                 (*token)=(*token)->nextToken; //kdyz ok tak by mel nasledovat ( NEBO { kdyz je seznam navartovych prazdny
+
+                GlobalTable->datastringnavratovehodnoty = malloc(sizeof(char)*16);
+                if(GlobalTable->datastringparametry == NULL){
+                    fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro dynamicstring\n");
+                    exit(99);
+                }
+
+                GlobalTable->datastringnavratovehodnoty[0]='\0';
                 if ((*token)->type==T_LDBR) // (
                 {
                     (*token)=(*token)->nextToken;
-                    GlobalTable->datastringnavratovehodnoty = malloc(sizeof(char)*16);
-                    if(GlobalTable->datastringparametry == NULL){
-                        fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro dynamicstring\n");
-                        exit(99);
-                    }
-
                     paramscounter=0; (*token)=narvrattype_n(token);
 
                     if ((*token)->type==T_UNKNOWN) //nastala chyba v navrattype_n a nebo je vraceno )
@@ -545,6 +607,7 @@
                 }
                 else if ((*token)->type==T_LCBR) // je rovnou { ->  nejsou zadne navratove datove typy
                 {   PocetKoncovychZavorek++;
+                    VeFunkci=true;
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_EOL)
                     {
@@ -554,8 +617,9 @@
                             return *token;
                         }
                         (*token)=(*token)->nextToken;
+
                         if ((*token)->type==T_RCBR) // }a tim ukonceni tela funkce
-                        {   PocetKoncovychZavorek--; AktualniHloubkaZanoreni--;
+                        {   PocetKoncovychZavorek--; AktualniHloubkaZanoreni--; VeFunkci=false;
                             STableDisposeZanorene(&LocalTable,AktualniHloubkaZanoreni);
                             (*token)=(*token)->nextToken;
                             (*token)=body(token);
@@ -678,7 +742,9 @@
         }
         else if ((*token)->type==T_RDBR)
         {
+            GlobalTable->datastringparametry[0]='\0';
             return *token; //vraci ) do func
+
         }
         else
         {
