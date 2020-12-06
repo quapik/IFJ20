@@ -157,3 +157,59 @@ printf("POPFRAME\n");
 printf("RETURN\n");
     
 }
+void gen_input()
+{
+printf("LABEL $read_inputs\n");
+printf("PUSHFRAME\n");
+
+printf("DEFVAR LF@%%string_read\n");
+printf("MOVE LF@%%string_read string@\n");
+printf("DEFVAR LF@%%read_err1\n");
+printf("MOVE LF@%%read_err1 int@0\n");
+
+printf("READ LF@%%string_read string\n");
+printf("JUMPIFEQ $err_inputs LF@%%string_read string@\n");
+printf("JUMP $end_inputs\n");
+
+printf("LABEL $err_inputs\n");
+printf("MOVE LF@%%read_err1 int@1\n");
+
+printf("LABEL $end_inputs\n");
+printf("POPFRAME\n");
+printf("RETURN\n");
+
+printf("LABEL $read_inputi\n");
+printf("PUSHFRAME\n");
+printf("DEFVAR LF@%%int_read\n");
+printf("MOVE LF@%%int_read nil@nil\n");
+printf("DEFVAR LF@%%read_err2\n");
+printf("MOVE LF@%%read_err2 int@0\n");
+
+printf("READ LF@%%int_read int\n");
+printf("JUMPIFEQ $err_inputi LF@%%int_read nil@nil\n");
+printf("JUMP $end_inputi\n");
+
+printf("LABEL $err_inputi\n");
+printf("MOVE LF@%%read_err2 int@1\n");
+
+printf("LABEL $end_inputi\n");
+printf("POPFRAME\n");
+printf("RETURN\n");
+
+printf("LABEL $read_inputf\n");
+printf("PUSHFRAME\n");
+printf("DEFVAR LF@%%float_read\n");
+printf("MOVE LF@%%float_read nil@nil\n");
+printf("DEFVAR LF@%%read_err3\n");
+printf("MOVE LF@%%read_err3 int@0\n");
+
+printf("READ LF@%%float_read float\n");
+printf("JUMPIFEQ $err_inputf LF@%%float_read nil@nil\n");
+printf("JUMP $end_inputf\n");
+
+printf("LABEL $err_inputf\n");
+printf("MOVE LF@%%read_err3 int@1\n");
+printf("LABEL $end_inputf\n");
+printf("POPFRAME\n");
+printf("RETURN\n");
+}
