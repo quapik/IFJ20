@@ -73,12 +73,21 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
     bool dkaError = false;
     //bool debugPrint = true;
 
-
+    unsigned int suspiciousCounter = 0;
     // cyklus naplneni jednoho tokenu
     do {
         free((*newToken)->data);
         (*newToken)->data = NULL;
-        if (scannerDKA(*newToken, file)) dkaError = true;
+        if (scannerDKA(*newToken, file))
+        {
+            suspiciousCounter++;
+            dkaError = true;
+        }
+        if (suspiciousCounter==20)
+        {
+            fprintf(stderr, "Error: Prilis mnoho chyb, konec lexikalni analyzy a programu.\n");
+            return 1;
+        }
 
         //debug
         //printf("dkaError je %d\n", dkaError);
@@ -443,6 +452,7 @@ int scannerDKA(tToken token, FILE *file)
             //printf("mame unknown tokens \n");
             if (nextState == STATE_ERROR) {
                 //printf("error \n");
+
 
                 fprintf(stderr, "Error: Neocekavany znak ");
                 if (currChar == '\n') fprintf(stderr, "EOL\n");
