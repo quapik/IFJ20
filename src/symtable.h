@@ -46,3 +46,4 @@ void STableDelete(tSymbolTablePtr *Tab, char *Symbol);
 void STableDispose(tSymbolTablePtr *Tab);
 void STableDisposeLocal(tSymbolTablePtrPromenna *Tab);
 void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazanoreni);
+char STableSearchLocalReturnType(tSymbolTablePtrPromenna Tab, char *Symbol);
