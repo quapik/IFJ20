@@ -57,6 +57,22 @@ tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Sym
         }
     }
 }
+
+char STableSearchLocalReturnType(tSymbolTablePtrPromenna Tab, char *Symbol){
+        if((strcmp(Symbol,Tab->Symbol))==0){
+            return Tab->DatovyTyp;
+        }
+        else{
+            if((strcmp(Symbol,Tab->Symbol))<0){
+                Tab->DatovyTyp=STableSearchLocalReturnType(Tab->LPtr,Symbol);
+                return Tab->DatovyTyp;
+            }
+            else{
+                Tab->DatovyTyp=STableSearchLocalReturnType(Tab->RPtr,Symbol);
+                return Tab->DatovyTyp;
+            }
+        }
+}
 void STableInsert(tSymbolTablePtr *Tab, char *Symbol){
     tSymbolTablePtr polozka;
     if(*Tab==NULL){
@@ -217,33 +233,31 @@ void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazan
     {
         if((*Tab)->HloubkaZanoreni>hloubkazanoreni) //pokud aktualni polozka ma vetsi hloubku zanoreni, byla zanorena a je treba smazat
         {
-            printf("mazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+            printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL;
         }
         else if ((*Tab)->LPtr!=NULL) //pokud mame levy podstrom
-        {
-            if((*Tab)->LPtr->HloubkaZanoreni>hloubkazanoreni)
+        {    (*Tab)=(*Tab)->LPtr;
+            if((*Tab)->HloubkaZanoreni>hloubkazanoreni)
             {
-                printf("mazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+                printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
             }
             else
             {
-                STableDisposeZanorene(&(*Tab)->LPtr,hloubkazanoreni);
+                STableDisposeZanorene(&(*Tab)->LPtr,hloubkazanoreni); //rekiurizivne dal prochazime fci a hledame
             }
         }
 
-        else if ((*Tab)->RPtr!=NULL) //pokud mame levy podstrom
-        {
-            if((*Tab)->RPtr->HloubkaZanoreni>hloubkazanoreni)
+        else if ((*Tab)->RPtr!=NULL) //pokud mame pravy podstrom
+        {   (*Tab)=(*Tab)->RPtr;
+            if((*Tab)->HloubkaZanoreni>hloubkazanoreni)
             {
-                printf("mazumazumazumazumazumazumazu\n"); STableDisposeLocal((Tab)); *Tab=NULL;
+                printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
             }
             else
             {
                 STableDisposeZanorene(&(*Tab)->RPtr,hloubkazanoreni);
             }
         }
-
-
 
     }
 
