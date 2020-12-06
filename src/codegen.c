@@ -115,16 +115,44 @@ printf("MOVE LF@%%ret string@\n")
 printf("DEFVAR LF@index\n");
 printf("MOVE LF@index LF@i\n");
 printf("DEFVAR LF@index_end\n");
-printf("MOVE LF@index_end LF@delka\n")
-printf("ADD LF@index_end LF@index_end LF@i\n");
-printf("DEFVAR LF@znak\n");
+printf("MOVE LF@index_end LF@delka\n");
+       
+printf("# priznak chyby\n");
+printf("DEFVAR LF@%%ret_err1\n");
+printf("MOVE LF@%%ret_err1 int@0\n");
+       
+printf("# osetreni chybovych stavu\n");
+printf("DEFVAR LF@err_ind\n");
+printf("LT LF@err_ind LF@index int@0\n");
+printf("JUMPIFEQ $err_substr LF@err_ind bool@true\n");
+printf("DEFVAR LF@substr_len\n");
+printf("STRLEN LF@substr_len LF@str\n");
+printf("GT LF@err_ind LF@index LF@substr_len\n");
+printf("JUMPIFEQ $err_substr LF@err_ind bool@true\n");
+printf("LT LF@err_ind LF@index_end int@0\n")
+printf("JUMPIFEQ $err_substr LF@err_ind bool@true\n");
+printf("DEFVAR LF@err_delka\n");
+printf("MOVE LF@err_delka LF@substr_len\n");
+printf("SUB LF@err_delka LF@err_delka LF@index\n");
+printf("GT LF@err_ind LF@index_end LF@err_delka\n");
+printf("JUMPIFNEQ body LF@err_ind bool@true\n");
+printf("MOVE LF@index_end LF@err_delka\n");  
 
+printf("# telo funkce\n");
+printf("LABEL body\n");
+printf("DEFVAR LF@znak\n");
+printf("ADD LF@index_end LF@index_end LF@i\n");
 printf("LABEL cyklus\n");
 printf("GETCHAR LF@znak LF@str LF@index\n");
 printf("CONCAT LF@%%ret LF@%%ret LF@znak\n");
 printf("ADD LF@index LF@index int@1\n");
 printf("JUMPIFNEQ cyklus LF@index LF@index_end\n");
-
+printf("JUMP end_substr\n");
+       
+printf("LABEL $err_substr\n");
+printf("MOVE LF@%%ret_err1 int@1\n")
+       
+printf("LABEL end_substr\n");
 printf("POPFRAME\n");
 printf("RETURN\n");
     
