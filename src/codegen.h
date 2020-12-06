@@ -20,3 +20,6 @@ void CodeGenDefVar(char* id);
 char *gen_float(char *input_float);
 void gen_string(char *input_string);
 void CodeGenPrint(tToken *token);
+void gen_substr();
+void gen_input();
+void gen_string_functions();
