@@ -337,6 +337,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
         {
             // E -> n
             xNTermType ntype = X_UNKNOWN;
+            char returnChar;
 
             switch (item->data.token->type) {
                 case T_INT:
@@ -368,9 +369,23 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                         return 3;
                     } else
                     {
+                        returnChar = STableSearchLocalReturnType(table, item->data.token->data);
                         printf("PUSHS LF@%s\n", item->data.token->data);
                     }
-
+                    switch (returnChar) {
+                        case 'i':
+                            ntype = X_INT;
+                            break;
+                        case 'f':
+                            ntype = X_FLOAT;
+                            break;
+                        case 's':
+                            ntype = X_STRING;
+                            break;
+                        default:
+                            fprintf(stderr, "Error: Vyrazy, problem s ID\n");
+                            break;
+                    }
 
                     //exprTyp = 'u';
                     break;
