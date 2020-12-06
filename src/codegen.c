@@ -106,4 +106,26 @@ void CodeGenPrint(tToken *token)
     }
 
 }
+void gen_substr()
+{
+printf("LABEL $find_substr\n);
+printf("PUSHFRAME\n);
+printf("DEFVAR LF@%ret\n");
+printf("MOVE LF@%ret string@\n")
+printf("DEFVAR LF@index\n");
+printf("MOVE LF@index LF@i\n");
+printf("DEFVAR LF@index_end\n");
+printf("MOVE LF@index_end LF@delka\n")
+printf("ADD LF@index_end LF@index_end LF@i\n");
+printf("DEFVAR LF@znak\n");
 
+printf("LABEL cyklus\n");
+printf("GETCHAR LF@znak LF@str LF@index\n");
+printf("CONCAT LF@%ret LF@%ret LF@znak\n");
+printf("ADD LF@index LF@index int@1\n");
+printf("JUMPIFNEQ cyklus LF@index LF@index_end\n");
+
+printf("POPFRAME\n");
+printf("RETURN\n");
+    
+}
