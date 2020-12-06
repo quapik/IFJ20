@@ -606,11 +606,11 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
 
             if (type == X_STRING)
             {
-                printf("#---KONKATENACE---\nCREATEFRAME\nDEFVAR $tmp1\nDEFVAR $tmp2\nDEFVAR $tmpString\n");
+                printf("#---KONKATENACE---\nCREATEFRAME\nDEFVAR TF@$tmp1\nDEFVAR TF@$tmp2\nDEFVAR TF@$tmpString\n");
                 printf("POPS TF@$tmp2\nPOPS TF@$tmp1\nCONCAT TF@$tmpString TF@$tmp1 TF@$tmp2\nPUSHS TF@$tmpString\n");
                 printf("#---KONEC KONKATENACE---\n");
             }
-            printf("ADDS\n");
+            //printf("ADDS\n");
 
             break;
         case T_SUB:
@@ -620,7 +620,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             printf("MULS\n");
             break;
         case T_DIV:
-        printf("#---DELENI---\n");
+            printf("#---DELENI---\n");
             if (!unknownType)
             {
                 if (type == X_INT)

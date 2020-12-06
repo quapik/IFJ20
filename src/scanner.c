@@ -11,7 +11,7 @@ Lexikalni Analyzator
 
 #include "scanner.h"
 
-int scannerLoadTokens(tToken *firstToken, FILE *file)
+int scannerLoadTokens(tToken *firstToken)
 {
     // pocitame s platnym souborem
 
@@ -24,7 +24,7 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
 
 
         // filling token:
-        dkaError = scannerGetValidToken(&newToken, file);
+        dkaError = scannerGetValidToken(&newToken);
 
         if (prevToken == NULL)
             // Prvni token
@@ -56,7 +56,7 @@ int scannerLoadTokens(tToken *firstToken, FILE *file)
 
 }
 
-int scannerGetValidToken (tToken *newToken, FILE *file)
+int scannerGetValidToken (tToken *newToken)
 {
     //pocitame s platnym souborem
     if (newToken == NULL) return 99;
@@ -78,7 +78,7 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
     do {
         free((*newToken)->data);
         (*newToken)->data = NULL;
-        if (scannerDKA(*newToken, file))
+        if (scannerDKA(*newToken))
         {
             suspiciousCounter++;
             dkaError = true;
@@ -111,7 +111,7 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
     return dkaError ? 1 : 0;
 }
 
-int scannerDKA(tToken token, FILE *file)
+int scannerDKA(tToken token)
 {
 
     // pocitame s platnym souborem
@@ -168,7 +168,7 @@ int scannerDKA(tToken token, FILE *file)
         //sken dalsiho znaku
         if (currChar != EOF)
         {
-            currChar = getc(file);
+            currChar = getc(stdin);
         }
 
         //debug
@@ -441,7 +441,7 @@ int scannerDKA(tToken token, FILE *file)
 
         // priprava obsahu tokenu:
         if (token->type != T_UNKNOWN) {
-            ungetc(currChar, file);
+            ungetc(currChar, stdin);
             dataString[c] = '\0';
             //debug
             //printf("ungeted \n");

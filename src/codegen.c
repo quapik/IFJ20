@@ -18,7 +18,7 @@ void CodeGenStart()
 }
 void CodeGenDefVar(char* id)
 {
-    printf("DEFVAR @LF %s\n",id);
+    printf("DEFVAR LF@%s\n",id);
 }
 
 char *gen_float(char *input_float)
@@ -87,15 +87,15 @@ void CodeGenPrint(tToken *token)
 {
     if((*token)->type==T_INT)
     {
-        printf("WRITE INT");
+        printf("WRITE int@%s", (*token)->data);
         //print cislo
     }
     else if((*token)->type==T_STRING)
-    {   printf("test %s\n",(*token)->data);
+    {   printf("WRITE ");
         gen_string((*token)->data);
         //printf("WRITE %s\n",(*token)->data);
     }
-    else if((*token)->type==T_EXP)
+    else if((*token)->type==T_EXP || (*token)->type==T_DOUBLE)
     {
         (*token)->data=gen_float((*token)->data);
         printf("WRITE %s\n",(*token)->data);
@@ -108,10 +108,10 @@ void CodeGenPrint(tToken *token)
 }
 void gen_substr()
 {
-printf("LABEL $find_substr\n);
+printf("LABEL $find_substr\n");
 printf("PUSHFRAME\n");
 printf("DEFVAR LF@%%ret\n");
-printf("MOVE LF@%%ret string@\n")
+printf("MOVE LF@%%ret string@\n");
 printf("DEFVAR LF@index\n");
 printf("MOVE LF@index LF@i\n");
 printf("DEFVAR LF@index_end\n");
@@ -129,7 +129,7 @@ printf("DEFVAR LF@substr_len\n");
 printf("STRLEN LF@substr_len LF@str\n");
 printf("GT LF@err_ind LF@index LF@substr_len\n");
 printf("JUMPIFEQ $err_substr LF@err_ind bool@true\n");
-printf("LT LF@err_ind LF@index_end int@0\n")
+printf("LT LF@err_ind LF@index_end int@0\n");
 printf("JUMPIFEQ $err_substr LF@err_ind bool@true\n");
 printf("DEFVAR LF@err_delka\n");
 printf("MOVE LF@err_delka LF@substr_len\n");
@@ -150,7 +150,7 @@ printf("JUMPIFNEQ cyklus LF@index LF@index_end\n");
 printf("JUMP end_substr\n");
        
 printf("LABEL $err_substr\n");
-printf("MOVE LF@%%ret_err1 int@1\n")
+printf("MOVE LF@%%ret_err1 int@1\n");
        
 printf("LABEL end_substr\n");
 printf("POPFRAME\n");

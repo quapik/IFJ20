@@ -39,7 +39,7 @@ void STableInit(tSymbolTablePtr *Tab);
 void STableInitLocal(tSymbolTablePtrPromenna *Tab);
 tSymbolTablePtr STableSearch(tSymbolTablePtr Tab, char *Symbol);
 tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Symbol);
-void STableInsert(tSymbolTablePtr *Tab, char *Symbol);
+void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined);
 void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, unsigned int hloubkazanoreni);
 void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab);
 void STableDelete(tSymbolTablePtr *Tab, char *Symbol);

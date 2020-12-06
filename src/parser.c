@@ -412,7 +412,7 @@
         if ((*token)->type==T_LCBR) // token je {
         {   PocetKoncovychZavorek++; IFCounter++; ELSECounter=IFCounter;
             printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-            printf("JUMPIFNEQ $elsedlabel%d TF@$return bool@true\n",IFCounter);
+            printf("JUMPIFNEQ $elselabel%d TF@$return bool@true\n",IFCounter);
             (*token)=(*token)->nextToken;
             if ((*token)->type==T_EOL)
             {
@@ -471,6 +471,7 @@
     {   PossibleEof=false;
         if(((*token)->type==T_ID)&&(strcmp((*token)->data,"main")==0))
         { printf("LABEL $$main\n"); AktualniHloubkaZanoreni=0;
+		printf("CREATEFRAME\nPUSHFRAME\n");
             if (BylMain==false)
             {
                 (*token)=(*token)->nextToken;
@@ -811,6 +812,7 @@
             (*token)=(*token)->nextToken;
             if ((*token)->type==T_DEFINE)
             {   CodeGenDefVar(JmenoPromenne);
+			//TODO Semantika
 
                 (*token)=(*token)->nextToken;
                 (*token)=exprBUParse(token,LocalTable);
@@ -826,7 +828,7 @@
                 }
                 //GENEROVNAI KODU prirazeni do promenne
                 printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-                printf("MOVE %s TF@$return\n", JmenoPromenne);
+                printf("MOVE LF@%s TF@$return\n", JmenoPromenne);
 
             }
             else
@@ -837,7 +839,7 @@
             }
         }
         //GENEROVANI KODU FOR label (zacatek foru na ktery se jumpuje)
-        printf("LABEL for%d\n",FORCounter);
+        printf("LABEL $for%d\n",FORCounter);
 
         if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
         {
@@ -852,8 +854,11 @@
             printf("JUMPIFNEQ $forendlabel%d TF@$return bool@true\n",FORCounter);
             printf("JUMP $forbody%d\n",FORCounter);
             printf("LABEL $forprirazeni%d\n",FORCounter);
-            printf("JUMP for%d\n",FORCounter);
-            printf("TODO prirazeni\n");
+	    	
+
+
+            //printf("JUMP $for%d\n",FORCounter);
+            
 
 
             if ((*token)->type == T_UNKNOWN)
@@ -868,6 +873,7 @@
                 {   (*token)=(*token)->nextToken;
                     if ((*token)->type==T_ASSIGN)
                     {
+			JmenoPromenne = (*token)->prevToken; //TODO Problem
                         (*token)=(*token)->nextToken;
                         (*token)=exprBUParse(token,LocalTable);
                         if ((*token)->type == T_UNKNOWN)
@@ -879,13 +885,18 @@
                             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for prikaz_prirazeni\n");
                             return *token;
                         }
+			printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                	printf("MOVE LF@%s TF@$return\n", JmenoPromenne);
 
                     }
                 }
 
+		printf("JUMP $for%d\n",FORCounter);
+
                 if ((*token)->type==T_LCBR)
                 {
-                    PocetKoncovychZavorek++;
+                    printf("LABEL $forbody%d\n",FORCounter);
+		    PocetKoncovychZavorek++;
                     (*token)=(*token)->nextToken;
                     if ((*token)->type==T_EOL) //povinny eol
                     {   (*token)=(*token)->nextToken;
@@ -973,7 +984,7 @@
 
             //GENEROVANI KODU TODO DO CODEGEN?
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-                    printf("MOVE %s TF@$return\n", JmenoPromenne);
+                    printf("MOVE LF@%s TF@$return\n", JmenoPromenne);
 
             return *token;
         }
@@ -1005,7 +1016,6 @@
             {
                 printf("Promenna nebyla definovana1\n");  (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;
             }
-            printf("testovaci vypis %c\n\n\n",STableSearchLocalReturnType(LocalTable,(*token)->prevToken->data));
             IDCounter=1; //nastaaveni napevno aby nekolidovalo s vice id
             UchovaniID[IDCounter]=(*token)->prevToken->data;
             (*token)=(*token)->nextToken; IDCounterOpacny=0;
@@ -1094,7 +1104,7 @@
 
             //GENEROVANI
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-                    printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
+                    printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
             IDCounterOpacny++;
             (*token)=vyraz_n(token);
             return *token;
@@ -1255,7 +1265,7 @@
 
             //GENEROVANI KODU
                     printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-                    printf("MOVE %s TF@$return\n", UchovaniID[IDCounterOpacny]);
+                    printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
             IDCounterOpacny++;
                     (*token)=vyraz_n(token); //rekurzivni volani teto funkce
              return *token;

@@ -73,7 +73,7 @@ char STableSearchLocalReturnType(tSymbolTablePtrPromenna Tab, char *Symbol){
             }
         }
 }
-void STableInsert(tSymbolTablePtr *Tab, char *Symbol){
+void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined){
     tSymbolTablePtr polozka;
     if(*Tab==NULL){
         polozka=(tSymbolTablePtr) malloc(sizeof(struct tSymbolTable));
@@ -83,7 +83,7 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol){
         else{
 
             polozka->Symbol=Symbol;
-            polozka->defined=true;
+            polozka->defined=defined;
             polozka->LPtr=NULL;
             polozka->RPtr=NULL;
             *(Tab)=polozka;
@@ -91,10 +91,10 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol){
     }
     else{
         if((strcmp(Symbol,(*Tab)->Symbol))<0){
-            STableInsert(&((*Tab)->LPtr),Symbol);
+            STableInsert(&((*Tab)->LPtr),Symbol,defined);
         }
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
-            STableInsert(&((*Tab)->RPtr),Symbol);
+            STableInsert(&((*Tab)->RPtr),Symbol,defined);
         }
         else{
             //free((*Tab)->Data);
