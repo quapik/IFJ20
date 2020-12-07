@@ -269,8 +269,6 @@ printf("RETURN\n");
 
 void gen_string_functions()
 {
-void gen_string_functions()
-{
 printf("LABEL $find_len\n");
 printf("PUSHFRAME\n");
 printf("DEFVAR LF@%%str\n");
