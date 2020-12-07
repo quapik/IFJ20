@@ -707,7 +707,7 @@ void exprBUDivZeroCheck(char *zero)
     printf("JUMP $expression\n");
 
     //error print zatim tady:
-    printf("LABEL $divZeroError\n\tDEFVAR TF@$errorPrint\n\tMOVE TF@$errorPrint str@error:\\032pokus\\032o\\032deleni\\032nulou\n");
+    printf("LABEL $divZeroError\n\tDEFVAR TF@$errorPrint\n\tMOVE TF@$errorPrint string@error:\\032pokus\\032o\\032deleni\\032nulou\n");
     printf("\tDPRINT TF@$errorPrint\n");
     printf("\tEXIT int@9\n");
 
