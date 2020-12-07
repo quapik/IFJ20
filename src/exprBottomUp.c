@@ -347,7 +347,8 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                     break;
                 case T_EXP:
                 case T_DOUBLE:
-                    printf("PUSHS float@%s\n", item->data.token->data);
+                    printf("PUSHS \n");
+                    printf("%s\n",gen_float(item->data.token->data);
                     ntype = X_FLOAT;
                     //exprTyp = 'i';
                     break;
@@ -384,6 +385,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                             break;
                         default:
                             fprintf(stderr, "Error: Vyrazy, problem s ID\n");
+                            return 3;
                             break;
                     }
 
@@ -607,11 +609,12 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
 
             if (type == X_STRING)
             {
-                printf("#---KONKATENACE---\nCREATEFRAME\nDEFVAR $tmp1\nDEFVAR $tmp2\nDEFVAR $tmpString\n");
+                printf("#---KONKATENACE---\nCREATEFRAME\nDEFVAR TF@$tmp1\nDEFVAR TF@$tmp2\nDEFVAR TF@$tmpString\n");
                 printf("POPS TF@$tmp2\nPOPS TF@$tmp1\nCONCAT TF@$tmpString TF@$tmp1 TF@$tmp2\nPUSHS TF@$tmpString\n");
                 printf("#---KONEC KONKATENACE---\n");
+            } else {
+                printf("ADDS\n");
             }
-            printf("ADDS\n");
 
             break;
         case T_SUB:
