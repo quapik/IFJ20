@@ -155,6 +155,32 @@ printf("MOVE LF@%%ret_err1 int@1\n");
 printf("LABEL end_substr\n");
 printf("POPFRAME\n");
 printf("RETURN\n");
+
+//func substr(s string, i int, n int) (string, int)    
+// mozna problem se zmenou nazvu promennych
+    
+    /* v $main
+    DEFVAR LF@substr        # pro navratove hodnoty
+    DEFVAR LF@err
+
+    CREATEFRAME
+
+    DEFVAR TF@str           
+    MOVE TF@str string@novy\032podretezec
+    DEFVAR TF@i
+    MOVE TF@i int@0
+    DEFVAR TF@delka
+    MOVE TF@delka int@5
+
+    CALL $find_substr
+
+    MOVE LF@substr TF@%ret
+    MOVE LF@err TF@%ret_err1
+    
+    WRITE LF@substr    #pro vypis
+    WRITE LF@err
+    
+    */
 }
 
 void gen_input()
@@ -203,6 +229,42 @@ printf("MOVE LF@%%read_err3 int@1\n");
 printf("LABEL $end_inputf\n");
 printf("POPFRAME\n");
 printf("RETURN\n");
+       
+    /*
+//    func inputs() (string,int)
+    DEFVAR LF@retezec
+    DEFVAR LF@err
+    
+    CREATEFRAME
+    
+    CALL $read_inputs
+    
+    MOVE LF@retezec TF@%string_read
+    MOVE LF@err TF@%read_err1
+    
+//    func inputi() (int,int)
+    DEFVAR LF@cislo
+    DEFVAR LF@err
+    
+    CREATEFRAME
+    
+    CALL $read_inputi
+    
+    MOVE LF@cislo TF@%int_read
+    MOVE LF@err TF@%read_err2
+    
+//    func inputf() (float64,int)  
+    DEFVAR LF@cislo
+    DEFVAR LF@err
+    
+    CREATEFRAME
+    
+    CALL $read_inputf
+    
+    MOVE LF@cislo TF@%float_read
+    MOVE LF@err TF@%read_err3
+
+    */
 }
 
 void gen_string_functions()
@@ -223,7 +285,7 @@ printf("MOVE LF@%err_ind int@1\n");
 printf("LABEL $find_len_end\n");
 printf("POPFRAME \n");
 printf("RETURN\n");
-printf(" \n");
+printf("\n");
 printf("LABEL $find_ord\n");
 printf("PUSHFRAME\n");
 printf("DEFVAR LF@%str\n");
@@ -267,4 +329,43 @@ printf("MOVE LF@%err_ind int@1\n");
 printf("LABEL $end_chr\n");
 printf("POPFRAME \n");
 printf("RETURN\n");
+    
+/*
+// func len(𝑠 string) (int)
+    DEFVAR LF@delka
+    
+    CREATEFRAME
+    DEFVAR TF@str
+    MOVE TF@retezec string@slovo\032slovo
+    
+    CALL $find_len
+    MOVE LF@delka TF@%delka
+    
+// func ord(s string, i int) (int, int)  
+    DEFVAR LF@cislo
+    DEFVAR LF@err
+
+    CREATEFRAME
+    DEFVAR TF@str
+    MOVE TF@str string@slovoslovo
+    DEFVAR TF@index
+    MOVE TF@index int @7
+
+    CALL $find_ord
+    MOVE LF@cislo TF@%ret
+    MOVE LF@err TF@%err_ind
+  
+// func chr(i int) (string, int)
+    DEFVAR LF@znak
+    DEFVAR LF@err
+
+    CREATEFRAME
+    DEFVAR TF@cislo
+    MOVE TF@cislo int@9
+
+    CALL $find_chr
+    MOVE LF@znak TF@%ret
+    MOVE LF@err TF@%err_ind
+  
+*/
 }
