@@ -97,7 +97,7 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined){
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
             STableInsert(&((*Tab)->RPtr),Symbol,defined);
         }
-        
+
     }
 }
 
@@ -128,7 +128,7 @@ void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, uns
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
             STableInsertLocal(&((*Tab)->RPtr),Symbol,data,hloubkazanoreni);
         }
-        
+
     }
 }
 
@@ -187,41 +187,32 @@ void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
     }
 }
 
-void STableDispose(tSymbolTablePtr *Tab){
-    if(*Tab!=NULL){
+void STableDispose(tSymbolTablePtr Tab){
+    if(Tab!=NULL){
         // pruchod celym stromem
-        STableDispose(&((*Tab)->LPtr));
-        STableDispose(&((*Tab)->RPtr));
-
-        // pokud jsem narazil na funkci, respektive pomocny podstrom
-        //if((*Tab)->Data->LocalFuncData!=NULL){
-          //  STableDispose(&((*Tab)->Data->LocalFuncData));
-        //}
+        STableDispose((Tab)->LPtr);
+        STableDispose((Tab)->RPtr);
 
         // uvolneni pameti
-        free((*Tab)->datastringparametry);
-        free((*Tab)->datastringnavratovehodnoty);//TODO
-        free(*Tab);
 
-        *Tab=NULL;
+        free(&Tab->datastringparametry);
+        free(&Tab->datastringnavratovehodnoty);//TODO
+        free(&Tab);
+
+        Tab=NULL;
     }
 }
 
-void STableDisposeLocal(tSymbolTablePtrPromenna *Tab){
-    if(*Tab!=NULL){
+void STableDisposeLocal(tSymbolTablePtrPromenna Tab){
+    if(Tab!=NULL){
         // pruchod celym stromem
-        STableDisposeLocal(&((*Tab)->LPtr));
-        STableDisposeLocal(&((*Tab)->RPtr));
-
-        // pokud jsem narazil na funkci, respektive pomocny podstrom
-        //if((*Tab)->Data->LocalFuncData!=NULL){
-        //  STableDispose(&((*Tab)->Data->LocalFuncData));
-        //}
+        STableDisposeLocal(Tab->LPtr);
+        STableDisposeLocal(Tab->RPtr);
 
         // uvolneni pameti
 
-        free(*Tab);
-        *Tab=NULL;
+        free(Tab);
+        Tab=NULL;
     }
 }
 
@@ -231,13 +222,13 @@ void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazan
     {
         if((*Tab)->HloubkaZanoreni>hloubkazanoreni) //pokud aktualni polozka ma vetsi hloubku zanoreni, byla zanorena a je treba smazat
         {
-             STableDisposeLocal(Tab); *Tab=NULL;
+             STableDisposeLocal(*Tab); *Tab=NULL;
         }
         else if ((*Tab)->LPtr!=NULL) //pokud mame levy podstrom
         {    (*Tab)=(*Tab)->LPtr;
             if((*Tab)->HloubkaZanoreni>hloubkazanoreni)
             {
-                 STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
+                 STableDisposeLocal(*Tab); *Tab=NULL; //smazani lptr a jeho podstromu
             }
             else
             {
@@ -249,7 +240,7 @@ void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazan
         {   (*Tab)=(*Tab)->RPtr;
             if((*Tab)->HloubkaZanoreni>hloubkazanoreni)
             {
-                printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
+                STableDisposeLocal(*Tab); *Tab=NULL; //smazani lptr a jeho podstromu
             }
             else
             {
