@@ -13,7 +13,7 @@ Prosinec 2020, Fakulta informačních technologií VUT v Brně
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
-
+bool ViceVyrazu=false;
 int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
 int IDCounter=0; int IDCounterOpacny=0; int FORCounter=0;
 int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
@@ -27,7 +27,7 @@ tSymbolTablePtr GlobalTable;
 
 //pravidlo 1. <program>-><>package main<body> EOF
 int StartParser(tToken *token)
-{   STableInitLocal(&LocalTable);
+{   STableInitLocal(&LocalTable); STableInsertLocal(&LocalTable,"_",'_',0); //vlozeni _ abychom s ni mohli pracovat
     STableInit(&GlobalTable);
 
     if(((*token)->type)==T_PACKAGE) //prvni musi byt package main
@@ -152,7 +152,7 @@ tToken body(tToken *token)
         }
     }
         //PRAVIDLO <prirazeni> -> _ = vyraz
-    else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)) // _
+    else if(((*token)->type==T_ID)&&(strcmp((*token)->data,"_")==0)&&(*token)->nextToken->type==T_ID) // _
     {
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_ASSIGN) // =
@@ -172,6 +172,7 @@ tToken body(tToken *token)
             return *token;
 
         }
+
         else{  (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";
             printf("Chybny oef\n");
         }
@@ -307,7 +308,7 @@ tToken body(tToken *token)
             if (exprTyp==X_INT) { if(GlobalTable->datastringnavratovehodnoty[0]!='i') printf("chyba navrat"); }
             if (exprTyp==X_STRING) { if(GlobalTable->datastringnavratovehodnoty[0]!='s') printf("chyba navrat"); }
             if (exprTyp==X_FLOAT) { if(GlobalTable->datastringnavratovehodnoty[0]!='f') printf("chyba navrat"); }
-            // JdemeZReturnu=true;
+            // JdemeZReturnu=true; //TODO SMAZAT
             // (*token)=vyraz_n(token);
             //JdemeZReturnu=false;
             int pom=1;
@@ -815,7 +816,7 @@ tToken for_rule(tToken *token)
             if(STableSearchLocal(LocalTable,JmenoPromenne)!=NULL)
             {
                     (*token)->type = T_UNKNOWN;
-                    (*token)->data = "ERR_SEM_PROG"; 
+                    (*token)->data = "ERR_SEM_PROG";
                     return *token;
             }
 
@@ -828,7 +829,7 @@ tToken for_rule(tToken *token)
             else if (exprTyp==X_FLOAT) { STableInsertLocal(&LocalTable,JmenoPromenne,'f',AktualniHloubkaZanoreni); }
 
             if(Porovnavani==true) //kontrola zda nebylo ve vyrazu porovnavani
-            {   
+            {
                 (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba foru1\n");  return *token;
             }
 
@@ -857,7 +858,7 @@ tToken for_rule(tToken *token)
         (*token)=(*token)->nextToken; //ted povinny vyraz
         (*token)=exprBUParse(token,LocalTable);
         if(Porovnavani==false) //pokud by se ve vyrazu nevyskytlo porovnani
-        {  
+        {
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for vyraz\n"); return *token;
         }
         //GENEROVANI KODU podminka FOR
@@ -879,7 +880,7 @@ tToken for_rule(tToken *token)
             {
                 //SEMANTICKA CAST - kontrola promenna byla definovana
                 if(STableSearchLocal(LocalTable,JmenoPromenne)==NULL)
-                {   
+                {
                     (*token)->type = T_UNKNOWN;
                     (*token)->data = "ERR_SEM_PROG";
                     return *token;
@@ -896,7 +897,7 @@ tToken for_rule(tToken *token)
                         return *token;
                     }
                     if(Porovnavani==true) //pokud by se ve vyrazu vyskytlo porovnani
-                    {  
+                    {
                         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("chyba for prikaz_prirazeni\n");
                         return *token;
                     }
@@ -1012,6 +1013,25 @@ tToken id_next(tToken *token)
         {
             (*token)=(*token)->nextToken; IDCounterOpacny=0;
             (*token)=vice_id_vlevo(token);
+            //SEMANTICKA CAST -> ulozeni hodnot z vyrazu do promenynych
+            if(ViceVyrazu==true)
+            {
+                IDCounterOpacny--;
+                while(IDCounterOpacny>0)
+                {   if(strcmp(UchovaniID[IDCounterOpacny],"_")!=0)
+                    { printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                        printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
+                    }
+                    else //potrebujeme promennou zapomenou - poze vytvoreni TF a popnuti, nasledne se premaze
+                    {
+                        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+                    }
+
+                    IDCounterOpacny--;
+                }
+                ViceVyrazu=false;
+            }
+            //KONEC SEMANTICKE CASTI
             return *token; //return do body kde se vola
         }
 
@@ -1081,7 +1101,7 @@ tToken id_n(tToken *token)
 }
 //PRAVIDLA <VICE_ID_VLEVO> -> vyraz <vyraz_n> NEBO <VICE_ID_VLEVO> -> ID (<PARAMSCALL>
 tToken vice_id_vlevo(tToken *token)
-{
+{   printf("CELKOVE VLEVO MAME %d promennych\n\n",IDCounter);
     IDCounterOpacny++;
     if (((*token)->type==T_ID) && ((*token)->nextToken->type==T_LDBR)) //volani fce
     {   if(STableSearch(GlobalTable,(*token)->data)==NULL)
@@ -1095,7 +1115,7 @@ tToken vice_id_vlevo(tToken *token)
         //TODO SEMANTIKA IDčka
     }
     else
-    {
+    {   ViceVyrazu=true;
         //pokud nevolame funkci, musi nasledovat vyraz
         (*token)=exprBUParse(token,LocalTable); //do token ulozeni buď posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type==T_UNKNOWN) //nastala chyba pri vyrazu
@@ -1108,15 +1128,12 @@ tToken vice_id_vlevo(tToken *token)
             (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_OSTATNI"; printf("Chyba (porovnavani tam kde nema byt \n");  return *token;
         }
         //Kontrola zda sedi datove typy, ktere ted prirazujeme a ktere byly definovany
-
+        if(strcmp(UchovaniID[IDCounterOpacny],"_")!=0){ //pokud _ tak netreba hlidat dat typy
         if (exprTyp==X_INT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='i') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
         if (exprTyp==X_STRING) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='s') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
         if (exprTyp==X_FLOAT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='f') { (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+        }
         //KONEC SEMANTICKE CASTI
-
-        //GENEROVANI
-        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-        printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
         IDCounterOpacny++;
         (*token)=vyraz_n(token);
         return *token;
@@ -1269,22 +1286,24 @@ tToken vyraz_n(tToken *token){
         }
 
         //Kontrola zda sedi datove typy, ktere ted prirazujeme a ktere byly definovany
+        if(strcmp(UchovaniID[IDCounterOpacny],"_")!=0){ //pokud _ tak netreba hlidat dat typy
         if (exprTyp==X_INT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='i') { printf("tu1\n"); (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
         if (exprTyp==X_STRING) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='s') { printf("tu2\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
         if (exprTyp==X_FLOAT) {if(STableSearchLocalReturnType(LocalTable,UchovaniID[IDCounterOpacny])!='f') { printf("tu3\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_KOMP"; return *token;}}
+        }
         //KONEC SEMANTICKE CASTI
 
 
         //GENEROVANI KODU
-        printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
-        printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
+       // printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+       // printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
         IDCounterOpacny++;
         (*token)=vyraz_n(token); //rekurzivni volani teto funkce
         return *token;
     }
     else
     { //neni uz zadny dalsi vyraz a nasleduje neco z body (returny az uplne na zacatek kde bude body)
-        if (JdemeZReturnu==false)
+        /*if (JdemeZReturnu==false)
         {
             if(IDCounter!=0) //nebyl stejny pocet identifikatoru vlevo a vyrazu vpravo
             {
@@ -1296,7 +1315,10 @@ tToken vyraz_n(tToken *token){
         {
             return *token;
         }
-
+        */
+        //TODO SMAZAT
+        if(IDCounter>0)
+        {(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG";return *token;  }
         return *token;
     }
 }
