@@ -78,7 +78,8 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined){
     if(*Tab==NULL){
         polozka=(tSymbolTablePtr) malloc(sizeof(struct tSymbolTable));
         if(polozka==NULL){
-            return;
+            fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro symtable\n");
+            exit(99);
         }
         else{
 
@@ -96,10 +97,7 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined){
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
             STableInsert(&((*Tab)->RPtr),Symbol,defined);
         }
-        else{
-            //free((*Tab)->Data);
-            //(*Tab)->Data=Data;
-        }
+        
     }
 }
 
@@ -108,7 +106,10 @@ void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, uns
     if(*Tab==NULL){
         polozka=(tSymbolTablePtrPromenna) malloc(sizeof(struct tSymbolTablePromenna));
         if(polozka==NULL){
-            return;
+
+                fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro symtable\n");
+                exit(99);
+
         }
         else{
 
@@ -127,10 +128,7 @@ void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, uns
         else if((strcmp(Symbol,(*Tab)->Symbol))>0){
             STableInsertLocal(&((*Tab)->RPtr),Symbol,data,hloubkazanoreni);
         }
-        else{
-            //free((*Tab)->Data);
-            //(*Tab)->Data=Data;
-        }
+        
     }
 }
 
@@ -233,13 +231,13 @@ void STableDisposeZanorene(tSymbolTablePtrPromenna *Tab, unsigned int hloubkazan
     {
         if((*Tab)->HloubkaZanoreni>hloubkazanoreni) //pokud aktualni polozka ma vetsi hloubku zanoreni, byla zanorena a je treba smazat
         {
-            printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL;
+             STableDisposeLocal(Tab); *Tab=NULL;
         }
         else if ((*Tab)->LPtr!=NULL) //pokud mame levy podstrom
         {    (*Tab)=(*Tab)->LPtr;
             if((*Tab)->HloubkaZanoreni>hloubkazanoreni)
             {
-                printf("mazu\n"); STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
+                 STableDisposeLocal(Tab); *Tab=NULL; //smazani lptr a jeho podstromu
             }
             else
             {
