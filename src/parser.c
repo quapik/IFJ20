@@ -1074,7 +1074,6 @@ tToken id_next(tToken *token)
         IDCounter=1; //nastaaveni napevno aby nekolidovalo s vice id
         UchovaniID[IDCounter]=(*token)->prevToken->data;
 
-
         (*token)=(*token)->nextToken; IDCounterOpacny=0;
         (*token)=vice_id_vlevo(token); //do token ulozeni buÄŹ posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         return *token;
@@ -1133,149 +1132,47 @@ tToken vice_id_vlevo(tToken *token) {
     IDCounterOpacny++;
     //VESTAVENA FUNKCE INPUTS
     if (((*token)->type == T_ID) && (strcmp((*token)->data, "inputs") == 0)) {
-        if(IDCounter!=2){(*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_POCET"; return *token;}
-        (*token) = (*token)->nextToken;
-        if (((*token)->type == T_LDBR) && ((*token)->nextToken->type == T_RDBR)) {
-            (*token) = (*token)->nextToken;
-            printf("CREATEFRAME\nCALL $read_inputs\n");
-            if(strcmp(UchovaniID[1],"_")!=0)
-            {
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 's') {
-                    printf("neni s?\n");
-                    (*token)->type = T_UNKNOWN;  (*token)->data = "ERR_SEM_KOMP"; return *token;
-                }
-                printf("MOVE LF@%s TF@%%string_read\n", UchovaniID[1]);
-            }
-
-            if(strcmp(UchovaniID[2],"_")!=0)
-            {
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i')
-                {
-                    (*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";   return *token;
-                }
-               IDCounter=0;
-                printf("MOVE LF@%s TF@%%read_err1\n", UchovaniID[2]);
-            }
-            return *token;
-        }
-        else
-        {
-            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-        }
+        (*token)= CodeGenInputs(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
     }
+
     //VESTAVENA FUNKCE INPUTI
     if (((*token)->type == T_ID) && (strcmp((*token)->data, "inputi") == 0)) {
-        if(IDCounter!=2){(*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_POCET"; return *token;}
-        (*token) = (*token)->nextToken;
-        if (((*token)->type == T_LDBR) && ((*token)->nextToken->type == T_RDBR)) {
-            (*token) = (*token)->nextToken;
-            printf("CREATEFRAME\nCALL $read_inputi\n");
-            if(strcmp(UchovaniID[1],"_")!=0){
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 'i') {
-                    (*token)->type = T_UNKNOWN;  (*token)->data = "ERR_SEM_KOMP";return *token;
-                }
-                printf("MOVE LF@%s TF@%%int_read\n", UchovaniID[1]);
-            }
-            if(strcmp(UchovaniID[2],"_")!=0) {
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i') {
-                    (*token)->type = T_UNKNOWN;(*token)->data = "ERR_SEM_KOMP"; return *token;
-
-                }
-                IDCounter=0;
-                printf("MOVE LF@%s TF@%%read_err2\n", UchovaniID[2]);
-            }
-
-            return *token;
-        }
-        else
-        {
-            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-        }
+        (*token)= CodeGenInputi(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
     }
     //VESTAVENA FUNKCE INPUTF
-    if (((*token)->type == T_ID) && (strcmp((*token)->data, "inputf") == 0)) {
-        if(IDCounter!=2){(*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_POCET"; return *token;}
-        (*token) = (*token)->nextToken;
-        if (((*token)->type == T_LDBR) && ((*token)->nextToken->type == T_RDBR)) {
-            (*token) = (*token)->nextToken;
-            printf("CREATEFRAME\nCALL $read_inputf\n");
-
-            if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 'f')
-            {
-                (*token)->type = T_UNKNOWN;  (*token)->data = "ERR_SEM_KOMP";  return *token;
-            }
-            printf("MOVE LF@%s TF@%%float_read\n", UchovaniID[1]);
-
-            if(strcmp(UchovaniID[2],"_")!=0)
-            {
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i') {
-                    (*token)->type = T_UNKNOWN;   (*token)->data = "ERR_SEM_KOMP";    return *token;
-                }
-                IDCounter=0;
-                printf("MOVE LF@%s TF@%%read_err3\n", UchovaniID[2]);
-            }
-
-            return *token;
-        }
-        else
-        {
-            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-        }
+    if (((*token)->type == T_ID) && (strcmp((*token)->data, "inputf") == 0))
+    {
+        (*token)= CodeGenInputf(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
     }
 
     //VESTAVENA FUNKCE len
     if (((*token)->type == T_ID) && (strcmp((*token)->data, "len") == 0))
-    {   if(IDCounter!=1){ (*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_POCET"; return *token;}
-        (*token) = (*token)->nextToken;
-        if ((*token)->type == T_LDBR)
-        {
-            (*token) = (*token)->nextToken;
-            if ((*token)->type == T_ID)
-            {
-                if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
-                {
-                    printf("promenna nebyla definovana"); (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
-                }
-                if(STableSearchLocalReturnType(LocalTable,(*token)->data)!='s')
-                {
-                    (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
-                }
-                if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 'i')
-                {
-                    (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
+    {
+        (*token)= CodeGenLen(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0;
+        return *token;
+    }
+    //VESTAVENA FUNKCE substr
 
-                }
-                (*token) = (*token)->nextToken;
-                if ((*token)->type == T_RDBR)
-                {
-                    //TODO PRINT
-                    return *token;
-                }
-                else
-                {
-                    (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-                }
-            }
-            else if ((*token)->type == T_STRING)
-            {
-
-                (*token) = (*token)->nextToken;
-                if ((*token)->type == T_RDBR)
-                {
-                    //TODO PRINT
-                    return *token;
-                }
-            }
-            else
-            {
-                (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-            }
-
-        }
-        else
-        {
-            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
-        }
+    if (((*token)->type == T_ID) && (strcmp((*token)->data, "substr") == 0))
+    {
+        (*token)= CodeGenSubstr(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
+    }
+    //VESTAVENA FUNKCE ord
+    if (((*token)->type == T_ID) && (strcmp((*token)->data, "ord") == 0))
+    {
+        (*token)= CodeGenOrd(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
+    }
+    //VESTAVENA FUNKCE chr
+    if (((*token)->type == T_ID) && (strcmp((*token)->data, "chr") == 0))
+    {
+        (*token)= CodeGenChr(token,LocalTable,IDCounter,UchovaniID);
+        IDCounter=0; return *token;
     }
 
 
@@ -1295,8 +1192,7 @@ tToken vice_id_vlevo(tToken *token) {
     } else {
         ViceVyrazu = true;
         //pokud nevolame funkci, musi nasledovat vyraz
-        (*token) = exprBUParse(token,
-                               LocalTable); //do token ulozeni buÄŹ posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
+        (*token) = exprBUParse(token,LocalTable); //do token ulozeni buÄŹ posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type == T_UNKNOWN) //nastala chyba pri vyrazu
         {
             return *token;
