@@ -250,6 +250,7 @@ int scannerDKA(tToken token)
                 break;
             case STATE_DOUBLE:
                 if (isdigit(currChar)) nextState = STATE_DOUBLE;
+                else if (currChar == 'E' || currChar == 'e') nextState = STATE_EXP0;
                 else token->type = T_DOUBLE;
                 break;
             case STATE_FLOAT64:
