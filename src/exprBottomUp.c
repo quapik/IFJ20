@@ -347,8 +347,8 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                     break;
                 case T_EXP:
                 case T_DOUBLE:
-                    printf("PUSHS \n");
-                    printf("%s\n",gen_float(item->data.token->data);
+                    printf("PUSHS ");
+                    printf("%s\n",gen_float(item->data.token->data));
                     ntype = X_FLOAT;
                     //exprTyp = 'i';
                     break;
@@ -467,7 +467,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
     switch (item->data.token->type) {
         //reseni operaci TODO
         case T_ADD:
-            Porovnavani = false;
+            //Porovnavani = false;
             if (isSingle)
             {
                 fprintf(stderr, "Error: unarni operator nepodporovan\n");
@@ -486,7 +486,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             }
             break;
         case T_SUB:
-            Porovnavani = false;
+            //Porovnavani = false;
             if (isSingle)
             {
                 fprintf(stderr, "Error: unarni operator nepodporovan\n");
@@ -505,7 +505,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             }
             break;
         case T_MUL:
-            Porovnavani = false;
+            //Porovnavani = false;
             if (unknownType) printf("todo\n")/* TODO Generovani kodu */;
             if (!(isSame) || (type == X_STRING))
             {
@@ -524,7 +524,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             }
             break;
         case T_DIV:
-            Porovnavani = false;
+            //Porovnavani = false;
             if (unknownType) printf("todo\n")/* TODO Generovani kodu symtable */;
             if (!(isSame) || (type == X_STRING))
             {
