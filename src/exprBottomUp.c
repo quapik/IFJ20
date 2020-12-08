@@ -386,7 +386,6 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                         default:
                             fprintf(stderr, "Error: Vyrazy, problem s ID\n");
                             return 3;
-                            break;
                     }
 
                     //exprTyp = 'u';
@@ -562,7 +561,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
             if (unknownType) printf("todo\n")/*TODO generovani kodu symtable*/;
             if ((!(isSingle) && !(isSame)) || (type == X_STRING))
             {
-                fprintf(stderr, "Error: ve vyrazu: porovnavame operandy rozdilnych typu\n");
+                fprintf(stderr, "Error: ve vyrazu: porovnavame operandy nespravnych typu\n");
                 free(item);
                 free(rItem);
                 free(lItem);
@@ -586,7 +585,7 @@ unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table)
                 }
                 if (!(isSame) || (type == X_STRING))
                 {
-                    fprintf(stderr, "Error: ve vyrazu: porovnavame operandy rozdilnych typu\n");
+                    fprintf(stderr, "Error: ve vyrazu: porovnavame operandy nespravnych typu\n");
                     free(item);
                     free(rItem);
                     free(lItem);
