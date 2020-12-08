@@ -197,7 +197,7 @@ void STableDispose(tSymbolTablePtr Tab){
 
         free(&Tab->datastringparametry);
         free(&Tab->datastringnavratovehodnoty);//TODO
-        free(&Tab);
+        free(Tab);
 
         Tab=NULL;
     }

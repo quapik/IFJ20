@@ -16,6 +16,9 @@ void CodeGenStart()
 {
     printf(".IFJcode20\n");
     printf("JUMP $$main\n");
+    gen_substr();
+    gen_input();
+    gen_string_functions();
 }
 void CodeGenDefVar(char* id)
 {
@@ -116,7 +119,7 @@ void gen_substr()
     printf("DEFVAR LF@index\n");
     printf("MOVE LF@index LF@i\n");
     printf("DEFVAR LF@index_end\n");
-    printf("MOVE LF@index_end LF@delka\n");
+    printf("MOVE LF@index_end LF@%%delka\n");
 
     printf("# priznak chyby\n");
     printf("DEFVAR LF@%%ret_err1\n");
@@ -272,61 +275,61 @@ void gen_string_functions()
 {
     printf("LABEL $find_len\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@%str\n");
-    printf("MOVE LF@%str LF@str\n");
-    printf("DEFVAR LF@%delka\n");
-    printf("MOVE LF@%delka nil@nil\n");
-    printf("DEFVAR LF@%err_ind\n");
-    printf("MOVE LF@%err_ind int@0\n");
-    printf("STRLEN LF@%delka LF@%str\n");
-    printf("JUMPIFEQ $err_len LF@%delka nil@nil\n");
+    printf("DEFVAR LF@%%str\n");
+    printf("MOVE LF@%%str LF@str\n");
+    printf("DEFVAR LF@%%delka\n");
+    printf("MOVE LF@%%delka nil@nil\n");
+    printf("DEFVAR LF@%%err_ind\n");
+    printf("MOVE LF@%%err_ind int@0\n");
+    printf("STRLEN LF@%%delka LF@%%str\n");
+    printf("JUMPIFEQ $err_len LF@%%delka nil@nil\n");
     printf("JUMP $find_len_end\n");
     printf("LABEL $err_len\n");
-    printf("MOVE LF@%err_ind int@1\n");
+    printf("MOVE LF@%%err_ind int@1\n");
     printf("LABEL $find_len_end\n");
     printf("POPFRAME \n");
     printf("RETURN\n");
     printf("\n");
     printf("LABEL $find_ord\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@%str\n");
-    printf("MOVE LF@%str LF@str\n");
-    printf("DEFVAR LF@%index\n");
-    printf("MOVE LF@%index LF@index\n");
-    printf("DEFVAR LF@%ret\n");
-    printf("MOVE LF@%ret nil@nil\n");
-    printf("DEFVAR LF@%err_ind\n");
-    printf("LT LF@%err_ind LF@%index int@0\n");
-    printf("JUMPIFEQ $err_ord LF@%err_ind bool@true\n");
+    printf("DEFVAR LF@%%str\n");
+    printf("MOVE LF@%%str LF@str\n");
+    printf("DEFVAR LF@%%index\n");
+    printf("MOVE LF@%%index LF@index\n");
+    printf("DEFVAR LF@%%ret\n");
+    printf("MOVE LF@%%ret nil@nil\n");
+    printf("DEFVAR LF@%%err_ind\n");
+    printf("LT LF@%%err_ind LF@%%index int@0\n");
+    printf("JUMPIFEQ $err_ord LF@%%err_ind bool@true\n");
     printf("DEFVAR LF@str_len\n");
     printf("STRLEN LF@str_len LF@str\n");
     printf("SUB LF@str_len LF@str_len int@1\n");
-    printf("GT LF@%err_ind LF@%index LF@str_len\n");
-    printf("JUMPIFEQ $err_ord LF@%err_ind bool@true\n");
-    printf("STRI2INT LF@%ret LF@%str LF@%index\n");
-    printf("MOVE LF@%err_ind int@0\n");
+    printf("GT LF@%%err_ind LF@%%index LF@str_len\n");
+    printf("JUMPIFEQ $err_ord LF@%%err_ind bool@true\n");
+    printf("STRI2INT LF@%%ret LF@%%str LF@%%index\n");
+    printf("MOVE LF@%%err_ind int@0\n");
     printf("JUMP $end_ord\n");
     printf("LABEL $err_ord\n");
-    printf("MOVE LF@%err_ind int@1\n");
+    printf("MOVE LF@%%err_ind int@1\n");
     printf("LABEL $end_ord\n");
     printf("POPFRAME \n");
     printf("RETURN\n");
     printf("\n");
     printf("LABEL $find_chr\n");
     printf("PUSHFRAME\n");
-    printf("DEFVAR LF@%cislo\n");
-    printf("MOVE LF@%cislo LF@cislo\n");
-    printf("DEFVAR LF@%ret\n");
-    printf("MOVE LF@%ret nil@nil\n");
-    printf("DEFVAR LF@%err_ind\n");
-    printf("LT LF@%err_ind LF@%cislo int@0\n");
-    printf("JUMPIFEQ $err_chr LF@%err_ind bool@true\n");
-    printf("GT LF@%err_ind LF@%cislo int@255\n");
-    printf("INT2CHAR LF@%ret LF@%cislo\n");
-    printf("MOVE LF@%err_ind int@0\n");
+    printf("DEFVAR LF@%%cislo\n");
+    printf("MOVE LF@%%cislo LF@cislo\n");
+    printf("DEFVAR LF@%%ret\n");
+    printf("MOVE LF@%%ret nil@nil\n");
+    printf("DEFVAR LF@%%err_ind\n");
+    printf("LT LF@%%err_ind LF@%%cislo int@0\n");
+    printf("JUMPIFEQ $err_chr LF@%%err_ind bool@true\n");
+    printf("GT LF@%%err_ind LF@%%cislo int@255\n");
+    printf("INT2CHAR LF@%%ret LF@%%cislo\n");
+    printf("MOVE LF@%%err_ind int@0\n");
     printf("JUMP $end_chr\n");
     printf("LABEL $err_chr\n");
-    printf("MOVE LF@%err_ind int@1\n");
+    printf("MOVE LF@%%err_ind int@1\n");
     printf("LABEL $end_chr\n");
     printf("POPFRAME \n");
     printf("RETURN\n");
@@ -340,7 +343,7 @@ void gen_string_functions()
     MOVE TF@retezec string@slovo\032slovo
 
     CALL $find_len
-    MOVE LF@delka TF@%delka
+    MOVE LF@delka TF@%%delka
 
 // func ord(s string, i int) (int, int)
     DEFVAR LF@cislo
@@ -353,8 +356,8 @@ void gen_string_functions()
     MOVE TF@index int @7
 
     CALL $find_ord
-    MOVE LF@cislo TF@%ret
-    MOVE LF@err TF@%err_ind
+    MOVE LF@cislo TF@%%ret
+    MOVE LF@err TF@%%err_ind
 
 // func chr(i int) (string, int)
     DEFVAR LF@znak
@@ -365,8 +368,8 @@ void gen_string_functions()
     MOVE TF@cislo int@9
 
     CALL $find_chr
-    MOVE LF@znak TF@%ret
-    MOVE LF@err TF@%err_ind
+    MOVE LF@znak TF@%%ret
+    MOVE LF@err TF@%%err_ind
 
 */
 }
@@ -480,7 +483,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
             {
                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
             }
-            printf("CREATEFRAME\nDEFVAR TF@str\nMOVE TF@str string@");gen_string((*token)->data);
+            printf("CREATEFRAME\nDEFVAR TF@str\nMOVE TF@str LF@%s\n", (*token)->data);
             printf("CALL $find_len\n");
 
             if(strcmp(UchovaniID[1],"_")!=0)
@@ -490,7 +493,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                     (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
 
                 }
-               printf("MOVE LF@%s TF@%delka\n",UchovaniID[1]);
+               printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
             }
 
             (*token) = (*token)->nextToken;
@@ -506,7 +509,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
             }
         }
         else if ((*token)->type == T_STRING)
-        {     printf("CREATEFRAME\nDEFVAR TF@str\nMOVE TF@str string@"); gen_string((*token)->data);
+        {     printf("CREATEFRAME\nDEFVAR TF@str\nMOVE TF@str "); gen_string((*token)->data);
               printf("CALL $find_len\n");
             if(strcmp(UchovaniID[1],"_")!=0)
             {
@@ -515,7 +518,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                     (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
 
                 }
-              printf("MOVE LF@%s TF@%delka\n",UchovaniID[1]);
+              printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
             }
 
             (*token) = (*token)->nextToken;
@@ -555,7 +558,7 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
             {
                 (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
             }
-            printf("MOVE LF@%s TF@%ret\n",UchovaniID[1]);
+            printf("MOVE LF@%s TF@%%ret\n",UchovaniID[1]);
         }
         if(strcmp(UchovaniID[2],"_")!=0)
         {
@@ -563,18 +566,21 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
             {
                 (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
             }
-            printf(" MOVE LF@%s TF@%ret_err1\n",UchovaniID[2]);
+            printf(" MOVE LF@%s TF@%%ret_err1\n",UchovaniID[2]);
         }
 
         (*token) = (*token)->nextToken;
         if (((*token)->type == T_ID)||((*token)->type == T_STRING))
-        {    printf("MOVE TF@str string@"); gen_string((*token)->data);
+        {    
             if((*token)->type == T_STRING)
             {
+		printf("MOVE TF@str "); gen_string((*token)->data);
                 (*token) = (*token)->nextToken;
+		
             }
             else
             {
+		printf("MOVE TF@str LF@%s\n", (*token)->data);
                 if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
                 {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
@@ -615,7 +621,7 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
                 }
                 (*token) = (*token)->nextToken;
                 if (((*token)->type == T_ID)||((*token)->type == T_INT))
-                {   printf("DEFVAR TF@delka\nMOVE TF@delka int@%s\nCALL $find_substr\n",(*token)->data);
+                {   printf("DEFVAR TF@%%delka\nMOVE TF@%%delka int@%s\nCALL $find_substr\n",(*token)->data); //editted
 
                     if ((*token)->type == T_INT)
                     {
@@ -658,7 +664,7 @@ tToken CodeGenOrd(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
     {
         (*token) = (*token)->nextToken;
         if (((*token)->type == T_ID)||((*token)->type == T_STRING))
-        {   printf("MOVE TF@str string@"); gen_string((*token)->data);
+        {   printf("MOVE TF@str LF@%s", (*token)->data);
             if ((*token)->type == T_STRING) {
                 (*token) = (*token)->nextToken;
             } else {
@@ -706,7 +712,7 @@ tToken CodeGenOrd(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                         (*token)->data = "ERR_SEM_KOMP";
                         return *token;
                     }
-                    printf("MOVE LF@%s TF@%ret\n",UchovaniID[1]);
+                    printf("MOVE LF@%s TF@%%ret\n",UchovaniID[1]);
 
                 }
                 if(strcmp(UchovaniID[1],"_")!=0)
@@ -716,7 +722,7 @@ tToken CodeGenOrd(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                         (*token)->data = "ERR_SEM_KOMP";
                         return *token;
                     }
-                    printf("MOVE LF@%s TF@%err_ind\n",UchovaniID[1]);
+                    printf("MOVE LF@%s TF@%%err_ind\n",UchovaniID[1]);
                 }
                 if ((*token)->type != T_RDBR) {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; return *token;
@@ -763,7 +769,7 @@ tToken CodeGenChr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                         (*token)->data = "ERR_SEM_KOMP";
                         return *token;
                     }
-                    printf("MOVE LF@%s TF@%ret\n",UchovaniID[1]);
+                    printf("MOVE LF@%s TF@%%ret\n",UchovaniID[1]);
                 }
 
                 if(strcmp(UchovaniID[2],"_")!=0)
@@ -772,7 +778,7 @@ tToken CodeGenChr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                         (*token)->type = T_UNKNOWN;(*token)->data = "ERR_SEM_KOMP";
                         return *token;
                     }
-                    printf("MOVE LF@%s TF@%err_ind\n",UchovaniID[2]);
+                    printf("MOVE LF@%s TF@%%err_ind\n",UchovaniID[2]);
                 }
             }
             if ((*token)->type != T_RDBR) {

@@ -14,8 +14,8 @@ Generování kódu
 #include <ctype.h>
 #include <stdlib.h>
 #include "scanner.h"
-#include "parser.h."
-#include "symtable.h."
+#include "parser.h"
+#include "symtable.h"
 
 void CodeGenStart();
 void CodeGenDefVar(char* id);
