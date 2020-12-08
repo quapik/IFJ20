@@ -87,11 +87,11 @@ void gen_string(char* input_string)
 
 }
 
-void CodeGenPrint(tToken *token)
+void CodeGenPrint(tToken *token) //funkce pro funkci print a jeji spravne printovani
 {
     if((*token)->type==T_INT)
     {
-        printf("WRITE int@%s", (*token)->data);
+        printf("WRITE int@%s\n", (*token)->data);
         //print cislo
     }
     else if((*token)->type==T_STRING)
@@ -111,7 +111,7 @@ void CodeGenPrint(tToken *token)
 
 }
 void gen_substr()
-{
+{   printf("#---VESTAVENA FUNKCE SUBSTR---\n");
     printf("LABEL $find_substr\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%ret\n");
@@ -188,7 +188,7 @@ void gen_substr()
 }
 
 void gen_input()
-{
+{   printf("#---VESTAVENA FUNKCE INPUTS---\n");
     printf("LABEL $read_inputs\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%string_read\n");
@@ -203,7 +203,7 @@ void gen_input()
     printf("LABEL $end_inputs\n");
     printf("POPFRAME\n");
     printf("RETURN\n");
-
+    printf("#---VESTAVENA FUNKCE INPUTI---\n");
     printf("LABEL $read_inputi\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%int_read\n");
@@ -218,7 +218,7 @@ void gen_input()
     printf("LABEL $end_inputi\n");
     printf("POPFRAME\n");
     printf("RETURN\n");
-
+    printf("#---VESTAVENA FUNKCE INPUTF---\n");
     printf("LABEL $read_inputf\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%float_read\n");
@@ -272,7 +272,7 @@ void gen_input()
 }
 
 void gen_string_functions()
-{
+{   printf("#---VESTAVENA FUNKCE LEN---\n");
     printf("LABEL $find_len\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%str\n");
@@ -290,6 +290,7 @@ void gen_string_functions()
     printf("POPFRAME \n");
     printf("RETURN\n");
     printf("\n");
+    printf("#---VESTAVENA FUNKCE ORD---\n");
     printf("LABEL $find_ord\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%str\n");
@@ -315,6 +316,7 @@ void gen_string_functions()
     printf("POPFRAME \n");
     printf("RETURN\n");
     printf("\n");
+    printf("#---VESTAVENA FUNKCE CHR---\n");
     printf("LABEL $find_chr\n");
     printf("PUSHFRAME\n");
     printf("DEFVAR LF@%%cislo\n");
@@ -334,53 +336,15 @@ void gen_string_functions()
     printf("POPFRAME \n");
     printf("RETURN\n");
 
-/*
-// func len(đť‘  string) (int)
-
-    DEFVAR LF@delka
-    CREATEFRAME
-    DEFVAR TF@str
-    MOVE TF@retezec string@slovo\032slovo
-
-    CALL $find_len
-    MOVE LF@delka TF@%%delka
-
-// func ord(s string, i int) (int, int)
-    DEFVAR LF@cislo
-    DEFVAR LF@err
-
-    CREATEFRAME
-    DEFVAR TF@str
-    MOVE TF@str string@slovoslovo
-    DEFVAR TF@index
-    MOVE TF@index int @7
-
-    CALL $find_ord
-    MOVE LF@cislo TF@%%ret
-    MOVE LF@err TF@%%err_ind
-
-// func chr(i int) (string, int)
-    DEFVAR LF@znak
-    DEFVAR LF@err
-
-    CREATEFRAME
-    DEFVAR TF@cislo
-    MOVE TF@cislo int@9
-
-    CALL $find_chr
-    MOVE LF@znak TF@%%ret
-    MOVE LF@err TF@%%err_ind
-
-*/
 }
 tToken CodeGenInputi(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounter,char *UchovaniID[])
-{
+{   //pokud jiny nez spravny pocet parametru
     if(IDCounter!=2){(*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_POCET"; return *token;}
     (*token) = (*token)->nextToken;
     if (((*token)->type == T_LDBR) && ((*token)->nextToken->type == T_RDBR)) {
         (*token) = (*token)->nextToken;
         printf("CREATEFRAME\nCALL $read_inputi\n");
-        if(strcmp(UchovaniID[1],"_")!=0){
+        if(strcmp(UchovaniID[1],"_")!=0){ //pokud _ tak zahazujeme, jinak musi byt int
             if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 'i') {
                 (*token)->type = T_UNKNOWN;  (*token)->data = "ERR_SEM_KOMP";return *token;
             }
@@ -391,14 +355,14 @@ tToken CodeGenInputi(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
                 (*token)->type = T_UNKNOWN;(*token)->data = "ERR_SEM_KOMP"; return *token;
 
             }
-            IDCounter=0;
+
             printf("MOVE LF@%s TF@%%read_err2\n", UchovaniID[2]);
         }
-        IDCounter=0;
+
         return *token;
     }
     else
-    {
+    {   //pokud nekde nastala chyba
         (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SYNTAX"; return *token;
     }
 
@@ -421,7 +385,7 @@ tToken CodeGenInputf(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
             if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i') {
                 (*token)->type = T_UNKNOWN;   (*token)->data = "ERR_SEM_KOMP";    return *token;
             }
-            IDCounter=0;
+
             printf("MOVE LF@%s TF@%%read_err3\n", UchovaniID[2]);
         }
 
@@ -454,7 +418,7 @@ tToken CodeGenInputs(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
             {
                 (*token)->type = T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";   return *token;
             }
-            IDCounter=0;
+
             printf("MOVE LF@%s TF@%%read_err1\n", UchovaniID[2]);
         }
         return *token;
@@ -477,7 +441,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
         {
             if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
             {
-                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
+                (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
             }
             if(STableSearchLocalReturnType(LocalTable,(*token)->data)!='s')
             {
@@ -493,7 +457,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                     (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
 
                 }
-               printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
+                printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
             }
 
             (*token) = (*token)->nextToken;
@@ -510,7 +474,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
         }
         else if ((*token)->type == T_STRING)
         {     printf("CREATEFRAME\nDEFVAR TF@str\nMOVE TF@str "); gen_string((*token)->data);
-              printf("CALL $find_len\n");
+            printf("CALL $find_len\n");
             if(strcmp(UchovaniID[1],"_")!=0)
             {
                 if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 'i')
@@ -518,7 +482,7 @@ tToken CodeGenLen(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
                     (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
 
                 }
-              printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
+                printf("MOVE LF@%s TF@%%delka\n",UchovaniID[1]);
             }
 
             (*token) = (*token)->nextToken;
@@ -548,39 +512,21 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
 
     printf("CREATEFRAME\n DEFVAR TF@str\n");
 
-
-
-
     if ((*token)->type == T_LDBR)
-    {    if(strcmp(UchovaniID[1],"_")!=0)
-        {
-            if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 's')
-            {
-                (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
-            }
-            printf("MOVE LF@%s TF@%%ret\n",UchovaniID[1]);
-        }
-        if(strcmp(UchovaniID[2],"_")!=0)
-        {
-            if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i')
-            {
-                (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
-            }
-            printf(" MOVE LF@%s TF@%%ret_err1\n",UchovaniID[2]);
-        }
+    {
 
         (*token) = (*token)->nextToken;
         if (((*token)->type == T_ID)||((*token)->type == T_STRING))
-        {    
+        {
             if((*token)->type == T_STRING)
             {
-		printf("MOVE TF@str "); gen_string((*token)->data);
+                printf("MOVE TF@str "); gen_string((*token)->data);
                 (*token) = (*token)->nextToken;
-		
+
             }
             else
             {
-		printf("MOVE TF@str LF@%s\n", (*token)->data);
+                printf("MOVE TF@str LF@%s\n", (*token)->data);
                 if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
                 {
                     (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
@@ -596,15 +542,18 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
                 (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; return *token;
             }
             (*token) = (*token)->nextToken;
+
             if (((*token)->type == T_ID)||((*token)->type == T_INT))
-            {     printf("DEFVAR TF@i\n MOVE TF@i int@%s\n",(*token)->data);
+            {
 
                 if ((*token)->type == T_INT)
                 {
+                    printf("DEFVAR TF@%%i\n MOVE TF@%%i int@%s\n",(*token)->data);
                     (*token) = (*token)->nextToken;
                 }
                 else
                 {
+                    printf("DEFVAR TF@%%i\n MOVE TF@%%i LF@%s\n",(*token)->data);
                     if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
                     {
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
@@ -621,14 +570,16 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
                 }
                 (*token) = (*token)->nextToken;
                 if (((*token)->type == T_ID)||((*token)->type == T_INT))
-                {   printf("DEFVAR TF@%%delka\nMOVE TF@%%delka int@%s\nCALL $find_substr\n",(*token)->data); //editted
+                {    //editted
 
                     if ((*token)->type == T_INT)
                     {
+                        printf("DEFVAR TF@%%delka\nMOVE TF@%%delka int@%s\nCALL $find_substr\n",(*token)->data);
                         (*token) = (*token)->nextToken;
                     }
                     else
                     {
+                        printf("DEFVAR TF@%%delka\nMOVE TF@%%delka LF@%s\nCALL $find_substr\n",(*token)->data);
                         if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
                         {
                             (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_POCET"; return *token;
@@ -642,6 +593,22 @@ tToken CodeGenSubstr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCou
                     if((*token)->type != T_RDBR)
                     {
                         (*token)->type=T_UNKNOWN; (*token)->data="ERR_SYNTAX"; return *token;
+                    }
+                    if(strcmp(UchovaniID[1],"_")!=0)
+                    {
+                        if (STableSearchLocalReturnType(LocalTable, UchovaniID[1]) != 's')
+                        {
+                            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
+                        }
+                        printf("MOVE LF@%s TF@%%ret\n",UchovaniID[1]);
+                    }
+                    if(strcmp(UchovaniID[2],"_")!=0)
+                    {
+                        if (STableSearchLocalReturnType(LocalTable, UchovaniID[2]) != 'i')
+                        {
+                            (*token)->type=T_UNKNOWN; (*token)->data = "ERR_SEM_KOMP";  return *token;
+                        }
+                        printf(" MOVE LF@%s TF@%%ret_err1\n",UchovaniID[2]);
                     }
 
                     return *token;
@@ -664,10 +631,13 @@ tToken CodeGenOrd(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
     {
         (*token) = (*token)->nextToken;
         if (((*token)->type == T_ID)||((*token)->type == T_STRING))
-        {   printf("MOVE TF@str LF@%s", (*token)->data);
-            if ((*token)->type == T_STRING) {
+        {
+            if ((*token)->type == T_STRING)
+            {
+                printf("MOVE TF@str "); gen_string((*token)->data);
                 (*token) = (*token)->nextToken;
             } else {
+                printf("MOVE TF@str LF@%s", (*token)->data);
                 if (STableSearchLocal(LocalTable, (*token)->data) == NULL) {
                     (*token)->type = T_UNKNOWN;
                     (*token)->data = "ERR_SEM_POCET";
@@ -746,10 +716,12 @@ tToken CodeGenChr(tToken *token, tSymbolTablePtrPromenna LocalTable,int IDCounte
         (*token) = (*token)->nextToken;
 
         if (((*token)->type == T_ID)||((*token)->type == T_INT))
-        {   printf("MOVE TF@cislo int@%s\n CALL $find_chr\n",(*token)->data);
+        {
             if ((*token)->type == T_INT) {
+                printf("MOVE TF@cislo int@%s\n CALL $find_chr\n",(*token)->data);
                 (*token) = (*token)->nextToken;
             } else {
+                printf("MOVE TF@cislo LF@%s\n CALL $find_chr\n",(*token)->data);
                 if (STableSearchLocal(LocalTable, (*token)->data) == NULL) {
                     (*token)->type = T_UNKNOWN;
                     (*token)->data = "ERR_SEM_POCET";
