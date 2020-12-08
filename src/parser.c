@@ -9,15 +9,15 @@ Prosinec 2020, Fakulta informaÄŤnĂ­ch technologiĂ­ VUT v BrnÄ›
 */
 
 #include "parser.h"
-bool firstID=false;
+
 bool BylMain=false; //pomocna pro to jestli byla fce main
 tToken pomToken;
 bool PossibleEof=false; //aby nenastal eof v tele ifu apod
-bool ViceVyrazu=false;
-int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
-int IDCounter=0; int IDCounterOpacny=0; unsigned FORCounter=0; unsigned FOR2Counter=0;
-int IFCounter=0;   int ELSECounter=0; //countery pro LABELY pro CODEGEN
-char* UchovaniID[20]; char UchovaniTYP[20];
+bool ViceVyrazu=false; bool Only1ID=false;
+unsigned int PocetKoncovychZavorek=0; //promenna pro kontrolu zda je stejny pocet { & }
+int IDCounter=0; unsigned  int IDCounterOpacny=0; unsigned FORCounter=0; unsigned FOR2Counter=0;
+unsigned  int IFCounter=0;   unsigned int ELSECounter=0; //countery pro LABELY pro CODEGEN
+char* UchovaniID[20];
 bool VeFunkci=false; bool VMainu=false; // bool JdemeZReturnu = false;
 char* JmenoPromenne;
 unsigned int AktualniHloubkaZanoreni=0; unsigned int paramscounter=0;
@@ -79,7 +79,7 @@ tToken body(tToken *token)
         (*token)=(*token)->nextToken;
         (*token)=func_rule(token);
 
-        if ((*token)->type==T_UNKNOWN) //chyba v ifu
+        if ((*token)->type==T_UNKNOWN) //chyba ve func rule
         {
 
             return *token;
@@ -544,6 +544,11 @@ tToken func_rule(tToken *token)
     }
     else if ((*token)->type==T_ID) //Dalsi typy funkci
     {   AktualniHloubkaZanoreni++;
+        //Abychom nemohli definovat vestavene funkce
+        if((strcmp((*token)->data,"inputi")==0)||(strcmp((*token)->data,"inputf")==0)||(strcmp((*token)->data,"inputs")==0)||
+                (strcmp((*token)->data,"len")==0)||(strcmp((*token)->data,"substr")==0)||(strcmp((*token)->data,"ord")==0)||
+                (strcmp((*token)->data,"chr")==0)){(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return* token;}
+
         if(STableSearch(GlobalTable,(*token)->data)!=NULL)
         {
             printf("Fce jiz byla jednou definovana\n");(*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return* token;
@@ -733,13 +738,29 @@ tToken params(tToken *token)
         exit(99);
     }
     if ((*token)->type==T_ID)
-    {
+    {   JmenoPromenne=(*token)->data;
+        //vlozeni vstupnich parametru funkce (idcke) do tabulky promennych
+        if(STableSearchLocal(LocalTable,JmenoPromenne)!=NULL)
+        {
+            (*token)->type = T_UNKNOWN;  (*token)->data = "ERR_SEM_PROG"; return *token;
+        }
+
+
         (*token)=(*token)->nextToken;
         if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
         {
-            if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
-            else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
-            else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
+            if((*token)->type==T_KEYINT){
+                GlobalTable->datastringparametry[paramscounter]='i';
+                STableInsertLocal(&LocalTable,JmenoPromenne, 'i', AktualniHloubkaZanoreni);
+            }
+            else if((*token)->type==T_KEYFLOAT64) {
+                GlobalTable->datastringparametry[paramscounter]='f';
+                STableInsertLocal(&LocalTable,JmenoPromenne, 'f', AktualniHloubkaZanoreni);
+            }
+            else if((*token)->type==T_KEYSTRING){
+                GlobalTable->datastringparametry[paramscounter]='s';
+                STableInsertLocal(&LocalTable,JmenoPromenne, 's', AktualniHloubkaZanoreni);
+            }
             GlobalTable->datastringparametry[paramscounter+1]='\0';
 
             (*token)=(*token)->nextToken;
@@ -773,17 +794,27 @@ tToken params(tToken *token)
 }
 //Pravidlo <params_n> -> , ID  <DATATYPE> <PARAMS_N> nebo  <params_n> -> EPS
 tToken params_n(tToken *token)
-{ paramscounter++;
+{
+    paramscounter++;
     if ((*token)->type==T_COMMA)
-    {
+    { JmenoPromenne=((*token)->prevToken->data);
         (*token)=(*token)->nextToken;
         if ((*token)->type==T_ID)
         {   (*token)=(*token)->nextToken;
             if (((*token)->type==T_KEYINT) || ((*token)->type==T_KEYFLOAT64) || ((*token)->type==T_KEYSTRING))
             {
-                if((*token)->type==T_KEYINT) GlobalTable->datastringparametry[paramscounter]='i';
-                else if((*token)->type==T_KEYFLOAT64) GlobalTable->datastringparametry[paramscounter]='f';
-                else if((*token)->type==T_KEYSTRING) GlobalTable->datastringparametry[paramscounter]='s';
+                if((*token)->type==T_KEYINT){
+                    GlobalTable->datastringparametry[paramscounter]='i';
+                    STableInsertLocal(&LocalTable,JmenoPromenne, 'i', AktualniHloubkaZanoreni);
+                }
+                else if((*token)->type==T_KEYFLOAT64) {
+                    GlobalTable->datastringparametry[paramscounter]='f';
+                    STableInsertLocal(&LocalTable,JmenoPromenne, 'f', AktualniHloubkaZanoreni);
+                }
+                else if((*token)->type==T_KEYSTRING){
+                    GlobalTable->datastringparametry[paramscounter]='s';
+                    STableInsertLocal(&LocalTable,JmenoPromenne, 's', AktualniHloubkaZanoreni);
+                }
                 GlobalTable->datastringparametry[paramscounter+1]='\0';
 
                 (*token)=(*token)->nextToken;
@@ -835,7 +866,6 @@ tToken for_rule(tToken *token)
                 return *token;
             }
 
-            //STableInsertLocal(&LocalTable,JmenoPromenne, (*token)->prevToken->data, AktualniHloubkaZanoreni);
 
             CodeGenDefVar(JmenoPromenne); //GENEROVANI PROMENNE a nasledne prirazeni hodnoty
             (*token)=(*token)->nextToken;
@@ -1035,6 +1065,7 @@ tToken id_next(tToken *token)
         if ((*token)->type==T_ASSIGN)  //po vice identifikatorech prislo =
         {
             (*token)=(*token)->nextToken; IDCounterOpacny=0;
+
             (*token)=vice_id_vlevo(token);
             //SEMANTICKA CAST -> ulozeni hodnot z vyrazu do promenynych
             if(ViceVyrazu==true)
@@ -1052,8 +1083,10 @@ tToken id_next(tToken *token)
 
                     IDCounterOpacny--;
                 }
+
                 ViceVyrazu=false;
             }
+
             //KONEC SEMANTICKE CASTI
             return *token; //return do body kde se vola
         }
@@ -1071,7 +1104,7 @@ tToken id_next(tToken *token)
         {
             printf("Promenna nebyla definovana1\n");  (*token)->type=T_UNKNOWN; (*token)->data="ERR_SEM_PROG"; return *token;
         }
-        IDCounter=1; //nastaaveni napevno aby nekolidovalo s vice id
+        IDCounter=1; Only1ID=true; //nastaaveni napevno aby nekolidovalo s vice id
         UchovaniID[IDCounter]=(*token)->prevToken->data;
 
         (*token)=(*token)->nextToken; IDCounterOpacny=0;
@@ -1192,6 +1225,7 @@ tToken vice_id_vlevo(tToken *token) {
     } else {
         ViceVyrazu = true;
         //pokud nevolame funkci, musi nasledovat vyraz
+
         (*token) = exprBUParse(token,LocalTable); //do token ulozeni buÄŹ posledni token vyrazu (vse ok) nebo v token type T_UNKNOWN (pri chybe)
         if ((*token)->type == T_UNKNOWN) //nastala chyba pri vyrazu
         {
@@ -1205,6 +1239,10 @@ tToken vice_id_vlevo(tToken *token) {
             printf("Chyba (porovnavani tam kde nema byt \n");
             return *token;
         }
+        if(Only1ID==(true))
+        {printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
+            printf("MOVE LF@%s TF@$return\n", UchovaniID[IDCounterOpacny]);
+            Only1ID=false;}
         //Kontrola zda sedi datove typy, ktere ted prirazujeme a ktere byly definovany
         if (strcmp(UchovaniID[IDCounterOpacny], "_") != 0) { //pokud _ tak netreba hlidat dat typy
             if (exprTyp == X_INT) {
@@ -1239,8 +1277,8 @@ tToken vice_id_vlevo(tToken *token) {
 
 //PRAVIDLO <paramscall> -> ID <PARAMSCALL_N>
 tToken paramscall(tToken *token)
-{   printf("test %d\n",paramscounter);
-    if ((*token)->type==T_ID||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP))
+{
+    if ((*token)->type==T_ID||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP)||((*token)->type==T_DOUBLE))
     {
         //SEMANTIKA TODO ID
         if((*token)->type==T_ID)
@@ -1311,7 +1349,7 @@ tToken paramscall_n(tToken *token)
     if ((*token)->type==T_COMMA)
     {
         (*token)=(*token)->nextToken;
-        if (((*token)->type==T_ID)||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP))
+        if (((*token)->type==T_ID)||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP)||((*token)->type==T_DOUBLE))
         {
             //SEMANTIKA TODO ID
             if((*token)->type==T_INT)
