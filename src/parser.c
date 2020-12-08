@@ -427,6 +427,7 @@ tToken if_rule(tToken *token)
 
     if ((*token)->type==T_LCBR) // token je {
     {   PocetKoncovychZavorek++; IFCounter++; ELSECounter=IFCounter;
+        printf("#---VETVENI IF---\n");
         printf("CREATEFRAME\nDEFVAR TF@$return\nPOPS TF@$return\n");
         printf("JUMPIFNEQ $elselabel%d TF@$return bool@true\n",IFCounter);
         (*token)=(*token)->nextToken;
@@ -443,8 +444,9 @@ tToken if_rule(tToken *token)
             (*token)=(*token)->nextToken;
 
             if ((*token)->type==T_RCBR) // } ukoncovaci zavorka ifu
-            {   printf("JUMP $endiflabel%d\n",IFCounter);
-                printf("LABEL $elselabel%d\n",IFCounter);
+            {   printf("JUMP $endiflabel%d\n",ELSECounter);
+                printf("#---VETVENI ELSE---\n");
+                printf("LABEL $elselabel%d\n",ELSECounter);
                 PocetKoncovychZavorek--;
                 (*token)=(*token)->nextToken;
                 if ((*token)->type==T_ELSE)
@@ -866,7 +868,6 @@ tToken for_rule(tToken *token)
                 return *token;
             }
 
-
             CodeGenDefVar(JmenoPromenne); //GENEROVANI PROMENNE a nasledne prirazeni hodnoty
             (*token)=(*token)->nextToken;
             (*token)=exprBUParse(token,LocalTable);
@@ -898,6 +899,7 @@ tToken for_rule(tToken *token)
         }
     }
     //GENEROVANI KODU FOR label (zacatek foru na ktery se jumpuje)
+    printf("#---FOR---\n");
     printf("LABEL $for%d\n",FORCounter);
 
     if ((*token)->type==T_SEMICOLON) //je strednik? bud je prvni nebo uspesne bylo ID=vyraz
