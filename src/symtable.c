@@ -6,7 +6,7 @@ Fabián Michal   xfabia13@stud.fit.vutbr.cz
 Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
-Symtable
+Generování kódu, na souboru pracovali Šíma Vojtěch, Fabián Michal
 */
 
 #include "symtable.h"
@@ -25,15 +25,15 @@ tSymbolTablePtr STableSearch(tSymbolTablePtr Tab, char *Symbol){
         return NULL;
     }
     else{
-        if((strcmp(Symbol,Tab->Symbol))==0){
+        if((strcmp(Symbol,Tab->Symbol))==0){ //nalezeny prvek
             return Tab;
         }
         else{
             if((strcmp(Symbol,Tab->Symbol))<0){
-                return (STableSearch(Tab->LPtr,Symbol));
+                return (STableSearch(Tab->LPtr,Symbol)); //rekurzivni vyhledavani v levem podstromu
             }
             else{
-                return (STableSearch(Tab->RPtr,Symbol));
+                return (STableSearch(Tab->RPtr,Symbol)); //rekurzivni vyhledavani v praveem podstromu
             }
         }
     }
@@ -59,17 +59,17 @@ tSymbolTablePtrPromenna STableSearchLocal(tSymbolTablePtrPromenna Tab, char *Sym
 }
 
 char STableSearchLocalReturnType(tSymbolTablePtrPromenna Tab, char *Symbol){
-        if((strcmp(Symbol,Tab->Symbol))==0){
+        if((strcmp(Symbol,Tab->Symbol))==0){ //prvek nalezen -> returnujeme jeho typ
             return Tab->DatovyTyp;
         }
         else{
             if((strcmp(Symbol,Tab->Symbol))<0){
-                Tab->DatovyTyp=STableSearchLocalReturnType(Tab->LPtr,Symbol);
-                return Tab->DatovyTyp;
+                return(STableSearchLocalReturnType(Tab->LPtr,Symbol));
+
             }
             else{
-                Tab->DatovyTyp=STableSearchLocalReturnType(Tab->RPtr,Symbol);
-                return Tab->DatovyTyp;
+                return(STableSearchLocalReturnType(Tab->RPtr,Symbol));
+
             }
         }
 }
@@ -83,11 +83,11 @@ void STableInsert(tSymbolTablePtr *Tab, char *Symbol, bool defined){
         }
         else{
 
-            polozka->Symbol=Symbol;
-            polozka->defined=defined;
-            polozka->LPtr=NULL;
+            polozka->Symbol=Symbol; //jmeno promenne
+            polozka->defined=defined; //info o definovani
+            polozka->LPtr=NULL; //vkladany prvek je posledni
             polozka->RPtr=NULL;
-            *(Tab)=polozka;
+            *(Tab)=polozka; //premosteni ukazatele
         }
     }
     else{
@@ -113,12 +113,12 @@ void STableInsertLocal(tSymbolTablePtrPromenna *Tab, char *Symbol,char data, uns
         }
         else{
 
-            polozka->Symbol=Symbol;
-            polozka->DatovyTyp=data;
-            polozka->HloubkaZanoreni=hloubkazanoreni;
+            polozka->Symbol=Symbol; //jmeno promenne
+            polozka->DatovyTyp=data; //jeji datovy typ
+            polozka->HloubkaZanoreni=hloubkazanoreni; //na jake jsme urovni
             polozka->LPtr=NULL;
             polozka->RPtr=NULL;
-            *(Tab)=polozka;
+            *(Tab)=polozka; //premosteni ukazatele
         }
     }
     else{
@@ -139,7 +139,6 @@ void ReplaceByRightmost(tSymbolTablePtr PtrReplaced, tSymbolTablePtr *Tab){
     else{
         if((*Tab)->RPtr==NULL){
             PtrReplaced->Symbol=(*Tab)->Symbol;
-            //PtrReplaced->Data=(*Tab)->Data;
             STableDelete(Tab,(*Tab)->Symbol);
         }
         else{
@@ -161,12 +160,12 @@ void STableDelete(tSymbolTablePtr *Tab, char *Symbol){
                 STableDelete(&((*Tab)->RPtr),Symbol);
             }
             else{
-                if((*Tab)->LPtr==NULL && (*Tab)->RPtr==NULL){
+                if((*Tab)->LPtr==NULL && (*Tab)->RPtr==NULL){ //nemá žádný podstrom
                     free(*Tab);
                     *Tab=NULL;
                 }
                 else{
-                    if((*Tab)->LPtr!=NULL && (*Tab)->RPtr!=NULL){
+                    if((*Tab)->LPtr!=NULL && (*Tab)->RPtr!=NULL){ //má oba podstromy
                         ReplaceByRightmost(*Tab, &((*Tab)->LPtr));
                     }
                     else{
@@ -195,8 +194,8 @@ void STableDispose(tSymbolTablePtr Tab){
 
         // uvolneni pameti
 
-        free(&Tab->datastringparametry);
-        free(&Tab->datastringnavratovehodnoty);//TODO
+        free(&Tab->datastringparametry);  //uvolnení dynamickych stirngu
+        free(&Tab->datastringnavratovehodnoty);
         free(Tab);
 
         Tab=NULL;
@@ -205,12 +204,10 @@ void STableDispose(tSymbolTablePtr Tab){
 
 void STableDisposeLocal(tSymbolTablePtrPromenna Tab){
     if(Tab!=NULL){
-        // pruchod celym stromem
+        // rekurzivni pruchod celym stromem
         STableDisposeLocal(Tab->LPtr);
         STableDisposeLocal(Tab->RPtr);
-
         // uvolneni pameti
-
         free(Tab);
         Tab=NULL;
     }

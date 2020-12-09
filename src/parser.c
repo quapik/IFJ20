@@ -6,7 +6,7 @@ Fabián Michal   xfabia13@stud.fit.vutbr.cz
 Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
-Parser
+Parser, na souboru pracoval Šíma Vojtěch
 */
 
 #include "parser.h"
