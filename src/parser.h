@@ -6,23 +6,32 @@ Fabián Michal   xfabia13@stud.fit.vutbr.cz
 Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
 Prosinec 2020, Fakulta informačních technologií VUT v Brně
+Parser, na souboru pracoval Šíma Vojtěch
 */
 
 #ifndef _PARSER_H
 #define _PARSER_H
 #include "scanner.h"
 #include "error.h"
-#include "codegen.h" //TODO
+#include "codegen.h" 
 #include "exprBottomUp.h"
 #include "symtable.h"
-//#include "dynamicstring.c"
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 bool Porovnavani;
 
-
+/**
+ *
+ * @param token Ukazatel na aktuální token se kterým se bude dále ve funkci pracovat
+ * @return Vrácenta hodnota typu int která informuje, zda je vše vpořádku (0) nebo chyba
+ */
 int StartParser(tToken *token);
+/**
+ *
+ * @param Ukazatel na aktuální token se kterým se bude dále ve funkci pracovat
+ * @return Ukazatel na poslední token se kterým se pracovalo
+ */
 tToken body(tToken *token);
 tToken id_next(tToken *token);
 tToken  id_n(tToken *token);
