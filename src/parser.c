@@ -1,11 +1,12 @@
-//Implementace pĹ™ekladaÄŤe imperativnĂ­ho jazyka IFJ20
-//TĂ˝m ÄŤĂ­slo 041, varianta I
-/*AutoĹ™i projektu:
-Ĺ Ă­ma VojtÄ›ch 	xsimav01@stud.fit.vutbr.cz
-FabiĂˇn Michal   xfabia13@stud.fit.vutbr.cz
-ÄŚĂˇbela Radek    xcabel04@stud.fit.vutbr.cz
+//Implementace překladače imperativního jazyka IFJ20
+//Tým číslo 041, varianta I
+/*Autoři projektu:
+Šíma Vojtěch 	xsimav01@stud.fit.vutbr.cz
+Fabián Michal   xfabia13@stud.fit.vutbr.cz
+Čábela Radek    xcabel04@stud.fit.vutbr.cz
 Poposki Vasil   xpopos00@stud.fit.vutbr.cz
-Prosinec 2020, Fakulta informaÄŤnĂ­ch technologiĂ­ VUT v BrnÄ›
+Prosinec 2020, Fakulta informačních technologií VUT v Brně
+Parser
 */
 
 #include "parser.h"
@@ -100,7 +101,7 @@ tToken body(tToken *token)
     {
         (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SYNTAX";   return *token;
     }
-        //print TODO
+
     else if (((*token)->type==T_ID)&&(strcmp((*token)->data,"print")==0))
     {
         (*token)=(*token)->nextToken;
@@ -195,8 +196,7 @@ tToken body(tToken *token)
             else //funkce nalezena
             {
                 if(strlen(GlobalTable->datastringnavratovehodnoty)!=0) //pokud volana funkce ma nÄ›jake navratove hodnoty
-                {   printf("test");
-                    //printf ("%s\n",strlen(GlobalTable->datastringnavratovehodnoty));
+                {
                     (*token)->type=T_UNKNOWN;  (*token)->data="ERR_SEM_POCET"; return *token;
                 }
                 (*token)=(*token)->nextToken;
@@ -1210,11 +1210,11 @@ tToken vice_id_vlevo(tToken *token) {
         IDCounter=0; return *token;
     }
 
-
-    if (((*token)->type == T_ID) && ((*token)->nextToken->type == T_LDBR)) //volani fce
+    //MAME VOLANI FUNKCE
+    if (((*token)->type == T_ID) && ((*token)->nextToken->type == T_LDBR))
     {
         if (STableSearch(GlobalTable, (*token)->data) == NULL) {
-            printf("Volame fci co nebyla definovana"); //TODO insert
+            STableInsert(&GlobalTable,(*token)->data,false);
         }
 
         (*token) = (*token)->nextToken;
@@ -1223,7 +1223,7 @@ tToken vice_id_vlevo(tToken *token) {
         (*token) = paramscall(token);
         paramscounter = 0; //vraceno ) nebo chyba z paramscall
         return *token;
-        //TODO SEMANTIKA IDÄŤka
+
     } else {
         ViceVyrazu = true;
         //pokud nevolame funkci, musi nasledovat vyraz
@@ -1282,7 +1282,7 @@ tToken paramscall(tToken *token)
 {
     if ((*token)->type==T_ID||((*token)->type==T_INT)||((*token)->type==T_STRING)||((*token)->type==T_EXP)||((*token)->type==T_DOUBLE))
     {
-        //SEMANTIKA TODO ID
+
         if((*token)->type==T_ID)
         {
             if(STableSearchLocal(LocalTable,(*token)->data)==NULL)
