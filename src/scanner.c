@@ -89,9 +89,6 @@ int scannerGetValidToken (tToken *newToken, FILE *file)
             return 1;
         }
 
-        //debug
-        //printf("dkaError je %d\n", dkaError);
-
         //vypis prvni chyby
 //        if (dkaError == true && debugPrint == true)
 //        {
@@ -120,17 +117,16 @@ int scannerDKA(tToken token, FILE *file)
     sState nextState;
 
     int currChar = 0;
-    //char *tokenData;
 
-
-    bool ignoreChar = false; //indikace nepridani znaku do obsahu tokenu
+    //indikace nepridani znaku do obsahu tokenu
+    bool ignoreChar = false;
     bool gettingLex = true;
 
     token->type = T_UNKNOWN;
 
     //dynamicky string
     unsigned int c = 0; //data string counter
-    unsigned int dsMultiplier = 16; // data string multiplier - k alokaci a realokaci //TODO fix to var
+    unsigned int dsMultiplier = 16;
     char *dataString = malloc(sizeof(char)*dsMultiplier);
     if(dataString == NULL){
         fprintf(stderr, "[INTERNAL] Fatal error - nelze alokovat pamet pro token\n");
@@ -154,10 +150,6 @@ int scannerDKA(tToken token, FILE *file)
 
             }
             if (!ignoreChar)
-//            if (currChar != ' ' &&
-//                nextState != STATE_START
-//                && nextState != STATE_DIV
-//                && nextState != STATE_CMNT3) //osetreni komentaru
             {
                 dataString[c] = currChar;
                 c++;
@@ -170,9 +162,6 @@ int scannerDKA(tToken token, FILE *file)
         {
             currChar = getc(file);
         }
-
-        //debug
-        //printf("scanning... %c\n", currChar);
 
         nextState = STATE_NULL;
 
@@ -335,11 +324,6 @@ int scannerDKA(tToken token, FILE *file)
                 break;
 
                 //MISC
-                //case STATE_SPACE:
-                //		printf("Ve STATE_SPACE currchar k porovnani je: %c\n", currChar);
-                //        if (isspace(currChar) && currChar != '\n') nextState = STATE_SPACE;
-                //        nextState = STATE_START;
-                //		break;
             case STATE_EOL:
                 token->type = T_EOL;
                 break;
@@ -422,41 +406,21 @@ int scannerDKA(tToken token, FILE *file)
             default:
                 break;
         }
-        // ignorujeme znaky:
-        //if (nextState == STATE_START) {
-        //    printf("freed string: %s\n", dataString);
-        //    dataString[0] = '\0';
-        //    free(dataString);
-        //}
 
         //konec souboru:
         if (token->type == EOF)
         {
             break;
         }
-//		if (nextState == STATE_START)
-//        {
-//		    //debug
-//		    //printf("mazu");
-//		    if (strlen(dataString) != 0)
-//            {
-//                free(dataString);
-//            }
-//        }
 
         // priprava obsahu tokenu:
         if (token->type != T_UNKNOWN) {
             ungetc(currChar, file);
             dataString[c] = '\0';
-            //debug
-            //printf("ungeted \n");
             break;
         }
         else {
-            //debug
-            //printf("mame unknown tokens \n");
             if (nextState == STATE_ERROR) {
-                //printf("error \n");
 
 
                 fprintf(stderr, "Error: Neocekavany znak ");
@@ -468,14 +432,10 @@ int scannerDKA(tToken token, FILE *file)
                 }
                 gettingLex = false;
             }
-            //break;
         }
 
         state = nextState;
     }
-
-    //debug
-    //printf("obsah tokenu: %s\n", dataString);
 
     //zaplneni datoveho obsahu tokenu
     switch (token->type)
@@ -503,9 +463,6 @@ tType scannerKeywordCheck (tToken token)
     char *dataString;
     dataString = token->data;
 
-    //debug
-    //printf("kontroluji keywords... \n");
-
     if(strcmp(dataString, "else") == 0) return T_ELSE;
     else if (strcmp(dataString, "float64") == 0) return T_KEYFLOAT64;
     else if (strcmp(dataString, "for") == 0) return T_FOR;
@@ -517,8 +474,6 @@ tType scannerKeywordCheck (tToken token)
     else if (strcmp(dataString, "string") == 0) return T_KEYSTRING;
     else
     {
-        //debug
-        //printf("nenalezen keyword.\n");
         return T_ID;
     }
 }

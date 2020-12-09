@@ -22,7 +22,7 @@ Lexikalni Analyzator
 
 
 /* Stavy FSM Lexikalniho analyzatoru
- * Nazvy odpovidaji grafu */
+ * Nazvy odpovidaji schematu */
 
 typedef enum{
     STATE_NULL,
@@ -30,7 +30,6 @@ typedef enum{
     STATE_START,
     STATE_EOF,
     STATE_EOL,
-    //STATE_SPACE,
     STATE_ID,
     STATE_INT,
     STATE_INT0,
@@ -91,7 +90,6 @@ typedef enum
     T_EOF, 		 	//Konec souboru
     T_EOL,			//Konec radku
     T_ID, 		 	//Identifiktor [obsahuje data]
-    //T_INT0, 	 	//0 useless asi
     T_INT, 		 	//Cele cislo [obsahuje data]
     T_DOUBLE, 	 	//Desetine cislo [obsahuje data]
     T_EXP, 		 	//Float 64 (s exponentem) [obsahuje data]
@@ -120,7 +118,7 @@ typedef enum
 
 
 /* Struktura tokenu
-* obousmernu seznam */
+* obousmerny seznam */
 
 typedef struct Token {
 
@@ -132,10 +130,51 @@ typedef struct Token {
 } *tToken;
 
 // funkce
-
-int scannerLoadTokens(tToken *firstToken);
-int scannerDKA(tToken token);
-int scannerGetValidToken (tToken *newToken);
+/**
+ * Vytvoří vázaný seznam tokenů ze standardního vstupu
+ *
+ * @param firstToken Ukazatel na první token deklarovaný ve funkci main
+ * @return int Hodnota 0 při úspěchu, hodnota 1 při chybě
+ */
+int scannerLoadTokens(tToken *firstToken, FILE *file);
+/**
+ * Funkce deterministického konečného stavového automatu. Navržena podle schématu.
+ * Dle posloupnosti znaků ze standardního vstupu se zjišťuje typ tokenu a lexikální správnost.
+ * Pomocné proměnné dataString a ignoreChar slouží ke snadnějšímu naplnění datové složky tokenu v případech
+ * ID nebo string.
+ *
+ * @param token Token odeslaný do funkce, očekává se, že bude určen typ a naplněn datovým obsahem
+ * @return int Hodnota 0 při úspěchu, hodnota 1 při chybě
+ */
+int scannerDKA(tToken token, FILE *file);
+/**
+ * Naplní jeden token správnými ukazateli (ukazatel na další a předchozí token) a zavolá
+ * scannerDKA pro získ informací o datech a typu
+ *
+ * @param newToken Ukazatel na nový token
+ * @return int Hodnota 0 při úspěchu, hodnota 1 při chybě
+ */
+int scannerGetValidToken (tToken *newToken, FILE *file);
+/**
+ * Kontrola, zda je token typu ID klíčovým slovem. V případě, že
+ * je klíčové slovo bude tokenu změnen na token s typem klíčového slova
+ *
+ * @param token Kontrolovaný token
+ * @return tType Původní token v případě nenalezeného klíčového slova, token T_UNKNOWN, T_ELSE, T_KEYFLOAT64, T_FOR,
+ * T_FUNC, T_IF, T_KEYINT, T_PACKAGE, T_RETURN, nebo T_KEYSTRING v případě nalezeného klíčového slova
+ */
 tType scannerKeywordCheck (tToken token);
+/**
+ * Uvolní z paměti seznam tokenů.
+ *
+ * @param firstToken Ukazatel na první token seznamu tokenů
+ */
 void scannerTokenListDealloc (tToken *firstToken);
-void scannerPrintDebug (tToken token, unsigned opt); //opt = 1 -> chybovy vypis , opt = 0 -> vypis obsahu tokenu (pro syntax, pozdejsi chyby)
+/**
+ * Slouží pouze k debugu, v odevzdané verzi nevyužitá.
+ *
+ * @param token
+ * @param opt 1 -> chybovy vypis , opt = 0 -> vypis obsahu tokenu (pro syntax, pozdejsi chyby)
+ */
+void scannerPrintDebug (tToken token, unsigned opt);
+
