@@ -13,7 +13,7 @@ Parser, na souboru pracoval Šíma Vojtěch
 #define _PARSER_H
 #include "scanner.h"
 #include "error.h"
-#include "codegen.h" 
+#include "codegen.h"
 #include "exprBottomUp.h"
 #include "symtable.h"
 #include <stdbool.h>
@@ -22,13 +22,15 @@ Parser, na souboru pracoval Šíma Vojtěch
 bool Porovnavani;
 
 /**
- *
+ * Startovací funkce celého parseru - volaná z funkce main
+ * 
  * @param token Ukazatel na aktuální token se kterým se bude dále ve funkci pracovat
  * @return Vrácenta hodnota typu int která informuje, zda je vše vpořádku (0) nebo chyba
  */
 int StartParser(tToken *token);
 /**
- *
+ * Všechny funkce si berou a vrací token, pomocí rekurzivního sestupu se jeho hodnota mění
+ * 
  * @param Ukazatel na aktuální token se kterým se bude dále ve funkci pracovat
  * @return Ukazatel na poslední token se kterým se pracovalo
  */
