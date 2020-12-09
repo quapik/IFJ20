@@ -11,7 +11,7 @@ Lexikalni Analyzator
 
 #include "scanner.h"
 
-int scannerLoadTokens(tToken *firstToken)
+int scannerLoadTokens(tToken *firstToken, FILE *file)
 {
     // pocitame s platnym souborem
 
@@ -24,7 +24,7 @@ int scannerLoadTokens(tToken *firstToken)
 
 
         // filling token:
-        dkaError = scannerGetValidToken(&newToken);
+        dkaError = scannerGetValidToken(&newToken, file);
 
         if (prevToken == NULL)
             // Prvni token
@@ -56,7 +56,7 @@ int scannerLoadTokens(tToken *firstToken)
 
 }
 
-int scannerGetValidToken (tToken *newToken)
+int scannerGetValidToken (tToken *newToken, FILE *file)
 {
     //pocitame s platnym souborem
     if (newToken == NULL) return 99;
@@ -78,7 +78,7 @@ int scannerGetValidToken (tToken *newToken)
     do {
         free((*newToken)->data);
         (*newToken)->data = NULL;
-        if (scannerDKA(*newToken))
+        if (scannerDKA(*newToken, file))
         {
             suspiciousCounter++;
             dkaError = true;
@@ -111,10 +111,10 @@ int scannerGetValidToken (tToken *newToken)
     return dkaError ? 1 : 0;
 }
 
-int scannerDKA(tToken token)
+int scannerDKA(tToken token, FILE *file)
 {
 
-    // pocitame s platnym souborem
+    // pocitame s platnym vstupem
 
     sState state = STATE_START;
     sState nextState;
@@ -168,7 +168,7 @@ int scannerDKA(tToken token)
         //sken dalsiho znaku
         if (currChar != EOF)
         {
-            currChar = getc(stdin);
+            currChar = getc(file);
         }
 
         //debug
@@ -260,7 +260,11 @@ int scannerDKA(tToken token)
 
                 //STRING
             case STATE_STR0:
-                if (currChar == '\\') nextState = STATE_STR1;
+                if (currChar == '\\')
+                {
+                    ignoreChar = true;
+                    nextState = STATE_STR1;
+                }
                 else if (currChar == '"')
                 {
                     ignoreChar = true;
@@ -442,7 +446,7 @@ int scannerDKA(tToken token)
 
         // priprava obsahu tokenu:
         if (token->type != T_UNKNOWN) {
-            ungetc(currChar, stdin);
+            ungetc(currChar, file);
             dataString[c] = '\0';
             //debug
             //printf("ungeted \n");

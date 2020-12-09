@@ -92,15 +92,83 @@ xNTermType exprTyp;
 
 
 // funkce
+/**
+ * Podle tabulky poprovná operátor v řádku s operátorem ve sloupci a vrátí odpovídající relaci (neterminál)
+ *
+ * @param currOperator Současný operátor na vrcholu zásobníku
+ * @param newTerm Nový terminál, zjištěný ve funkci exprBUParse
+ * @return xPriority Odpovídající relace (neterminál)
+ */
 xPriority exprBUGetPriority (xOperator currOperator, xOperator nextOperator);
+/**
+ * Hlavní funkce pro precedenční analýzu. Pracuje s posloupností tokenů.
+ * Volají se zde funkce z celého souboru, např. i inicializace zásobníku.
+ * Zjišťují se zde terminály a neterminály na vrcholu zásobníku a s nimi jsou volány další funkce.
+ * Obsahuje switch, který volá další funkce v případě neterminálů "<" a ">" a sama se vypořádá s neterminály "=" a " ".
+ * Po ukončení ukazatel na další token ukazuje za výraz.
+ *
+ * @param token Ukazatel na první token v seznamu, který je součástí výrazu
+ * @param table Tabulka lokálních poměnných
+ * @return tToken T_UNKNOWN s obsahem chybového kódu v případě chyby, jinak další token za výrazem
+ */
 tToken exprBUParse (tToken *token, tSymbolTablePtrPromenna table);
+/**
+ * Zde je inicializován zásobník
+ *
+ * @param *stack Ukazatel na zásobník
+ */
 void exprBUStackInit (txStack *stack);
+/**
+ * Převedení typu tokenu na typ terminálu dle prec. tabulky
+ *
+ * @param tokenType Typ tokenu
+ * @return xOperator Typ operátoru nebo operandu (terminálu) ve výrazu
+ */
 xOperator exprTokenTypeToOperator(tType tokenType);
+/**
+ * Push, vložení dat na vrchol zásobníku
+ * V případě nedostatku místa pro novou datovou položku se zde paměť zásobníku realokuje
+ *
+ * @param stack Zásobník
+ * @param item Datová položka
+ */
 void exprBUStackPush (txStack stack, txItem item);
+/**
+ * Vyjme položku na vrcholu zásobníku a vrátí ji do položky
+ *
+ * @param stack Zásobník
+ * @return txItem Prvek na vrcholu zásobníku, vrací se NULL pokud je zásobník prázdný
+ */
 txItem exprBUStackPop(txStack stack);
+/**
+ * Vloží otevírací "<" operátor pod zpracovaný neterminál a prvky nad ním posune
+ *
+ * @param stack Zásobník
+ * @param posun Aktuální posun prvku, se kterým pracujeme
+ */
 void exprBUStackOpen (txStack stack, int posun); // < shift
+/**
+ * 1. Získá typ výrazu odděleného závorkami nebo pravidlem a řeší tento výraz
+ * 2. Kontroluje sémantiku, pokud jsou ve výrazu dříve (ne)definované proměnné
+ * 3. Generuje mezikód ifjcode20 pro řešení výrazů
+ * 4. Generuje mezikód ifjcode20 pro tisknutí chyby při dělení nulou
+ *
+ * @param stack Zásobník
+ * @param idTable Lokální tabulka proměnných
+ * @return unsigned Hodnota pro vyplnění obsahu chybového kódu pro token. Hodnota dle zadání.
+ */
 unsigned exprBUStackClose(txStack stack, tSymbolTablePtrPromenna table); // > parse
+/**
+ * Uvolnení obsahu zásobníku a paměti
+ *
+ * @param *stack Ukazatel na zásobník
+ */
 void exprBUStackDispose(txStack *stack);
+/**
+ * Vytiskne kód pro kontrolu běhové chyby dělení nulou
+ *
+ * @param zero Text typu "int" nebo "float" pro změnu instrukce dělení
+ */
 void exprBUDivZeroCheck(char *zero); // kontrola deleni nulou, prebira typ 0 (float/int)
 
 
