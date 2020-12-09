@@ -18,6 +18,10 @@ Generování kódu, na souboru pracovali Šíma Vojtěch, Poposki Vasil
 #include "parser.h."
 #include "symtable.h."
 
+/**
+ * Startovací funkce, print .ifjcode20, JUMP main, vestavěné funkce
+ */
+
 void CodeGenStart();
 /**
  *
@@ -54,6 +58,7 @@ void gen_input();
  */
 void gen_string_functions();
 /**
+ * Funkce pro práci s vestavěnými funkcemi
  *
  * @param token Ukazatel na aktuální token se kterým se bude dále ve funkci pracovat
  * @param LocalTable Ukazatel na tabulku symbolů pro proměnné
