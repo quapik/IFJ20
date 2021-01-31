@@ -19,6 +19,8 @@
 :x: MULTIVAL 10 % (15/150) <br/>
 :heavy_check_mark:Celkem bez rozšíření: 52 % (826/1584) <br/>
 
+WARNING: Projekt je problematické ohodnotit (20 % testů (bez testů rozšíření) skončilo signálem SIGABRT). :neutral_face:
+
 Vaše hodnocení 10,59 bodů (32%)<br/>
   Komentář hodnocení části 1): PMGP, INDENTATION, CLEAN (příliš dlouhé řádky, čitelnost codegen.c) MIXENCZ(proměnné), místy chybějící kontrola alokace paměti (codegen.c)<br/>
 
