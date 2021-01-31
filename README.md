@@ -8,7 +8,7 @@
 
 
 Procentuální hodnocení modulů překladače: <br/>
-Lexikální analýza (detekce chyb): 100 % (170/170) <br/>
+- [x] Lexikální analýza (detekce chyb): 100 % (170/170) <br/>
 Syntaktická analýza (detekce chyb): 77 % (155/200) <br/>
 Sémantická analýza (detekce chyb): 58 % (199/338) <br/>
 Sémantické/běhové chyby (detekce): 50 % (13/26) <br/>
