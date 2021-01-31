@@ -1,11 +1,11 @@
 # IFJ20
 ## IFJ - Formální jazyky a překladače, projekt FIT VUT 2020
-
+| Jméno | Login |  Části vykonávané na projektu |
 | Šíma Vojtěch  | xsimav01  | syntaktická analýza, tvorba gramatiky, sémanická analýza, generování kódu, dokumentace |
 | ------------- | ------------- |  ------------- |
-| Čábela Radek  | xcabel04 | syntaktická analýza, tvorba gramatiky, sémanická analýza, generování kódu, dokumentace |
-| Fabián Michal  | xfabia13  | syntaktická analýza, tvorba gramatiky, sémanická analýza, generování kódu, dokumentace |
-| Poposki Vasil  | xpopos00  | syntaktická analýza, tvorba gramatiky, sémanická analýza, generování kódu, dokumentace |
+| Čábela Radek  | xcabel04 | tvorba automatu, lexikální analýza, parser výrazů, generování kódu, dokumentace |
+| Fabián Michal  | xfabia13  | tabulka symbolů, testování, dokumentace |
+| Poposki Vasil  | xpopos00  | generování kódu |
 
 
 **Procentuální hodnocení modulů překladače:** <br/>
