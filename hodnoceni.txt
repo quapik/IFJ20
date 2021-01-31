@@ -1,0 +1,113 @@
+Znovu dobrý den,
+email se slovním hodnocením z dopoledne 31. 12. bohužel obsahoval špatně spárované komentáře k ručně hodnoceným částem, takže jsem znovu vygeneroval tento email s opravenými komentáři (body jsou stále stejné). Velmi se omlouvám za tento omyl a doufám, že hodnocení je již z naší strany bez chyb.
+Dále bych rád upozornil na popis termínu "Projekt", kde jsem uvedl nějaké doplňující informace k reklamacím. Upozorňuji též, že znovuotevření vybírání běhu řádného termínu zkoušky bude 4. 1. 2021 ve 12:00 (viz popis organizačního termínu "Výběr běhu řádného termínu zkoušky").
+Přeji Vám všechno dobré či raději ještě lepší do nového roku!
+
+Jelikož Váš tým odevzdal projekt do IFJ20,
+zasíláme Vám automaticky generované detaily vyhodnocení.
+
+Login hodnoceného studenta: xsimav01
+Identifikátor týmu: team_41
+Procentuální podíl pro xsimav01: 32 %
+
+Následující procentuální hodnocení je FINÁLNÍ hodnocení Vašeho projektu.
+
+Projekt byl nejdříve automaticky přeložen a na výsledném binárním souboru byly
+spuštěny testy. Testy jsou rozděleny do několika kategorií. Podle výsledků
+jednotlivých testů byla stanovena procentuální úspěšnost Vašeho překladače
+v jednotlivých kategoriích a z těchto hodnot odvozeny body.
+Do WIS se importují body zaokrouhlené na jednotky.
+Testovací příklady nebudou uveřejněny.
+
+Hodnocení je individuálně vygenerováno pro každého studenta a následně
+automaticky rozesláno na školní email.
+
+Hodnocené části:
+1) Automatické testy a manuální hodnocení implementace:
+zahrnuje automatické testy včetně testů registrovaných rozšíření
+hodnocení implementace předepsané metody syntaktické analýzy,
+dodržení varianty zadání v implementaci (symtable.c),
+přehlednost a kvalita kódu.
+Následuje orientační ceník za nejčastější chyby a prohřešky včetně několika zkratek, které se mohou vyskytovat v komentářích hodnocení implementace:
+NOHEAD = chybí záhlaví ve zdroj. souborech: -0,50 b
+NOAUTHORS = chybí jména autorů v záhlaví: -0,20 b
+PMGP = nadměrné množství globálních proměnných: -0,20 b (tolerována globální proměnná pro chybu, tabulku symbolů a seznam instrukcí)
+HEADCODE = kód v hlavičkových souborech místo v .c souborech: -0,15 b
+LCOM++ = téměř žádné komentáře: -0,30 b
+LCOM = málo komentářů: -0,10 b
+GCOM = příliš mnoho komentářů: -0,10 b
+NOCOMH = chybí komentáře u deklarací důležitých funkcí v .h: -0,10 b
+FUNCDECLH = chybí deklarace funkcí v .h: -0,10 b
+MIXENCZ = kombinování anglického a českého jazyka v komentářích: -0,10 b
+INDENTATION = špatné/nevhodné odsazení bloků: bez postihu
+TOOLONGFUNCS = příliš dlouhé funkce (lépe provést dekompozici): bez postihu
+CLEAN = celková úprava kódu (více prohřešků): -0,50 b (odsazení, zakomentované zbytky kódu, ...)
+COPYPASTE = kopírování kódu místo vytvoření vhodné funkce: -0,10 b
+VUL = vulgarismy: -0,30 b
+NORS/PA = SA analýza chybí: -0,60 b
+NOPSA = SA analýza výrazů chybí: -0,60 b
+IAL+ = TS v jiném souboru než symtable.(c|h): -0,10 b
+NOTS/IAL++ = chybí TS dle zadání: -0,60 b
+2) Prémiové body, korekce, malus: aktivita na fóru, rychlostní soutěž,
+pozdní odevzdání, formální nedostatky.
+3) Dokumentace (viz zadání a seznam zkratek níže).
+Následuje seznam zkratek, které se mohou vyskytnout v komentářích k hodnocení dokumentace:
+KA = chyby v KA, především větší míra nedeterminismu, chybějící důležité lexémy (např. ošetření komentářů atp.)
+strukt. = nedostatky ve struktuře dokumentu (nejčastěji chybějící závěr)
+PSA = chybějící nebo nedostatečný popis precedenční syntaktické analýzy
+RP = chybějící popis rozdělení práce
+GK = chybějící/nedostatečný popis generování kódu
+1. strana = chybějící informace na 1. straně dokumentace
+LL = chyby a nedostatky v LL tabulce
+LLT = chybějící nebo chybná LL tabulka
+typ. = typografické nedostatky (nejčastěji text nebyl zarovnán do bloku)
+term. = nepřesná terminologie
+SA = nedostatečný/chybějící popis syntaktické analýzy
+SAV = nedostatečný popis syntaktické analýzy výrazů
+SéA = chybějící/nedostatečný popis sémantické analýzy (typicky není dobře popsáno, co všechno se kontroluje)
+PT = chybějící, chybná nebo nečitelná precedenční tabulka
+TS = chybějící/nedostatečný popis tabulky symbolů či její implementace
+SHORT = nedostatečný, nekonkrétní popis řešení
+gram. = gramatické chyby
+LANG = míchání jazyků v rámci dokumentace (nejčastěji češtiny a slovenštiny)
+HOV = použití hovorových výrazů
+BLOK = text není zarovnán do bloku
+KAPTXT = dokumentace obsahuje více nadpisů hned za sebou
+Za většinu prohřešků bylo podle závažnosti strhnuto 0,1 až 0,7 bodu.
+Poznámky k hodnocení dokumentací jsou vesměs řazeny dle klesající závažnosti.
+
+
+V případě, že nebyl Váš projekt přeložen úspěšně, je přiložen
+log dekomprimace odevzdáného archivu a kompilace projektu.
+
+Reklamace budou řešeny on-line (primárně emailem; případně konzultace on-line přes MS Teams). Pokud tušíte, proč je vaše hodnocení řádově horší než očekávané a jedná se o drobnou opravu (jednotky změněných řádků kódu), tak můžete poslat opravenou verzi archivu s projektem (v emailu popište, co si myslíte, že máte špatně a jak jste to opravili, např. v kterých souborech se vyžadovala změna; nelze však přidávat novou funkčnost!). Registrace na zkoušky z IAL a IFJ se blíží, takže neotálejte! Bez získaného zápočtu a registrace není možné přijít na zkoušku.
+
+
+Vaše hodnocení části 1): 10,59 bodů
+Komentář hodnocení části 1): PMGP, INDENTATION, CLEAN (příliš dlouhé řádky, čitelnost codegen.c) MIXENCZ(proměnné), místy chybějící kontrola alokace paměti (codegen.c)
+Vaše hodnocení části 2): 0 bodů
+Komentář hodnocení části 2): Bez komentáře.
+Vaše hodnocení části 3): 5 bodů
+Komentář hodnocení části 3): KA, LL, strukt.
+
+Pokud jste obdrželi výsledek částí 1) + 2) mimo interval <0,15+5> bodů, tak
+bude oříznut, tak že získáte za implementaci alespoň 0 a ne více jak 15+5 bodů.
+
+Procentuální hodnocení modulů překladače:
+Lexikální analýza (detekce chyb): 100 % (170/170)
+Syntaktická analýza (detekce chyb): 77 % (155/200)
+Sémantická analýza (detekce chyb): 58 % (199/338)
+Sémantické/běhové chyby (detekce): 50 % (13/26)
+Interpretace přeloženého kódu: 34 % (289/850)
+BOOLTHEN 0 % (0/150)
+BASE 0 % (0/50)
+FUNEXP 0 % (0/150)
+UNARY 0 % (0/50)
+MULTIVAL 10 % (15/150)
+Celkem bez rozšíření: 52 % (826/1584)
+
+WARNING: Projekt je problematické ohodnotit (20 % testů (bez testů rozšíření) skončilo signálem SIGABRT).
+
+
+S pozdravem,
+Zbyněk Křivka, Ivana Burgetová a cvičící Dominika Regéciová a Lukáš Zobal
