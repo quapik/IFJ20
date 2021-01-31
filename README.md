@@ -10,12 +10,12 @@
 Procentuální hodnocení modulů překladače: <br/>
 Lexikální analýza (detekce chyb): 100 % (170/170) <br/>
 Syntaktická analýza (detekce chyb): 77 % (155/200) <br/>
-Sémantická analýza (detekce chyb): 58 % (199/338)
-Sémantické/běhové chyby (detekce): 50 % (13/26)
-Interpretace přeloženého kódu: 34 % (289/850)
-BOOLTHEN 0 % (0/150)
-BASE 0 % (0/50)
-FUNEXP 0 % (0/150)
-UNARY 0 % (0/50)
-MULTIVAL 10 % (15/150)
-Celkem bez rozšíření: 52 % (826/1584)
+Sémantická analýza (detekce chyb): 58 % (199/338) <br/>
+Sémantické/běhové chyby (detekce): 50 % (13/26) <br/>
+Interpretace přeloženého kódu: 34 % (289/850) <br/>
+BOOLTHEN 0 % (0/150) <br/>
+BASE 0 % (0/50) <br/>
+FUNEXP 0 % (0/150) <br/>
+UNARY 0 % (0/50) <br/>
+MULTIVAL 10 % (15/150) <br/>
+Celkem bez rozšíření: 52 % (826/1584) <br/>
