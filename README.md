@@ -7,7 +7,7 @@ IFJ - Formální jazyky a překladače, projekt FIT VUT 2020
 - xpopos00 Poposki Vasil
 
 
-Procentuální hodnocení modulů překladače:
+Procentuální hodnocení modulů překladače: 
 Lexikální analýza (detekce chyb): 100 % (170/170)
 Syntaktická analýza (detekce chyb): 77 % (155/200)
 Sémantická analýza (detekce chyb): 58 % (199/338)
