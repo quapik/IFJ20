@@ -18,3 +18,9 @@
 :x: UNARY 0 % (0/50) <br/>
 :x: MULTIVAL 10 % (15/150) <br/>
 :heavy_check_mark:Celkem bez rozšíření: 52 % (826/1584) <br/>
+
+Vaše hodnocení 10,59 bodů (32%)<br/>
+  Komentář hodnocení části 1): PMGP, INDENTATION, CLEAN (příliš dlouhé řádky, čitelnost codegen.c) MIXENCZ(proměnné), místy chybějící kontrola alokace paměti (codegen.c)<br/>
+
+Vaše hodnocení dokumentace: 5 bodů  (32%)<br/>
+  Komentář hodnocení části 3): KA, LL, KAPTXT<br/>
