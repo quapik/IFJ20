@@ -6,7 +6,7 @@
 - xcabel04 Čábela Radek
 - xpopos00 Poposki Vasil
 
-Procentuální hodnocení modulů překladače: <br/>
+**Procentuální hodnocení modulů překladače: <br/>
 :heavy_check_mark: Lexikální analýza (detekce chyb): 100 % (170/170) <br/>
 :heavy_check_mark: Syntaktická analýza (detekce chyb): 77 % (155/200) <br/>
 :heavy_check_mark: Sémantická analýza (detekce chyb): 58 % (199/338) <br/>
